@@ -17,7 +17,7 @@ yang secara tradisional dikaitkan dengan kontrol semacam itu.
 
 ## Untuk Siapa Rust
 
-Rust sangat ideal untuk banyak orang karena berbagai alasan. Mari kita cermati beberapa kelompok yang paling penting.
+Rust sangat ideal untuk banyak orang karena berbagai alasan. Mari kita kita lihat siapa saja yang orang-orang yang ideal menggunakannya.
 
 ### Tim Pengembang
 
@@ -46,7 +46,7 @@ produktif saat menulis kode tingkat rendah (sistem).
 ### Pelajar
 
 Rust diperuntukkan bagi pelajar dan mereka yang tertarik untuk belajar tentang konsep yang berhubungan dengan sistem. Dengan menggunakan Rust, banyak orang telah belajar tentang topik-topik seperti pengembangan sistem operasi. Anggota komunitas sangat ramah dan dengan senang hati menjawab
-pertanyaan siswa. Melalui upaya seperti buku ini, tim Rust ingin
+pertanyaan-pertanyaan dari para pelajar. Melalui upaya seperti buku ini, tim Rust ingin
 membuat konsep yang berhubungan dengan sistem lebih mudah diakses oleh lebih banyak orang, terutama mereka pemula di bidang pemrograman.
 
 ### Perusahaan
@@ -151,9 +151,9 @@ kebingungan. Namun, lakukan apa pun yang sesuai untuk Anda.
 
 <span id="ferris"></span>
 
-Bagian penting dari proses belajar Rust adalah mempelajari cara membaca
+Bagian penting dari proses belajar Rust adalah mempelajari cara membaca pesan error
 yang ditampilkan oleh kompiler: ini akan memandu Anda menuju kode yang berfungsi.
-Oleh karena itu, kami akan memberikan banyak contoh kode yang gagal dikompilasi beserta pesan kesalahan
+Oleh karena itu, kami akan memberikan banyak contoh kode yang gagal dikompilasi beserta pesan error
 yang akan ditampilkan oleh kompiler pada berbagai situasi. Ketahuilah bahwa jika Anda memasukkan
 dan menjalankan sebuah contoh acak, maka contoh tersebut mungkin tidak akan dikompilasi! Pastikan Anda membaca teks-teks di sekelilingnya untuk melihat apakah contoh yang Anda coba jalankan memang bertujuan untuk
 kesalahan. Ferris juga akan membantu Anda membedakan kode yang memang tidak semestinya dijalankan:
