@@ -1,83 +1,83 @@
-## Concise Control Flow with `if let`
+## Alur Kontrol Ringkas dengan `if let`
 
-The `if let` syntax lets you combine `if` and `let` into a less verbose way to
-handle values that match one pattern while ignoring the rest. Consider the
-program in Listing 6-6 that matches on an `Option<u8>` value in the
-`config_max` variable but only wants to execute code if the value is the `Some`
-variant.
+Dengan `if let` syntaks anda bisa mengkombinasikan `if` dan `let` menjadi lebih sederhana 
+untuk menangani hanya satu pola nilai yang cocok dan mengabaikan nilai sisanya. 
+Pertimbangkan program di Daftar 6-6 yang cocok dengan nilai `Option<u8>` di variabel
+`config_max` tetapi hanya ingin mengeksekusi kode jika nilainya adalah variant `Some`.
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-06/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 6-6: A `match` that only cares about executing
-code when the value is `Some`</span>
+<span class="caption">Daftar 6-6: Sebuah `match` yang hanya mengeksekusi kode 
+ketika nilai adalah `Some`</span>
 
-If the value is `Some`, we print out the value in the `Some` variant by binding
-the value to the variable `max` in the pattern. We don’t want to do anything
-with the `None` value. To satisfy the `match` expression, we have to add `_ =>
-()` after processing just one variant, which is annoying boilerplate code to
-add.
+Jika nilainya adalah `Some`, kita mencetak nilai dalam varian `Some` dengan mengikat
+nilai ke variabel `max` yang ada pada pola. Kami tidak ingin melakukan apa pun
+dengan nilai `None`. Untuk memenuhi ekspresi `match`, kita harus menambahkan `_ =>
+()` setelah memproses hanya satu variant, ini adalah merupakan kode boilerplate 
+yang cukup mengganggu.
 
-Instead, we could write this in a shorter way using `if let`. The following
-code behaves the same as the `match` in Listing 6-6:
+Sebagai gantinya, kita bisa menulisnya dengan cara yang lebih singkat menggunakan
+`if let`. Berikut kode yang berperilaku sama dengan `match` di Daftar 6-6:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-12-if-let/src/main.rs:here}}
 ```
 
-The syntax `if let` takes a pattern and an expression separated by an equal
-sign. It works the same way as a `match`, where the expression is given to the
-`match` and the pattern is its first arm. In this case, the pattern is
-`Some(max)`, and the `max` binds to the value inside the `Some`. We can then
-use `max` in the body of the `if let` block in the same way we used `max` in
-the corresponding `match` arm. The code in the `if let` block isn’t run if the
-value doesn’t match the pattern.
+Sintaks `if let` mengambil pola dan ekspresi yang dipisahkan dengan tanda persamaan.
+Cara kerjanya sama seperti `match`, dimana ekspresi diberikan kepada `match` dan 
+polanya adalah lengan pertamanya. Dalam hal ini, polanya adalah `Some(max)`, dan `max`
+mengikat nilai di dalam `Some`. Kita bisa menggunakan `max` di badan blok `if let`
+dengan cara yang sama seperti kita menggunakan `max` di lengan `match` yang cocok. 
+Kode di blok `if let` tidak dijalankan jika nilainya tidak sesuai dengan pola.
 
-Using `if let` means less typing, less indentation, and less boilerplate code.
-However, you lose the exhaustive checking that `match` enforces. Choosing
-between `match` and `if let` depends on what you’re doing in your particular
-situation and whether gaining conciseness is an appropriate trade-off for
-losing exhaustive checking.
+Menggunakan `if let` berarti mengurangi penulisan, mengurangi indentasi, dan 
+mengurangi kode boilerplate. Namun, Anda kehilangan pemeriksaan menyeluruh 
+yang diterapkan oleh `match`. Memilih antara `match` dan `if let` bergantung 
+pada apa yang Anda lakukan di situasi khusus dan apakah mendapatkan keringkasan
+merupakan trade-off yang tepat dari kehilangan pemeriksaan menyeluruh.
 
-In other words, you can think of `if let` as syntax sugar for a `match` that
-runs code when the value matches one pattern and then ignores all other values.
+Dengan kata lain, Anda dapat menganggap `if let` sebagai sintaksis sugar untuk `match`
+itu akan menjalankan kode ketika nilainya cocok dengan satu pola dan kemudian 
+mengabaikan semua nilai lainnya.
 
-We can include an `else` with an `if let`. The block of code that goes with the
-`else` is the same as the block of code that would go with the `_` case in the
-`match` expression that is equivalent to the `if let` and `else`. Recall the
-`Coin` enum definition in Listing 6-4, where the `Quarter` variant also held a
-`UsState` value. If we wanted to count all non-quarter coins we see while also
-announcing the state of the quarters, we could do that with a `match`
-expression, like this:
+Kita dapat memasukkan `else` dengan `if let`. Blok kode yang menyertai `else` sama
+dengan blok kode yang disertakan dengan simbol `_` di dalam Ekspresi `match` 
+yang setara dengan `if let` dan `else`. Ingat definisi enum `Coin` di Daftar 6-4, 
+di mana variant `Quarter` memiliki nilai `UsState`. Jika kita ingin menghitung semua
+koin non-seperempat yang kita lihat juga mengumumkan keadaan kuartal, kita bisa 
+melakukannya dengan ekspresi `match`, seperti ini:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-13-count-and-announce-match/src/main.rs:here}}
 ```
 
-Or we could use an `if let` and `else` expression, like this:
+Atau kita bisa menggunakan ekspresi `if let` dan `else`, seperti ini:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-14-count-and-announce-if-let-else/src/main.rs:here}}
 ```
 
-If you have a situation in which your program has logic that is too verbose to
-express using a `match`, remember that `if let` is in your Rust toolbox as well.
+Jika Anda menghadapi situasi di mana program Anda memiliki logika yang terlalu 
+bertele-tele saat menggunakan ekspresi `match`, ingatlah bahwa `if let` juga ada 
+di kotak peralatan Rust Anda.
 
-## Summary
+## Ringkasan
 
-We’ve now covered how to use enums to create custom types that can be one of a
-set of enumerated values. We’ve shown how the standard library’s `Option<T>`
-type helps you use the type system to prevent errors. When enum values have
-data inside them, you can use `match` or `if let` to extract and use those
-values, depending on how many cases you need to handle.
+Kami sekarang telah membahas cara menggunakan enum untuk membuat tipe khusus yang
+dapat menjadi salah satu dari sebuah kumpulan nilai yang disebutkan. Kami telah menunjukkan
+bagaimana tipe `Option<T>` dari perpustakaan standar membantu Anda menggunakan type system
+untuk mencegah kesalahan. Ketika nilai enum dimiliki data di dalamnya, Anda dapat menggunakan 
+`match` atau `if let` untuk mengekstrak dan menggunakannya nilainya, tergantung pada berapa
+banyak kasus yang perlu Anda tangani.
 
-Your Rust programs can now express concepts in your domain using structs and
-enums. Creating custom types to use in your API ensures type safety: the
-compiler will make certain your functions only get values of the type each
-function expects.
+Program Rust Anda sekarang dapat mengekspresikan konsep di domain anda menggunakan
+struct dan enum. Membuat tipe khusus untuk digunakan di API Anda memastikan keamanan
+tipenya: Kompiler akan memastikan fungsi anda hanya mendapatkan nilai dari tipe yang 
+masing-masing fungsi harapkan.
 
-In order to provide a well-organized API to your users that is straightforward
-to use and only exposes exactly what your users will need, let’s now turn to
-Rust’s modules.
+Untuk menyediakan API yang terorganisir dengan baik kepada pengguna anda dengan mudah
+untuk menggunakannya dan hanya menampilkan apa yang dibutuhkan pengguna anda, sekarang
+mari kita beralih ke Modul Rust.
 
