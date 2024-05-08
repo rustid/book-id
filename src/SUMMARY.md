@@ -34,10 +34,10 @@
   - [An Example Program Using Structs](ch05-02-example-structs.md)
   - [Method Syntax](ch05-03-method-syntax.md)
 
-- [Enums and Pattern Matching](ch06-00-enums.md)
-  - [Defining an Enum](ch06-01-defining-an-enum.md)
-  - [The `match` Control Flow Construct](ch06-02-match.md)
-  - [Concise Control Flow with `if let`](ch06-03-if-let.md)
+- [Enum dan Pencocokan Pola](ch06-00-enums.md)
+  - [Mendefinisikan Enum](ch06-01-defining-an-enum.md)
+  - [Aliran Kontrol `match`](ch06-02-match.md)
+  - [Alur Kontrol Ringkas dengan `if let`](ch06-03-if-let.md)
 
 ## Basic Rust Literacy
 
