@@ -1,34 +1,34 @@
-# Style Guide
+# Panduan Gaya
 
-## Prose
+## Prosa
 
-- Prefer title case for chapter/section headings, ex: `## Generating a Secret
-  Number` rather than `## Generating a secret number`.
-- Prefer italics over single quotes when calling out a term, ex: `is an
-  *associated function* of` rather than `is an ‘associated function’ of`.
-- When talking about a method in prose, DO NOT include the parentheses, ex:
-  `read_line` rather than `read_line()`.
-- Hard wrap at 80 chars
-- Prefer not mixing code and not-code in one word, ex: ``Remember when we wrote
-  `use std::io`?`` rather than ``Remember when we `use`d `std::io`?``
+- Utamakan **Title Case** untuk judul bab/bagian, misalnya:
+  `## Generating a Secret Number` daripada `## Generating a secret number`.
+- Lebih utamakan _italic_ daripada tanda kutip tunggal saat menyoroti istilah, misalnya:
+  `is an *associated function* of` daripada `is an ‘associated function’ of`.
+- Saat membahas sebuah method dalam prosa, JANGAN sertakan tanda kurung, misalnya:
+  `read_line` daripada `read_line()`.
+- Hard wrap di 80 karakter.
+- Usahakan tidak mencampur kode dan non-kode dalam satu kata, misalnya:
+  ``Remember when we wrote `use std::io`?`` daripada ``Remember when we `use`d `std::io`?``
 
-## Code
+## Kode
 
-- Add the file name before markdown blocks to make it clear which file we're
-  talking about, when applicable.
-- When making changes to code, make it clear which parts of the code changed
-  and which stayed the same... not sure how to do this yet
-- Split up long lines as appropriate to keep them under 80 chars if possible
-- Use `bash` syntax highlighting for command line output code blocks
+- Tambahkan nama file sebelum blok markdown untuk memperjelas
+  file mana yang dibahas, jika relevan.
+- Saat membuat perubahan kode, buat jelas bagian mana yang berubah
+  dan mana yang tetap sama… (belum yakin cara terbaiknya)
+- Pecah baris yang terlalu panjang seperlunya agar tetap di bawah 80 karakter jika memungkinkan.
+- Gunakan penyorotan sintaks `bash` untuk blok kode output command line.
 
-## Links
+## Tautan
 
-Once all the scripts are done:
+Jika semua script sudah selesai:
 
-- If a link shouldn't be printed, mark it to be ignored
-  - This includes all "Chapter XX" intra-book links, which _should_ be links
-    for the HTML version
-- Make intra-book links and stdlib API doc links relative so they work whether
-  the book is read offline or on docs.rust-lang.org
-- Use markdown links and keep in mind that they will be changed into `text at
-  *url*` in print, so word them in a way that it reads well in that format
+- Jika sebuah tautan tidak seharusnya dicetak, tandai agar diabaikan
+  - Ini termasuk semua tautan intra-buku “Chapter XX”, yang _harusnya_
+    berupa tautan untuk versi HTML
+- Buat tautan intra-buku dan tautan dokumentasi API stdlib menjadi relatif
+  agar tetap berfungsi baik saat buku dibaca offline maupun di docs.rust-lang.org
+- Gunakan tautan markdown dan ingat bahwa tautan tersebut akan diubah menjadi
+  `teks di *url*` pada versi cetak, jadi susunlah kalimatnya agar tetap enak dibaca dalam format tersebut

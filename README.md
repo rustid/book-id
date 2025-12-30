@@ -1,48 +1,48 @@
-# The Rust Programming Language
+# Bahasa Pemrograman Rust
 
 ![Build Status](https://github.com/rust-lang/book/workflows/CI/badge.svg)
 
-This repository contains the source of "The Rust Programming Language" book.
+Repositori ini berisi kode sumber untuk buku "The Rust Programming Language".
 
-[The book is available in dead-tree form from No Starch Press][nostarch].
+[Buku ini tersedia dalam bentuk fisik (cetak) dari No Starch Press.][nostarch]
 
 [nostarch]: https://nostarch.com/rust-programming-language-2nd-edition
 
-You can also read the book for free online. Please see the book as shipped with
-the latest [stable], [beta], or [nightly] Rust releases. Be aware that issues
-in those versions may have been fixed in this repository already, as those
-releases are updated less frequently.
+Kamu juga bisa baca buku ini gratis secara online. Silakan cek versi yang dirilis
+bersamaan dengan Rust versi [stable], [beta], atau [nightly]. Perlu diingat,
+masalah atau error yang ada di versi tersebut mungkin sudah diperbaiki di repositori ini,
+karena versi rilis resminya tidak diperbarui sesering repositori ini.
 
 [stable]: https://doc.rust-lang.org/stable/book/
 [beta]: https://doc.rust-lang.org/beta/book/
 [nightly]: https://doc.rust-lang.org/nightly/book/
 
-See the [releases] to download just the code of all the code listings that appear in the book.
+Cek bagian [releases] untuk mendownload kode-kode contoh yang muncul di dalam buku.
 
 [releases]: https://github.com/rust-lang/book/releases
 
-## Requirements
+## Persyaratan
 
-Building the book requires [mdBook], ideally the same version that
-rust-lang/rust uses in [this file][rust-mdbook]. To get it:
+Untuk nge-build buku ini, kamu butuh [mdBook], idealnya versi yang sama dengan
+yang dipakai rust-lang/rust di [file ini][rust-mdbook]. Cara installnya:
 
 [mdBook]: https://github.com/rust-lang/mdBook
 [rust-mdbook]: https://github.com/rust-lang/rust/blob/HEAD/src/tools/rustbook/Cargo.toml
 
 ```bash
-$ cargo install mdbook --locked --version <version_num>
+$ cargo install mdbook --locked --version <nomor_versi>
 ```
 
-## Building
+## Membangun
 
-To build the book, type:
+Untuk membangun bukunya, ketik:
 
 ```bash
 $ mdbook build
 ```
 
-The output will be in the `book` subdirectory. To check it out, open it in
-your web browser.
+Hasilnya bakal ada di subdirektori `book`. Buat ngecek hasilnya, buka saja
+pakai browser.
 
 _Firefox:_
 
@@ -62,46 +62,45 @@ $ Start-Process "chrome.exe" .\book\index.html  # Windows (PowerShell)
 $ start chrome.exe .\book\index.html            # Windows (Cmd)
 ```
 
-To run the tests:
+Untuk menjalankan tes:
 
 ```bash
 $ cd packages/trpl
 $ mdbook test --library-path packages/trpl/target/debug/deps
 ```
 
-## Contributing
+## Kontribusi
 
-We'd love your help! Please see [CONTRIBUTING.md][contrib] to learn about the
-kinds of contributions we're looking for.
+Kami senang banget kalau kamu mau bantu! Silakan baca [CONTRIBUTING.md][contrib]
+untuk mengetahui kontribusi apa saja yang kami cari.
 
 [contrib]: https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md
 
-Because the book is [printed][nostarch], and because we want
-to keep the online version of the book close to the print version when
-possible, it may take longer than you're used to for us to address your issue
-or pull request.
+Karena buku ini [dicetak][nostarch], dan kami ingin
+versi online-nya tetap mirip dengan versi cetak,
+mungkin proses penanganan isu atau _pull request_ dari kamu bakal lebih lama
+dari biasanya.
 
-So far, we've been doing a larger revision to coincide with [Rust Editions](https://doc.rust-lang.org/edition-guide/). Between those larger
-revisions, we will only be correcting errors. If your issue or pull request
-isn't strictly fixing an error, it might sit until the next time that we're
-working on a large revision: expect on the order of months or years. Thank you
-for your patience!
+Sejauh ini, kami melakukan revisi besar-besaran barengan dengan rilis [Edisi Rust](https://doc.rust-lang.org/edition-guide/).
+Di antara revisi besar itu, kami cuma akan memperbaiki error saja.
+Kalau isu atau _pull request_ kamu bukan untuk benerin error yang penting,
+kemungkinan bakal didiamkan dulu sampai jadwal revisi besar berikutnya:
+kira-kira dalam hitungan bulan atau tahun. Terima kasih atas kesabarannya!
 
-### Translations
+### Terjemahan
 
-We'd love help translating the book! See the [Translations] label to join in
-efforts that are currently in progress. Open a new issue to start working on
-a new language! We're waiting on [mdbook support] for multiple languages
-before we merge any in, but feel free to start!
+Kami sangat butuh bantuan buat nerjemahin buku ini! Cek label [Translations]
+untuk bergabung dengan tim yang sudah jalan. Kalau mau mulai bahasa baru,
+buka saja isu baru! Kami masih menunggu [mdbook support] untuk banyak bahasa sebelum menggabungkannya,
+tapi kalau mau mulai duluan silakan saja!
 
 [Translations]: https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations
 [mdbook support]: https://github.com/rust-lang/mdBook/issues/5
 
 ## Spellchecking
 
-To scan source files for spelling errors, you can use the `spellcheck.sh`
-script available in the `ci` directory. It needs a dictionary of valid words,
-which is provided in `ci/dictionary.txt`. If the script produces a false
-positive (say, you used the word `BTreeMap` which the script considers invalid),
-you need to add this word to `ci/dictionary.txt` (keep the sorted order for
-consistency).
+Buat ngecek kesalahan ejaan di file sumber, kamu bisa pakai script `spellcheck.sh`
+yang ada di folder `ci`. Script ini butuh kamus kata-kata benar yang ada
+di `ci/dictionary.txt`. Kalau script-nya salah deteksi
+(misalnya, kamu nulis kata `BTreeMap` tapi dianggap salah),
+kamu tinggal tambahin kata itu ke `ci/dictionary.txt` (urutkan sesuai abjad ya biar rapi).

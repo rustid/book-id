@@ -1,17 +1,17 @@
-# In each chapter
+# Di setiap bab
 
-- [ ] Manual regeneration
-- [ ] Check for upstream changes from last snapshot
-- [ ] Propagate updated output to docx
-- [ ] Extract docx and check diff
-- [ ] Answer all comments
-- [ ] Check cross references
-- [ ] Check indentation of --snip--
-- [ ] Numbered lines, Gray out unchanged lines
-- [ ] Check line wrapping
-- [ ] Check for unneeded command/compiling/running output
-- [ ] Check println style and error messages
-- [ ] Add alt text to images
-- [ ] Index tags
-  - [ ] search for "convention" conventions:naming:of blah
-  - [ ] check for double spaces, spaces at the end of paragraphs
+- [ ] Regenerasi manual
+- [ ] Periksa perubahan upstream sejak snapshot terakhir
+- [ ] Sebarkan output yang diperbarui ke docx
+- [ ] Ekstrak docx dan periksa perbedaannya (diff)
+- [ ] Jawab semua komentar
+- [ ] Periksa referensi silang
+- [ ] Periksa indentasi `--snip--`
+- [ ] Baris bernomor, abu-abukan baris yang tidak berubah
+- [ ] Periksa pembungkusan baris (line wrapping)
+- [ ] Periksa output perintah/kompilasi/eksekusi yang tidak diperlukan
+- [ ] Periksa gaya println dan pesan error
+- [ ] Tambahkan alt text pada gambar
+- [ ] Tag indeks
+  - [ ] cari “convention” conventions:naming:of blah
+  - [ ] periksa spasi ganda, spasi di akhir paragraf
