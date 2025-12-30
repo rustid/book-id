@@ -74,7 +74,7 @@ $ mdbook test --library-path packages/trpl/target/debug/deps
 Kami senang banget kalau kamu mau bantu! Silakan baca [CONTRIBUTING.md][contrib]
 untuk mengetahui kontribusi apa saja yang kami cari.
 
-[contrib]: https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md
+[contrib]: https://github.com/dudinsdn/rust-book-id/blob/docs/id-meta/CONTRIBUTING.md
 
 Karena buku ini [dicetak][nostarch], dan kami ingin
 versi online-nya tetap mirip dengan versi cetak,
