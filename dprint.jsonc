@@ -1,12 +1,11 @@
 {
-  "typescript": {
-  },
-  "json": {
-  },
+  "typescript": {},
+  "json": {},
   "markdown": {
+    "lineWidth": 80,
+    "textWrap": "always"
   },
-  "malva": {
-  },
+  "malva": {},
   "excludes": [
     "**/node_modules",
     "**/*-lock.json",
