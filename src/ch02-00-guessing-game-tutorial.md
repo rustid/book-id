@@ -1,33 +1,33 @@
-# Programming a Guessing Game
+# Bikin Game Tebak Angka
 
-Let’s jump into Rust by working through a hands-on project together! This
-chapter introduces you to a few common Rust concepts by showing you how to use
-them in a real program. You’ll learn about `let`, `match`, methods, associated
-functions, external crates, and more! In the following chapters, we’ll explore
-these ideas in more detail. In this chapter, you’ll just practice the
-fundamentals.
+Yuk langsung gas belajar Rust lewat proyek langsung praktek!. Di bab ini kamu
+bakal kenalan sama konsep-konsep Rust yang sering dipakai, tapi bukan cuma teori
+doang, langsung dipraktekin di program beneran. Kamu bakal ketemu `let`,
+`match`, method, associated function, external crate, dan temen-temennya. Di bab
+selanjutnya baru kita kupas lebih dalam. Sekarang fokus dulu ke basic-nya sambil
+praktik.
 
-We’ll implement a classic beginner programming problem: a guessing game. Here’s
-how it works: The program will generate a random integer between 1 and 100. It
-will then prompt the player to enter a guess. After a guess is entered, the
-program will indicate whether the guess is too low or too high. If the guess is
-correct, the game will print a congratulatory message and exit.
+Kita bakal ngerjain problem klasik buat pemula: **game tebak angka**, Kurang
+lebih gini cara mainnya: Program bakal bikin angka random dari 1 sampai 100
+Kamu diminta masukin tebakan Abis itu program bakal ngasih tau tebakan kamu 
+**kekecilan** atau **kegedean** kalo pas… **boom!** Tebakan kamu bener, 
+program bakal ngucapin selamat dan selesai
 
-## Setting Up a New Project
+## Setup Project Baru
 
-To set up a new project, go to the _projects_ directory that you created in
-Chapter 1 and make a new project using Cargo, like so:
+Biar bisa mulai, masuk dulu ke folder _projects_ yang kamu bikin di Chapter 1,
+terus bikin project baru pakai Cargo kayak gini:
 
 ```console
-$ cargo new guessing_game
-$ cd guessing_game
+cargo new guessing_game
+cd guessing_game
 ```
 
-The first command, `cargo new`, takes the name of the project (`guessing_game`)
-as the first argument. The second command changes to the new project’s
-directory.
+Perintah pertama, `cargo new`, pake nama project (`guessing_game`) sebagai
+argumen pertamanya. Perintah kedua buat pindah ke folder project yang baru
+dibuat.
 
-Look at the generated _Cargo.toml_ file:
+Sekarang cek dulu file _Cargo.toml_ yang otomatis dibuat
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial
@@ -44,8 +44,8 @@ cd ../../..
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/Cargo.toml}}
 ```
 
-As you saw in Chapter 1, `cargo new` generates a “Hello, world!” program for
-you. Check out the _src/main.rs_ file:
+Seperti yang sudah kamu lihat di Chapter 1, `cargo new` otomatis bikin program
+**“Hello, world!”** buat kamu. Sekarang cek file `src/main.rs`:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -53,27 +53,31 @@ you. Check out the _src/main.rs_ file:
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/src/main.rs}}
 ```
 
-Now let’s compile this “Hello, world!” program and run it in the same step
-using the `cargo run` command:
+Sekarang yuk kita **compile** program “Hello, world!” ini dan langsung jalanin
+sekaligus pakai perintah:
+
+```console
+cargo run
+```
 
 ```console
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-01-cargo-new/output.txt}}
 ```
 
-The `run` command comes in handy when you need to rapidly iterate on a project,
-as we’ll do in this game, quickly testing each iteration before moving on to
-the next one.
+Perintah `cargo run` ini bakal kepake banget kalau kamu lagi butuh **iterasi
+cepet** pas ngembangin project kayak yang bakal kita lakuin di game ini. Jadi
+kamu bisa ngetes perubahan tiap langkah tanpa ribet.
 
-Reopen the _src/main.rs_ file. You’ll be writing all the code in this file.
+Sekarang buka lagi file _src/main.rs_. Semua kode bakal kamu tulis di file ini.
 
-## Processing a Guess
+## Memproses Tebakan
 
-The first part of the guessing game program will ask for user input, process
-that input, and check that the input is in the expected form. To start, we’ll
-allow the player to input a guess. Enter the code in Listing 2-1 into
-_src/main.rs_.
+Bagian pertama dari program tebak angka ini bakal: minta input dari user,
+ngolah inputnya, terus ngecek apakah inputnya udah sesuai format yang diharapkan.
+Pertama-tama, kita bakal ngasih pemain kesempatan buat masukin tebakan. Masukin
+kode di **Listing 2-1** ke dalam file `src/main.rs`.
 
-<Listing number="2-1" file-name="src/main.rs" caption="Code that gets a guess from the user and prints it">
+<Listing number="2-1" file-name="src/main.rs" caption="Kode yang ngambil tebakan dari user terus nampilin (nge-print) tebakannya">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:all}}
@@ -81,208 +85,208 @@ _src/main.rs_.
 
 </Listing>
 
-This code contains a lot of information, so let’s go over it line by line. To
-obtain user input and then print the result as output, we need to bring the
-`io` input/output library into scope. The `io` library comes from the standard
-library, known as `std`:
+Kode ini lumayan banyak isinya, jadi mari kita bahas baris demi baris. Biar bisa
+nerima input dari user terus nampilin hasilnya, kita perlu masukin library
+input/output `io` ke dalam scope. Library `io` ini berasal dari standard library
+Rust, yaitu `std`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:io}}
 ```
 
-By default, Rust has a set of items defined in the standard library that it
-brings into the scope of every program. This set is called the _prelude_, and
-you can see everything in it [in the standard library documentation][prelude].
+Secara default, Rust sudah punya sekumpulan item dari standard library yang
+otomatis dimasukin ke setiap program. Kumpulan ini disebut _**prelude**_, dan
+kamu bisa lihat isinya lengkap di dokumentasi standard library.
 
-If a type you want to use isn’t in the prelude, you have to bring that type
-into scope explicitly with a `use` statement. Using the `std::io` library
-provides you with a number of useful features, including the ability to accept
-user input.
+Kalau tipe yang pengin kamu pakai nggak ada di prelude, kamu harus masukin
+sendiri ke scope pakai `use`. Dengan `std::io`, kamu dapet banyak fitur berguna,
+termasuk kemampuan buat nerima input dari user.
 
-As you saw in Chapter 1, the `main` function is the entry point into the
-program:
+Seperti yang udah kamu lihat di Chapter 1, fungsi `main` adalah titik masuk
+utama program:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:main}}
 ```
 
-The `fn` syntax declares a new function; the parentheses, `()`, indicate there
-are no parameters; and the curly bracket, `{`, starts the body of the function.
+Sintaks `fn` dipakai buat deklarasi fungsi baru, tanda kurung `()` berarti nggak
+ada parameter dan kurung kurawal `{` menandakan awal dari isi fungsi.
 
-As you also learned in Chapter 1, `println!` is a macro that prints a string to
-the screen:
+Seperti yang juga kamu pelajari di Chapter 1, `println!` adalah macro yang
+nge-print string ke output.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:print}}
 ```
 
-This code is printing a prompt stating what the game is and requesting input
-from the user.
+Kode ini menampilkan prompt yang ngasih tahu game apaan ini dan minta input dari
+user.
 
-### Storing Values with Variables
+### Menyimpan Nilai dengan Variabel
 
-Next, we’ll create a _variable_ to store the user input, like this:
+Selanjutnya, kita bakal bikin **variabel** untuk nyimpen input user, kayak gini:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:string}}
 ```
 
-Now the program is getting interesting! There’s a lot going on in this little
-line. We use the `let` statement to create the variable. Here’s another example:
+Sekarang programnya mulai makin menarik! Ada cukup banyak hal yang terjadi di
+satu baris kecil ini. Kita pakai pernyataan `let` untuk membuat variabel. Ini
+contoh lainnya:
 
 ```rust,ignore
 let apples = 5;
 ```
 
-This line creates a new variable named `apples` and binds it to the value `5`.
-In Rust, variables are immutable by default, meaning once we give the variable
-a value, the value won’t change. We’ll be discussing this concept in detail in
-the [“Variables and Mutability”][variables-and-mutability]<!-- ignore -->
-section in Chapter 3. To make a variable mutable, we add `mut` before the
-variable name:
+Baris ini membuat variabel baru bernama `apples` dan mengikatnya ke nilai `5`.
+Di Rust, variabel itu **immutable secara default**, artinya setelah kita kasih
+nilai ke variabel, nilainya nggak bisa diubah lagi. Kita bakal bahas ini lebih
+detail di bagian **“Variables and Mutability”** di Chapter 3. Untuk membuat
+variabel bisa diubah (mutable), kita tambahkan `mut` sebelum nama variabel:
 
 ```rust,ignore
 let apples = 5; // immutable
 let mut bananas = 5; // mutable
 ```
 
-> Note: The `//` syntax starts a comment that continues until the end of the
-> line. Rust ignores everything in comments. We’ll discuss comments in more
-> detail in [Chapter 3][comments]<!-- ignore -->.
+> Catatan: Sintak `//` memulai komentar yang berlanjut sampai akhir baris. Rust
+> mengabaikan semua yang ada di dalam komentar. Kita akan membahas komentar
+> lebih detail di [Chapter3][comments]<!-- ignore -->.
 
-Returning to the guessing game program, you now know that `let mut guess` will
-introduce a mutable variable named `guess`. The equal sign (`=`) tells Rust we
-want to bind something to the variable now. On the right of the equal sign is
-the value that `guess` is bound to, which is the result of calling
-`String::new`, a function that returns a new instance of a `String`.
-[`String`][string]<!-- ignore --> is a string type provided by the standard
-library that is a growable, UTF-8 encoded bit of text.
+Kembali ke program tebak angka, sekarang kamu tahu bahwa `let mut guess` akan
+memperkenalkan variabel mutable bernama `guess`. Tanda sama dengan (`=`) memberi
+tahu Rust bahwa kita ingin langsung mengikat sesuatu ke variabel tersebut. Di
+sebelah kanan tanda sama dengan adalah nilai yang diikat ke `guess`, yaitu hasil
+pemanggilan `String::new`, sebuah fungsi yang mengembalikan instance baru dari
+`String`. [`String`][string]<!-- ignore --> adalah tipe string yang disediakan
+oleh standard library yang bisa bertambah ukurannya dan berisi teks UTF-8.
 
-The `::` syntax in the `::new` line indicates that `new` is an associated
-function of the `String` type. An _associated function_ is a function that’s
-implemented on a type, in this case `String`. This `new` function creates a
-new, empty string. You’ll find a `new` function on many types because it’s a
-common name for a function that makes a new value of some kind.
+Sintaks `::` pada baris `::new` menunjukkan bahwa `new` adalah **associated
+function** dari tipe `String`. **Associated function** adalah fungsi yang
+diimplementasikan pada sebuah tipe, dalam kasus ini `String`. Fungsi `new` ini
+membuat string baru yang kosong. Kamu akan menemukan fungsi `new` pada banyak
+tipe karena ini adalah nama umum untuk fungsi yang membuat nilai baru.
 
-In full, the `let mut guess = String::new();` line has created a mutable
-variable that is currently bound to a new, empty instance of a `String`. Whew!
+Secara keseluruhan, baris `let mut guess = String::new();` telah membuat
+variabel mutable yang saat ini terikat pada instance baru dan kosong dari
+`String`. Whew!
 
-### Receiving User Input
+### Menerima Input dari User
 
-Recall that we included the input/output functionality from the standard
-library with `use std::io;` on the first line of the program. Now we’ll call
-the `stdin` function from the `io` module, which will allow us to handle user
-input:
+Ingat, tadi kita sudah masukin fitur input/output dari standard library dengan
+`use std::io;` di baris pertama program. Sekarang kita bakal manggil fungsi
+`stdin` dari module `io`, yang bakal kita pakai buat ngurus input dari user:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:read}}
 ```
 
-If we hadn’t imported the `io` module with `use std::io;` at the beginning of
-the program, we could still use the function by writing this function call as
-`std::io::stdin`. The `stdin` function returns an instance of
-[`std::io::Stdin`][iostdin]<!-- ignore -->, which is a type that represents a
-handle to the standard input for your terminal.
+Kalau kita **nggak** meng-import module `io` dengan `use std::io;` di awal
+program, kita tetap bisa pakai fungsinya dengan nulis pemanggilannya sebagai
+`std::io::stdin`. Fungsi `stdin` ini bakal balikin sebuah instance dari
+[`std::io::Stdin`][iostdin]<!-- ignore -->, yaitu tipe yang mewakili _handle_ ke
+input standar terminal kamu.
 
-Next, the line `.read_line(&mut guess)` calls the [`read_line`][read_line]<!--
-ignore --> method on the standard input handle to get input from the user.
-We’re also passing `&mut guess` as the argument to `read_line` to tell it what
-string to store the user input in. The full job of `read_line` is to take
-whatever the user types into standard input and append that into a string
-(without overwriting its contents), so we therefore pass that string as an
-argument. The string argument needs to be mutable so that the method can change
-the string’s content.
+Selanjutnya, baris `.read_line(&mut guess)` akan memanggil method
+[`read_line`][read_line]<!-- ignore --> pada _input handle standard_ untuk
+mengambil input dari user. Kita juga mengoper `&mut guess` sebagai argumen ke
+`read_line` untuk kasih tahu string mana yang harus dipakai buat nyimpen input
+user. Tugas penuh `read_line` adalah mengambil apapun yang user ketik di
+standard input dan **menambahkan** itu ke dalam sebuah string (tanpa menghapus
+isi sebelumnya), jadi kita kasih string itu sebagai argumen. String tersebut
+harus mutable supaya method-nya bisa mengubah isinya.
 
-The `&` indicates that this argument is a _reference_, which gives you a way to
-let multiple parts of your code access one piece of data without needing to
-copy that data into memory multiple times. References are a complex feature,
-and one of Rust’s major advantages is how safe and easy it is to use
-references. You don’t need to know a lot of those details to finish this
-program. For now, all you need to know is that, like variables, references are
-immutable by default. Hence, you need to write `&mut guess` rather than
-`&guess` to make it mutable. (Chapter 4 will explain references more
-thoroughly.)
+Tanda `&` menunjukkan bahwa argumen ini adalah sebuah **reference**, yaitu cara
+buat beberapa bagian kode mengakses data yang sama tanpa harus menyalin datanya
+berkali-kali ke memori. Reference itu topik yang lumayan kompleks, dan salah
+satu keunggulan besar Rust adalah reference-nya aman dan relatif mudah dipakai.
+Kamu gak perlu paham detailnya untuk menyelesaikan program ini. Untuk sekarang,
+semua yang perlu kamu ketahui bahwa, sama kayak variabel, reference itu
+**immutable secara default**. Makanya kita perlu nulis `&mut guess` bukan
+`&guess` supaya bisa diubah. (Chapter 4 bakal jelasin reference ini lebih
+lengkap.)
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="handling-potential-failure-with-the-result-type"></a>
 
-### Handling Potential Failure with `Result`
+### Menangani Kemungkinan Error dengan `Result`
 
-We’re still working on this line of code. We’re now discussing a third line of
-text, but note that it’s still part of a single logical line of code. The next
-part is this method:
+Kita masih ngebahas baris kode yang sama. Sekarang kita masuk ke baris teks
+ketiga, tapi perlu diingat ini sebenarnya masih bagian dari **satu baris logika
+kode yang sama**. Bagian berikutnya adalah method ini:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:expect}}
 ```
 
-We could have written this code as:
+Kita sebenarnya juga bisa nulis kodenya seperti ini:
 
 ```rust,ignore
 io::stdin().read_line(&mut guess).expect("Failed to read line");
 ```
 
-However, one long line is difficult to read, so it’s best to divide it. It’s
-often wise to introduce a newline and other whitespace to help break up long
-lines when you call a method with the `.method_name()` syntax. Now let’s
-discuss what this line does.
+Namun, satu baris yang terlalu panjang bakal susah dibaca, jadi lebih baik
+dibagi beberapa baris. Biasanya lebih baik untuk menambahkan newline dan
+whitespace lain untuk “memecah” baris panjang saat kamu memanggil method dengan
+sintaks `.method_name()`. Sekarang mari kita bahas apa yang sebenarnya dilakukan
+baris ini.
 
-As mentioned earlier, `read_line` puts whatever the user enters into the string
-we pass to it, but it also returns a `Result` value. [`Result`][result]<!--
-ignore --> is an [_enumeration_][enums]<!-- ignore -->, often called an _enum_,
-which is a type that can be in one of multiple possible states. We call each
-possible state a _variant_.
+Seperti yang sudah disebutkan sebelumnya, `read_line` akan memasukkan apa pun
+yang diketik user ke dalam string yang kita berikan, tapi fungsi ini juga
+mengembalikan nilai bertipe `Result`. [`Result`][result]<!-- ignore --> adalah
+sebuah [_enumeration_][enums]<!-- ignore --> (sering disebut _enum_), yaitu tipe
+yang bisa berada dalam beberapa kemungkinan keadaan. Setiap kemungkinan keadaan
+itu disebut _variant_.
 
-[Chapter 6][enums]<!-- ignore --> will cover enums in more detail. The purpose
-of these `Result` types is to encode error-handling information.
+[Chapter 6][enums]<!-- ignore --> akan membahas enum lebih dalam. Tujuan dari
+tipe `Result` ini adalah untuk membawa informasi terkait penanganan error.
 
-`Result`’s variants are `Ok` and `Err`. The `Ok` variant indicates the
-operation was successful, and it contains the successfully generated value.
-The `Err` variant means the operation failed, and it contains information
-about how or why the operation failed.
+Variant dari `Result` adalah `Ok` dan `Err`.`Ok` berarti operasi berhasil, dan
+dia menyimpan nilai hasil keberhasilan tersebut. `Err` berarti operasi gagal,
+dan dia menyimpan informasi tentang bagaimana atau kenapa kegagalan itu terjadi.
 
-Values of the `Result` type, like values of any type, have methods defined on
-them. An instance of `Result` has an [`expect` method][expect]<!-- ignore -->
-that you can call. If this instance of `Result` is an `Err` value, `expect`
-will cause the program to crash and display the message that you passed as an
-argument to `expect`. If the `read_line` method returns an `Err`, it would
-likely be the result of an error coming from the underlying operating system.
-If this instance of `Result` is an `Ok` value, `expect` will take the return
-value that `Ok` is holding and return just that value to you so that you can
-use it. In this case, that value is the number of bytes in the user’s input.
+Nilai bertipe `Result`, sama seperti tipe lain, juga punya method. Sebuah
+instance `Result` punya method [`expect`][expect]<!-- ignore --> yang bisa kamu
+panggil. Jika instance `Result` tersebut adalah `Err`, `expect` akan membuat
+program crash dan menampilkan pesan yang kamu berikan ke `expect`. Jika
+`read_line` mengembalikan `Err`, biasanya itu karena ada masalah dari sistem
+operasi. Kalau instance `Result` tersebut adalah `Ok`, `expect` akan mengambil
+nilai yang ada di dalam `Ok` dan mengembalikannya ke kamu supaya bisa dipakai.
+Dalam kasus ini, nilainya adalah jumlah byte dari input user.
 
-If you don’t call `expect`, the program will compile, but you’ll get a warning:
+Kalau kamu tidak memanggil `expect`, program tetap akan berhasil dikompilasi,
+tapi kamu akan mendapatkan peringatan:
 
 ```console
 {{#include ../listings/ch02-guessing-game-tutorial/no-listing-02-without-expect/output.txt}}
 ```
 
-Rust warns that you haven’t used the `Result` value returned from `read_line`,
-indicating that the program hasn’t handled a possible error.
+Rust ngasih peringatan karena kamu nggak pakai nilai `Result` yang dikembalikan
+dari `read_line`, yang artinya program belum menangani kemungkinan terjadinya
+error.
 
-The right way to suppress the warning is to actually write error-handling code,
-but in our case we just want to crash this program when a problem occurs, so we
-can use `expect`. You’ll learn about recovering from errors in [Chapter
-9][recover]<!-- ignore -->.
+Cara yang “benar” buat ngilangin peringatan itu adalah dengan benar-benar nulis
+kode penanganan error. Tapi, dalam kasus kita sekarang, kita cuma pengin
+programnya langsung crash kalau ada masalah, jadi kita bisa pakai `expect`. Kamu
+bakal belajar cara “pulih” dari error di [Bab 9][recover]<!-- ignore -->.
 
-### Printing Values with `println!` Placeholders
+### Nampilin Nilai dengan Placeholder `println!`
 
-Aside from the closing curly bracket, there’s only one more line to discuss in
-the code so far:
+Selain kurung kurawal penutup, masih ada satu baris lagi yang perlu dibahas:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-01/src/main.rs:print_guess}}
 ```
 
-This line prints the string that now contains the user’s input. The `{}` set of
-curly brackets is a placeholder: Think of `{}` as little crab pincers that hold
-a value in place. When printing the value of a variable, the variable name can
-go inside the curly brackets. When printing the result of evaluating an
-expression, place empty curly brackets in the format string, then follow the
-format string with a comma-separated list of expressions to print in each empty
-curly bracket placeholder in the same order. Printing a variable and the result
-of an expression in one call to `println!` would look like this:
+Baris ini bakal nge-print string yang sekarang udah berisi input dari user.
+Tanda kurung kurawal `{}` itu jadi semacam “tempat dudukan” nilai, anggap aja
+`{}` kayak capit kepiting kecil yang megang nilai biar bisa ditampilin. Kalau
+mau nge-print nilai dari sebuah variabel, tinggal taruh nama variabelnya di
+dalam `{}`. Kalau mau nge-print hasil dari sebuah ekspresi, cukup pakai `{}`
+yang kosong di format string, lalu setelah stringnya kasih daftar ekspresi yang
+dipisahkan koma sesuai urutan placeholder `{}` tadi. Nge-print variabel dan
+hasil ekspresi sekaligus dalam satu `println!` bakal kelihatan seperti ini:
 
 ```rust
 let x = 5;
@@ -291,11 +295,12 @@ let y = 10;
 println!("x = {x} and y + 2 = {}", y + 2);
 ```
 
-This code would print `x = 5 and y + 2 = 12`.
+Kode itu bakal nge-print: `x = 5 and y + 2 = 12`
 
-### Testing the First Part
+### Ngetes Bagian Pertama
 
-Let’s test the first part of the guessing game. Run it using `cargo run`:
+Sekarang kita tes dulu bagian pertama dari game tebak angkanya. Jalanin
+programnya pakai: `cargo run`
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-01/
@@ -314,34 +319,38 @@ Please input your guess.
 You guessed: 6
 ```
 
-At this point, the first part of the game is done: We’re getting input from the
-keyboard and then printing it.
+Pada tahap ini, bagian pertama dari game-nya sudah kelar kita berhasil ngambil
+input dari keyboard terus kita tampilin lagi.
 
-## Generating a Secret Number
+## Membuat Angka Rahasia
 
-Next, we need to generate a secret number that the user will try to guess. The
-secret number should be different every time so that the game is fun to play
-more than once. We’ll use a random number between 1 and 100 so that the game
-isn’t too difficult. Rust doesn’t yet include random number functionality in
-its standard library. However, the Rust team does provide a [`rand`
-crate][randcrate] with said functionality.
+Selanjutnya, kita perlu bikin angka rahasia yang nanti harus ditebak sama user.
+Angka ini harus beda setiap kali game dijalankan biar tetap seru dimainkan
+berkali-kali. Kita bakal pakai angka random antara 1 sampai 100 supaya gamenya
+nggak terlalu susah.
+
+Rust sendiri belum punya fitur angka random di standard library-nya. Tapi tim
+Rust sudah nyediain crate bernama [`rand`][randcrate] yang punya fitur itu.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="using-a-crate-to-get-more-functionality"></a>
 
-### Increasing Functionality with a Crate
+### Nambah Fungsionalitas dengan Crate
 
-Remember that a crate is a collection of Rust source code files. The project
-we’ve been building is a binary crate, which is an executable. The `rand` crate
-is a library crate, which contains code that is intended to be used in other
-programs and can’t be executed on its own.
+Ingat, **crate** itu kumpulan file kode sumber Rust. Project yang lagi kita
+bikin sekarang adalah **binary crate**, yaitu program yang bisa dieksekusi.
+Sementara itu, crate `rand` adalah **library crate**, yang isinya kode buat
+dipakai di program lain dan nggak bisa dijalankan sendiri.
 
-Cargo’s coordination of external crates is where Cargo really shines. Before we
-can write code that uses `rand`, we need to modify the _Cargo.toml_ file to
-include the `rand` crate as a dependency. Open that file now and add the
-following line to the bottom, beneath the `[dependencies]` section header that
-Cargo created for you. Be sure to specify `rand` exactly as we have here, with
-this version number, or the code examples in this tutorial may not work:
+Bagian ngatur crate eksternal ini adalah salah satu hal yang bikin Cargo
+keliatan keren banget. Sebelum kita bisa nulis kode yang pakai `rand`, kita
+harus ngubah file _Cargo.toml_ dulu buat nambahin `rand` sebagai dependency.
+
+Buka file itu sekarang, lalu tambahin baris berikut di bagian paling bawah,
+tepat di bawah header `[dependencies]` yang sebelumnya udah dibuat Cargo buat
+kamu. Pastikan kamu tulis `rand` persis kayak ini, termasuk versi nomornya,
+karena kalau beda bisa bikin contoh kode di tutorial ini nggak jalan:
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -355,24 +364,24 @@ this version number, or the code examples in this tutorial may not work:
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-02/Cargo.toml:8:}}
 ```
 
-In the _Cargo.toml_ file, everything that follows a header is part of that
-section that continues until another section starts. In `[dependencies]`, you
-tell Cargo which external crates your project depends on and which versions of
-those crates you require. In this case, we specify the `rand` crate with the
-semantic version specifier `0.8.5`. Cargo understands [Semantic
-Versioning][semver]<!-- ignore --> (sometimes called _SemVer_), which is a
-standard for writing version numbers. The specifier `0.8.5` is actually
-shorthand for `^0.8.5`, which means any version that is at least 0.8.5 but
-below 0.9.0.
+Di file _Cargo.toml_, semua yang ada setelah sebuah header akan jadi bagian dari
+section itu sampai ada section baru dimulai. Di bagian `[dependencies]`, kamu
+kasih tahu Cargo crate eksternal apa aja yang dibutuhin project kamu dan versi
+berapa yang ingin dipakai.
 
-Cargo considers these versions to have public APIs compatible with version
-0.8.5, and this specification ensures that you’ll get the latest patch release
-that will still compile with the code in this chapter. Any version 0.9.0 or
-greater is not guaranteed to have the same API as what the following examples
-use.
+Di kasus ini, kita nentuin crate `rand` dengan semantic version `0.8.5`. Cargo
+paham soal [Semantic Versioning][semver]<!-- ignore --> (sering disebut
+_SemVer_), yaitu standar penulisan versi. Penulisan `0.8.5` ini sebenarnya
+singkatan dari `^0.8.5`, yang artinya versi berapapun yang minimal 0.8.5 dan
+masih di bawah 0.9.0.
 
-Now, without changing any of the code, let’s build the project, as shown in
-Listing 2-2.
+Cargo nganggep versi-versi dalam rentang itu punya API yang masih kompatibel
+dengan 0.8.5. Dengan begitu, kamu bakal selalu dapet patch terbaru tapi tetap
+aman dan bisa dikompilasi sesuai contoh di bab ini. Versi 0.9.0 ke atas nggak
+dijamin punya API yang sama lagi.
+
+Sekarang, tanpa mengubah kode apa pun, coba build project-nya dulu seperti yang
+ditunjukkan di Listing 2-2.
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -380,7 +389,7 @@ rm Cargo.lock
 cargo clean
 cargo build -->
 
-<Listing number="2-2" caption="The output from running `cargo build` after adding the `rand` crate as a dependency">
+<Listing number="2-2" caption=" Output yang muncul saat menjalankan `cargo build` setelah menambahkan crate `rand` sebagai dependency. ">
 
 ```console
 $ cargo build
@@ -407,30 +416,31 @@ $ cargo build
 
 </Listing>
 
-You may see different version numbers (but they will all be compatible with the
-code, thanks to SemVer!) and different lines (depending on the operating
-system), and the lines may be in a different order.
+Kamu mungkin akan melihat nomor versi yang berbeda (tapi semuanya tetap
+kompatibel kok berkat SemVer!) dan mungkin juga baris output yang berbeda
+tergantung sistem operasi yang kamu pakai, bahkan urutannya juga bisa nggak
+sama.
 
-When we include an external dependency, Cargo fetches the latest versions of
-everything that dependency needs from the _registry_, which is a copy of data
-from [Crates.io][cratesio]. Crates.io is where people in the Rust ecosystem
-post their open source Rust projects for others to use.
+Saat kita nambahin dependency eksternal, Cargo akan ngambil versi terbaru dari
+semua dependency yang dibutuhin lewat _registry_, yaitu salinan data dari
+[Crates.io][cratesio]. Crates.io itu tempat orang-orang di ekosistem Rust
+nge-publish proyek Rust open source mereka supaya bisa dipakai orang lain.
 
-After updating the registry, Cargo checks the `[dependencies]` section and
-downloads any crates listed that aren’t already downloaded. In this case,
-although we only listed `rand` as a dependency, Cargo also grabbed other crates
-that `rand` depends on to work. After downloading the crates, Rust compiles
-them and then compiles the project with the dependencies available.
+Setelah registry diperbarui, Cargo ngecek bagian `[dependencies]`, lalu
+nge-download crate yang belum ada di lokal. Di kasus ini, meskipun kita cuma
+nulis `rand` sebagai dependency, Cargo juga ikut ngambil crate lain yang
+dibutuhin `rand` supaya bisa jalan. Setelah semua crate kelar di-download, Rust
+akan nge-compile crate-crate itu, baru kemudian nge-compile project kamu dengan
+dependency yang sudah siap dipakai.
 
-If you immediately run `cargo build` again without making any changes, you
-won’t get any output aside from the `Finished` line. Cargo knows it has already
-downloaded and compiled the dependencies, and you haven’t changed anything
-about them in your _Cargo.toml_ file. Cargo also knows that you haven’t changed
-anything about your code, so it doesn’t recompile that either. With nothing to
-do, it simply exits.
+Kalau kamu langsung menjalankan `cargo build` lagi tanpa ada perubahan apa pun,
+kamu nggak bakal lihat output apa pun selain baris `Finished`. Cargo tahu kalau
+dependency-nya sudah didownload dan dikompilasi, dan kamu juga nggak ngubah apa
+pun di _Cargo.toml_. Cargo juga sadar kode kamu nggak berubah, jadi dia nggak
+perlu recompile. Karena nggak ada kerjaan, dia langsung selesai.
 
-If you open the _src/main.rs_ file, make a trivial change, and then save it and
-build again, you’ll only see two lines of output:
+Kalau kamu buka file _src/main.rs_, ubah sesuatu yang sepele aja, simpan, lalu
+build lagi, kamu cuma bakal lihat dua baris output:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -443,43 +453,50 @@ $ cargo build
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.13s
 ```
 
-These lines show that Cargo only updates the build with your tiny change to the
-_src/main.rs_ file. Your dependencies haven’t changed, so Cargo knows it can
-reuse what it has already downloaded and compiled for those.
+Baris-baris tadi nunjukin kalau Cargo cuma nge-update build berdasarkan
+perubahan kecil yang kamu lakukan di file _src/main.rs_. Karena dependency kamu
+nggak berubah, Cargo tahu dia bisa langsung pakai ulang hasil download dan
+compile sebelumnya tanpa perlu ngulang dari awal.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="ensuring-reproducible-builds-with-the-cargo-lock-file"></a>
 
-#### Ensuring Reproducible Builds
+#### Memastikan Build Bisa Diulang dengan Hasil yang Sama
 
-Cargo has a mechanism that ensures that you can rebuild the same artifact every
-time you or anyone else builds your code: Cargo will use only the versions of
-the dependencies you specified until you indicate otherwise. For example, say
-that next week version 0.8.6 of the `rand` crate comes out, and that version
-contains an important bug fix, but it also contains a regression that will
-break your code. To handle this, Rust creates the _Cargo.lock_ file the first
-time you run `cargo build`, so we now have this in the _guessing_game_
-directory.
+Cargo punya mekanisme supaya kamu bisa build proyek dengan hasil yang sama
+setiap kali kamu atau orang lain nge-build kode kamu. Caranya: Cargo cuma bakal
+pakai versi dependency yang sudah kamu tentuin, sampai kamu bilang mau ganti.
 
-When you build a project for the first time, Cargo figures out all the versions
-of the dependencies that fit the criteria and then writes them to the
-_Cargo.lock_ file. When you build your project in the future, Cargo will see
-that the _Cargo.lock_ file exists and will use the versions specified there
-rather than doing all the work of figuring out versions again. This lets you
-have a reproducible build automatically. In other words, your project will
-remain at 0.8.5 until you explicitly upgrade, thanks to the _Cargo.lock_ file.
-Because the _Cargo.lock_ file is important for reproducible builds, it’s often
-checked into source control with the rest of the code in your project.
+Misalnya, minggu depan keluar `rand` versi 0.8.6. Versi itu punya bug fix
+penting, tapi ternyata ada regresi yang bikin kode kamu rusak. Untuk ngatasi
+hal-hal kayak gitu, Rust bikin file _**Cargo.lock**_ saat pertama kali kamu
+jalanin `cargo build`, jadi sekarang file itu sudah ada di folder
+_guessing_game_.
 
-#### Updating a Crate to Get a New Version
+Waktu kamu build project pertama kali, Cargo bakal nyari versi dependency yang
+cocok sama aturan yang kamu tulis, lalu nyimpen hasilnya ke file _Cargo.lock_.
+Build berikutnya, Cargo bakal lihat kalau _Cargo.lock_ sudah ada dan langsung
+pakai versi yang tertulis di situ, tanpa repot-repot ngecek lagi. Ini bikin
+build jadi **reproducible** alias hasilnya konsisten. Singkatnya: proyekmu bakal
+tetap pakai versi 0.8.5 sampai kamu sengaja upgrade, berkat _Cargo.lock_. Karena
+penting buat jaga konsistensi build, file ini biasanya ikut di-commit bareng
+source code ke version control.
 
-When you _do_ want to update a crate, Cargo provides the command `update`,
-which will ignore the _Cargo.lock_ file and figure out all the latest versions
-that fit your specifications in _Cargo.toml_. Cargo will then write those
-versions to the _Cargo.lock_ file. Otherwise, by default, Cargo will only look
-for versions greater than 0.8.5 and less than 0.9.0. If the `rand` crate has
-released the two new versions 0.8.6 and 0.999.0, you would see the following if
-you ran `cargo update`:
+#### Update Crate ke Versi Baru
+
+Kalau kamu **memang pengin update** crate, Cargo nyediain perintah `update`.
+Perintah ini bakal ngabaikan _Cargo.lock_ dan nyari versi terbaru yang masih
+cocok sama aturan di _Cargo.toml_. Setelah itu, Cargo bakal nulis versi barunya
+ke _Cargo.lock_. Secara default, Cargo cuma bakal nyari versi yang lebih besar
+dari 0.8.5 tapi masih di bawah 0.9.0.
+
+Kalau misalnya crate `rand` udah keluar versi 0.8.6 dan 0.999.0, dan kamu
+jalanin:
+
+```
+cargo update
+```
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-02/
@@ -494,34 +511,35 @@ $ cargo update
     Updating rand v0.8.5 -> v0.8.6 (available: v0.999.0)
 ```
 
-Cargo ignores the 0.999.0 release. At this point, you would also notice a
-change in your _Cargo.lock_ file noting that the version of the `rand` crate
-you are now using is 0.8.6. To use `rand` version 0.999.0 or any version in the
-0.999._x_ series, you’d have to update the _Cargo.toml_ file to look like this
-instead (don’t actually make this change because the following examples assume
-you’re using `rand` 0.8):
+Cargo mengabaikan rilis 0.999.0. Pada titik ini, kamu juga bakal lihat ada
+perubahan di file _Cargo.lock_ yang nunjukin kalau sekarang versi `rand` yang
+dipakai adalah 0.8.6. Kalau kamu mau pakai `rand` versi 0.999.0 atau versi lain
+di seri 0.999._x_, kamu harus ngubah file _Cargo.toml_ jadi seperti ini (tapi
+jangan beneran diubah, karena contoh-contoh selanjutnya diasumsikan masih pakai
+`rand` 0.8):
 
 ```toml
 [dependencies]
 rand = "0.999.0"
 ```
 
-The next time you run `cargo build`, Cargo will update the registry of crates
-available and reevaluate your `rand` requirements according to the new version
-you have specified.
+Saat kamu menjalankan `cargo build` lagi, Cargo bakal memperbarui daftar crate
+yang tersedia lalu mengevaluasi ulang kebutuhan `rand` kamu sesuai versi baru
+yang sudah kamu tentukan.
 
-There’s a lot more to say about [Cargo][doccargo]<!-- ignore --> and [its
-ecosystem][doccratesio]<!-- ignore -->, which we’ll discuss in Chapter 14, but
-for now, that’s all you need to know. Cargo makes it very easy to reuse
-libraries, so Rustaceans are able to write smaller projects that are assembled
-from a number of packages.
+Sebenernya masih banyak hal lain soal [Cargo][doccargo]<!-- ignore --> dan
+[ekosistemnya][doccratesio]<!-- ignore --> yang bakal dibahas lebih dalam di
+Bab 14. Tapi untuk sekarang, itu aja yang perlu kamu tahu dulu. Cargo bikin
+reuse library jadi super gampang, sehingga para Rustacean bisa nulis project
+yang lebih kecil dan nyusunnya dari banyak package yang sudah ada.
 
-### Generating a Random Number
+### Membuat Angka Acak
 
-Let’s start using `rand` to generate a number to guess. The next step is to
-update _src/main.rs_, as shown in Listing 2-3.
+Sekarang kita mulai pakai `rand` buat ngehasilin angka yang bakal ditebak.
+Langkah selanjutnya adalah update file _src/main.rs_, seperti yang ditunjukkan
+di Listing 2-3.
 
-<Listing number="2-3" file-name="src/main.rs" caption="Adding code to generate a random number">
+<Listing number="2-3" file-name="src/main.rs" caption="Menambahkan kode untuk menghasilkan angka acak.">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-03/src/main.rs:all}}
@@ -529,35 +547,37 @@ update _src/main.rs_, as shown in Listing 2-3.
 
 </Listing>
 
-First, we add the line `use rand::Rng;`. The `Rng` trait defines methods that
-random number generators implement, and this trait must be in scope for us to
-use those methods. Chapter 10 will cover traits in detail.
+Pertama, kita nambahin baris `use rand::Rng;`. Trait `Rng` ini berisi
+method-method yang dipakai oleh random number generator, dan trait ini harus ada
+di scope supaya kita bisa pakai method-nya. Detail soal trait bakal dibahas
+lebih dalam di Chapter 10.
 
-Next, we’re adding two lines in the middle. In the first line, we call the
-`rand::thread_rng` function that gives us the particular random number
-generator we’re going to use: one that is local to the current thread of
-execution and is seeded by the operating system. Then, we call the `gen_range`
-method on the random number generator. This method is defined by the `Rng`
-trait that we brought into scope with the `use rand::Rng;` statement. The
-`gen_range` method takes a range expression as an argument and generates a
-random number in the range. The kind of range expression we’re using here takes
-the form `start..=end` and is inclusive on the lower and upper bounds, so we
-need to specify `1..=100` to request a number between 1 and 100.
+Selanjutnya, kita nambah dua baris di bagian tengah kode. Di baris pertama, kita
+manggil fungsi `rand::thread_rng` untuk ngambil random number generator yang
+bakal kita pakai. Generator ini terikat pada thread yang lagi jalan sekarang dan
+“dibekali” (seeded) dari operating system.
 
-> Note: You won’t just know which traits to use and which methods and functions
-> to call from a crate, so each crate has documentation with instructions for
-> using it. Another neat feature of Cargo is that running the `cargo doc
-> --open` command will build documentation provided by all your dependencies
-> locally and open it in your browser. If you’re interested in other
-> functionality in the `rand` crate, for example, run `cargo doc --open` and
-> click `rand` in the sidebar on the left.
+Lalu, kita manggil method `gen_range` dari random number generator tadi. Method
+ini didefinisikan oleh trait `Rng` yang tadi sudah kita masukin ke scope lewat
+`use rand::Rng;`. Method `gen_range` menerima sebuah ekspresi range sebagai
+argumen dan bakal ngasilin angka random di dalam range tersebut. Range yang kita
+pakai bentuknya `start..=end`, yaitu range yang inklusif di batas bawah _dan_
+batas atas. Jadi kita tulis `1..=100` supaya dapet angka acak antara 1
+sampai 100.
 
-The second new line prints the secret number. This is useful while we’re
-developing the program to be able to test it, but we’ll delete it from the
-final version. It’s not much of a game if the program prints the answer as soon
-as it starts!
+> Catatan: Kamu nggak mungkin hafal begitu aja trait apa yang harus dipakai,
+> method apa yang harus dipanggil, atau fungsi apa yang tersedia dari sebuah
+> crate. Makanya setiap crate punya dokumentasi yang ngejelasin cara pakainya.
+> Fitur keren Cargo lainnya: kalau kamu jalanin perintah `cargo doc --open`
+> Cargo bakal bikin dokumentasi lokal untuk semua dependency kamu dan langsung
+> buka di browser. Misalnya kamu pengin lihat fitur lain dari crate `rand`,
+> tinggal jalankan `cargo doc --open` lalu klik `rand` di sidebar kiri.
 
-Try running the program a few times:
+Baris baru kedua cuma buat nge-print angka rahasianya. Ini berguna selama masa
+pengembangan biar gampang ngetes, tapi nanti bakal kita hapus di versi final.
+Soalnya nggak seru dong kalau game langsung kasih jawabannya 
+
+Sekarang coba jalankan programnya beberapa kali:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-03/
@@ -588,16 +608,17 @@ Please input your guess.
 You guessed: 5
 ```
 
-You should get different random numbers, and they should all be numbers between
-1 and 100. Great job!
+Kamu harusnya dapat angka acak yang berbeda-beda tiap kali jalanin program, dan
+semuanya bakal berada di antara 1 sampai 100. Mantap! 🎉
 
-## Comparing the Guess to the Secret Number
+## Membandingkan Tebakan dengan Angka Rahasia
 
-Now that we have user input and a random number, we can compare them. That step
-is shown in Listing 2-4. Note that this code won’t compile just yet, as we will
-explain.
+Sekarang kita sudah punya input dari user dan angka acak. Berarti sekarang
+saatnya kita bandingin keduanya. Langkah ini ditunjukkan di Listing 2-4.
+Catatan: kode ini belum bisa dikompilasi dulu ya — nanti bakal dijelasin
+kenapanya.
 
-<Listing number="2-4" file-name="src/main.rs" caption="Handling the possible return values of comparing two numbers">
+<Listing number="2-4" file-name="src/main.rs" caption="Menangani kemungkinan nilai hasil yang muncul saat membandingkan dua angka.">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-04/src/main.rs:here}}
@@ -605,44 +626,43 @@ explain.
 
 </Listing>
 
-First, we add another `use` statement, bringing a type called
-`std::cmp::Ordering` into scope from the standard library. The `Ordering` type
-is another enum and has the variants `Less`, `Greater`, and `Equal`. These are
-the three outcomes that are possible when you compare two values.
+Pertama, kita nambah satu `use` lagi buat masukin tipe `std::cmp::Ordering` ke
+dalam scope dari standard library. Tipe `Ordering` ini adalah enum lain yang
+punya tiga kemungkinan nilai: `Less`, `Greater`, dan `Equal`. Ini adalah tiga
+hasil yang mungkin terjadi saat kita membandingkan dua nilai.
 
-Then, we add five new lines at the bottom that use the `Ordering` type. The
-`cmp` method compares two values and can be called on anything that can be
-compared. It takes a reference to whatever you want to compare with: Here, it’s
-comparing `guess` to `secret_number`. Then, it returns a variant of the
-`Ordering` enum we brought into scope with the `use` statement. We use a
-[`match`][match]<!-- ignore --> expression to decide what to do next based on
-which variant of `Ordering` was returned from the call to `cmp` with the values
-in `guess` and `secret_number`.
+Lalu, kita nambah lima baris kode baru di bagian bawah yang pakai `Ordering`.
+Method `cmp` dipakai buat membandingkan dua nilai, dan bisa dipanggil di tipe
+apa pun yang bisa dibandingkan. Method ini butuh referensi ke nilai yang mau
+dibandingin: di sini, kita bandingin `guess` dengan `secret_number`. Setelah
+itu, `cmp` bakal ngembalikan salah satu varian dari enum `Ordering` yang tadi
+sudah kita masukin ke scope lewat `use`. Nah, kita pakai ekspresi
+[`match`][match]<!-- ignore --> buat nentuin langkah selanjutnya berdasarkan
+varian `Ordering` yang dikembalikan dari `cmp` saat bandingin `guess` dan
+`secret_number`.
 
-A `match` expression is made up of _arms_. An arm consists of a _pattern_ to
-match against, and the code that should be run if the value given to `match`
-fits that arm’s pattern. Rust takes the value given to `match` and looks
-through each arm’s pattern in turn. Patterns and the `match` construct are
-powerful Rust features: They let you express a variety of situations your code
-might encounter, and they make sure you handle them all. These features will be
-covered in detail in Chapter 6 and Chapter 19, respectively.
+Ekspresi `match` tersusun dari beberapa _arm_. Satu arm terdiri dari _pattern_
+yang mau dicocokkan, plus kode yang bakal dijalankan kalau nilai yang dikasih ke
+`match` cocok sama pattern tersebut. Rust bakal ngambil nilai yang dikasih ke
+`match`, lalu ngecek tiap pattern dari atas ke bawah. Pattern matching dan
+`match` ini fitur yang kuat banget di Rust: mereka bikin kamu bisa menangani
+banyak kemungkinan kondisi program dengan rapi, dan memastikan semuanya
+tertangani. Fitur ini bakal dibahas lebih dalam di Chapter 6 dan Chapter 19
+nanti.
 
-Let’s walk through an example with the `match` expression we use here. Say that
-the user has guessed 50 and the randomly generated secret number this time is
-38.
+Sekarang kita lihat contohnya pakai `match` yang ada di sini. Misalnya user
+nebak angka 50, dan angka rahasianya ternyata 38.
 
-When the code compares 50 to 38, the `cmp` method will return
-`Ordering::Greater` because 50 is greater than 38. The `match` expression gets
-the `Ordering::Greater` value and starts checking each arm’s pattern. It looks
-at the first arm’s pattern, `Ordering::Less`, and sees that the value
-`Ordering::Greater` does not match `Ordering::Less`, so it ignores the code in
-that arm and moves to the next arm. The next arm’s pattern is
-`Ordering::Greater`, which _does_ match `Ordering::Greater`! The associated
-code in that arm will execute and print `Too big!` to the screen. The `match`
-expression ends after the first successful match, so it won’t look at the last
-arm in this scenario.
+Pas kode ngebandingin 50 dengan 38, method `cmp` bakal balikin
+`Ordering::Greater` karena 50 lebih besar dari 38. Nilai `Ordering::Greater` ini
+masuk ke `match`, lalu `match` mulai ngecek tiap arm. Pertama dia lihat pattern
+`Ordering::Less`, tapi karena nggak cocok, arm itu dilewatin. Lanjut ke arm
+berikutnya yang pattern-nya `Ordering::Greater`, dan ini cocok! Jadi kode di arm
+itu dijalankan, dan program bakal nampilin `Too big!`. Setelah dapat kecocokan
+pertama, `match` langsung selesai dan nggak ngecek arm terakhir.
 
-However, the code in Listing 2-4 won’t compile yet. Let’s try it:
+Tapi… kode di Listing 2-4 ini belum bisa dikompilasi. Yuk kita coba jalanin
+dulu:
 
 <!--
 The error numbers in this output should be that of the code **WITHOUT** the
@@ -653,20 +673,24 @@ anchor or snip comments
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-04/output.txt}}
 ```
 
-The core of the error states that there are _mismatched types_. Rust has a
-strong, static type system. However, it also has type inference. When we wrote
-`let mut guess = String::new()`, Rust was able to infer that `guess` should be
-a `String` and didn’t make us write the type. The `secret_number`, on the other
-hand, is a number type. A few of Rust’s number types can have a value between 1
-and 100: `i32`, a 32-bit number; `u32`, an unsigned 32-bit number; `i64`, a
-64-bit number; as well as others. Unless otherwise specified, Rust defaults to
-an `i32`, which is the type of `secret_number` unless you add type information
-elsewhere that would cause Rust to infer a different numerical type. The reason
-for the error is that Rust cannot compare a string and a number type.
+Inti dari error-nya bilang kalau terjadi **mismatched types** alias tipe datanya
+nggak cocok. Rust punya sistem tipe yang kuat dan statis, tapi juga punya fitur
+_type inference_. Waktu kita nulis `let mut guess = String::new()`, Rust bisa
+nebak sendiri kalau `guess` itu bertipe `String`, jadi kita nggak perlu nulis
+tipenya secara eksplisit.
 
-Ultimately, we want to convert the `String` the program reads as input into a
-number type so that we can compare it numerically to the secret number. We do
-so by adding this line to the `main` function body:
+Di sisi lain, `secret_number` adalah tipe angka. Beberapa tipe angka di Rust
+bisa punya nilai antara 1 sampai 100, misalnya `i32` (32-bit signed), `u32`
+(32-bit unsigned), `i64` (64-bit signed), dan lainnya. Kalau nggak ditentukan
+lain, Rust bakal default ke `i32`, jadi `secret_number` dianggap bertipe `i32`
+kecuali ada informasi lain yang bikin Rust menebak tipe berbeda.
+
+Masalahnya adalah: Rust **nggak bisa membandingkan String dengan angka**. Itu
+yang bikin error.
+
+Pada akhirnya, kita perlu mengubah `String` yang dibaca dari input user menjadi
+tipe angka supaya bisa dibandingkan secara numerik dengan angka rahasia. Kita
+lakukan itu dengan menambahkan baris ini ke dalam body fungsi `main`:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -680,53 +704,52 @@ The line is:
 let guess: u32 = guess.trim().parse().expect("Please type a number!");
 ```
 
-We create a variable named `guess`. But wait, doesn’t the program already have
-a variable named `guess`? It does, but helpfully Rust allows us to shadow the
-previous value of `guess` with a new one. _Shadowing_ lets us reuse the `guess`
-variable name rather than forcing us to create two unique variables, such as
-`guess_str` and `guess`, for example. We’ll cover this in more detail in
-[Chapter 3][shadowing]<!-- ignore -->, but for now, know that this feature is
-often used when you want to convert a value from one type to another type.
+Kita bikin variabel baru bernama `guess`. Eh, tapi kan kita udah punya variabel
+`guess` sebelumnya? Betul. Tapi enaknya Rust, kita boleh “menimpa” nilai lama
+`guess` dengan nilai baru. Fitur ini disebut **shadowing**. Dengan shadowing,
+kita bisa pakai lagi nama variabel `guess` tanpa harus bikin dua nama berbeda,
+misalnya `guess_str` dan `guess`. Topik ini bakal dibahas lebih detail di
+[Chapter 3][shadowing]<!-- ignore -->, tapi untuk sekarang cukup tahu kalau
+fitur ini sering dipakai saat kita ingin mengubah suatu nilai dari satu tipe ke
+tipe lain.
 
-We bind this new variable to the expression `guess.trim().parse()`. The `guess`
-in the expression refers to the original `guess` variable that contained the
-input as a string. The `trim` method on a `String` instance will eliminate any
-whitespace at the beginning and end, which we must do before we can convert the
-string to a `u32`, which can only contain numerical data. The user must press
-<kbd>enter</kbd> to satisfy `read_line` and input their guess, which adds a
-newline character to the string. For example, if the user types <kbd>5</kbd> and
-presses <kbd>enter</kbd>, `guess` looks like this: `5\n`. The `\n` represents
-“newline.” (On Windows, pressing <kbd>enter</kbd> results in a carriage return
-and a newline, `\r\n`.) The `trim` method eliminates `\n` or `\r\n`, resulting
-in just `5`.
+Variabel baru ini kita isi dengan ekspresi `guess.trim().parse()`. `guess` yang
+ada di ekspresi ini masih merujuk ke `guess` yang lama, yang isinya input user
+dalam bentuk string. Method `trim` pada `String` bakal ngapus whitespace di awal
+dan akhir teks, dan ini wajib dilakukan sebelum kita ubah string tersebut ke
+`u32`, karena `u32` cuma boleh berisi angka doang.
 
-The [`parse` method on strings][parse]<!-- ignore --> converts a string to
-another type. Here, we use it to convert from a string to a number. We need to
-tell Rust the exact number type we want by using `let guess: u32`. The colon
-(`:`) after `guess` tells Rust we’ll annotate the variable’s type. Rust has a
-few built-in number types; the `u32` seen here is an unsigned, 32-bit integer.
-It’s a good default choice for a small positive number. You’ll learn about
-other number types in [Chapter 3][integers]<!-- ignore -->.
+User harus tekan <kbd>enter</kbd> buat ngirim input ke `read_line`, dan itu
+bakal nambahin karakter newline ke string. Misalnya user ngetik <kbd>5</kbd>
+lalu tekan <kbd>enter</kbd>, isi `guess` bakal jadi kayak gini: `5\n`. Tanda
+`\n` itu newline. (Di Windows malah jadi `\r\n`.) Nah, `trim` bakal ngilangin
+`\n` atau `\r\n`, jadi tinggal `5`.
 
-Additionally, the `u32` annotation in this example program and the comparison
-with `secret_number` means Rust will infer that `secret_number` should be a
-`u32` as well. So, now the comparison will be between two values of the same
-type!
+Method [`parse` pada string][parse]<!-- ignore --> dipakai buat ngubah string
+jadi tipe lain. Di sini kita pakai buat ngubah string jadi angka. Kita harus
+ngasih tahu Rust angka tipe apa yang kita mau, makanya kita tulis
+`let guess: u32`. Titik dua (`:`) setelah `guess` artinya kita lagi nentuin tipe
+variabelnya. `u32` sendiri adalah unsigned 32-bit integer, pilihan yang pas buat
+angka kecil dan positif. Tipe angka lain bakal dibahas di
+[Chapter 3][integers]<!-- ignore -->.
 
-The `parse` method will only work on characters that can logically be converted
-into numbers and so can easily cause errors. If, for example, the string
-contained `A👍%`, there would be no way to convert that to a number. Because it
-might fail, the `parse` method returns a `Result` type, much as the `read_line`
-method does (discussed earlier in [“Handling Potential Failure with
-`Result`”](#handling-potential-failure-with-result)<!-- ignore -->). We’ll treat
-this `Result` the same way by using the `expect` method again. If `parse`
-returns an `Err` `Result` variant because it couldn’t create a number from the
-string, the `expect` call will crash the game and print the message we give it.
-If `parse` can successfully convert the string to a number, it will return the
-`Ok` variant of `Result`, and `expect` will return the number that we want from
-the `Ok` value.
+Selain itu, karena di contoh ini kita pakai `u32` untuk `guess` dan kita
+bandingin sama `secret_number`, Rust jadi nge-infer kalau `secret_number` juga
+harus `u32`. Jadi sekarang kedua nilai punya tipe yang sama — mantap, bisa
+dibandingkan!
 
-Let’s run the program now:
+Method `parse` cuma bakal berhasil kalau stringnya bener-bener bisa diubah ke
+angka. Jadi gampang banget terjadi error kalau isinya aneh, misalnya `A👍%`,
+jelas nggak bisa jadi angka. Karena bisa gagal, `parse` juga ngembalikan
+`Result`, sama kayak `read_line` yang udah kita bahas di bagian
+[“Handling Potential Failure with `Result`”](#handling-potential-failure-with-result)<!-- ignore -->.
+
+Kita tangani `Result` ini dengan cara yang sama: pakai `expect`. Kalau `parse`
+gagal dan balikin `Err`, `expect` bakal bikin game crash dan nampilin pesan yang
+kita kasih. Tapi kalau `parse` berhasil dan balikin `Ok`, `expect` bakal ngasih
+kita angkanya.
+
+Sekarang, ayo jalanin programnya lagi:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/no-listing-03-convert-string-to-number/
@@ -748,18 +771,18 @@ You guessed: 76
 Too big!
 ```
 
-Nice! Even though spaces were added before the guess, the program still figured
-out that the user guessed 76. Run the program a few times to verify the
-different behavior with different kinds of input: Guess the number correctly,
-guess a number that is too high, and guess a number that is too low.
+Keren! 🎉 Meskipun ada spasi di depan tebakan, program tetap bisa ngerti kalau
+user nebak angka 76. Coba jalanin programnya beberapa kali untuk ngetes berbagai
+kondisi: tebak angka yang tepat, tebak angka yang terlalu besar, dan tebak angka
+yang terlalu kecil.
 
-We have most of the game working now, but the user can make only one guess.
-Let’s change that by adding a loop!
+Sekarang sebagian besar game-nya sudah jalan, tapi user baru bisa nebak **sekali
+doang**. Kita perlu ubah itu dengan nambahin loop!
 
-## Allowing Multiple Guesses with Looping
+## Mengizinkan Banyak Tebakan dengan Loop
 
-The `loop` keyword creates an infinite loop. We’ll add a loop to give users
-more chances at guessing the number:
+Keyword `loop` bakal bikin loop tak terbatas (infinite loop). Kita bakal
+nambahin loop supaya user bisa punya banyak kesempatan buat nebak angkanya:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -767,17 +790,20 @@ more chances at guessing the number:
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-04-looping/src/main.rs:here}}
 ```
 
-As you can see, we’ve moved everything from the guess input prompt onward into
-a loop. Be sure to indent the lines inside the loop another four spaces each
-and run the program again. The program will now ask for another guess forever,
-which actually introduces a new problem. It doesn’t seem like the user can quit!
+Seperti yang kamu lihat, sekarang kita mindahin semua bagian mulai dari prompt
+input tebakan ke dalam sebuah loop. Pastikan baris-baris di dalam loop
+di-_indent_ empat spasi lagi, lalu jalankan programnya. Sekarang program bakal
+terus minta tebakan baru tanpa henti… tapi itu bikin masalah baru: kelihatannya
+user jadi nggak bisa keluar dari game!
 
-The user could always interrupt the program by using the keyboard shortcut
-<kbd>ctrl</kbd>-<kbd>C</kbd>. But there’s another way to escape this insatiable
-monster, as mentioned in the `parse` discussion in [“Comparing the Guess to the
-Secret Number”](#comparing-the-guess-to-the-secret-number)<!-- ignore -->: If
-the user enters a non-number answer, the program will crash. We can take
-advantage of that to allow the user to quit, as shown here:
+Sebenernya user masih bisa keluar pakai shortcut keyboard <kbd>Ctrl</kbd> +
+<kbd>C</kbd>. Tapi ada cara lain buat kabur dari “monster tak pernah puas” ini,
+seperti yang udah disinggung waktu bahas `parse` di bagian
+[“Comparing the Guess to the Secret Number”](#comparing-the-guess-to-the-secret-number)<!-- ignore -->.
+
+Kalau user masukin input yang **bukan angka**, program bakal crash. Nah, kita
+bisa manfaatin hal ini buat bikin cara keluar dari game, seperti di contoh
+berikut:
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/no-listing-04-looping/
@@ -816,13 +842,15 @@ Please type a number!: ParseIntError { kind: InvalidDigit }
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 ```
 
-Typing `quit` will quit the game, but as you’ll notice, so will entering any
-other non-number input. This is suboptimal, to say the least; we want the game
-to also stop when the correct number is guessed.
+Mengetik `quit` bakal langsung keluar dari game, tapi seperti yang kamu lihat,
+input apa pun yang **bukan angka** juga bikin game berhenti. Jelas ini kurang
+ideal, kita maunya game juga berhenti kalau user berhasil nebak angka yang
+benar.
 
-### Quitting After a Correct Guess
+### Keluar Setelah Tebakan Benar
 
-Let’s program the game to quit when the user wins by adding a `break` statement:
+Sekarang kita bikin game berhenti saat user menang dengan nambahin statement
+`break`:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -830,18 +858,20 @@ Let’s program the game to quit when the user wins by adding a `break` statemen
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/no-listing-05-quitting/src/main.rs:here}}
 ```
 
-Adding the `break` line after `You win!` makes the program exit the loop when
-the user guesses the secret number correctly. Exiting the loop also means
-exiting the program, because the loop is the last part of `main`.
+Menambahkan baris `break` setelah `You win!` bikin program keluar dari loop saat
+user berhasil nebak angka dengan benar. Karena loop itu bagian terakhir dari
+`main`, keluar dari loop berarti programnya juga langsung selesai.
 
-### Handling Invalid Input
+### Menangani Input yang Tidak Valid
 
-To further refine the game’s behavior, rather than crashing the program when
-the user inputs a non-number, let’s make the game ignore a non-number so that
-the user can continue guessing. We can do that by altering the line where
-`guess` is converted from a `String` to a `u32`, as shown in Listing 2-5.
+Biar game-nya makin rapi, daripada langsung crash kalau user masukin input yang
+bukan angka, lebih bagus kalau game cuma **ngabaikan** input tersebut dan lanjut
+main seperti biasa. Jadi user masih bisa terus nebak.
 
-<Listing number="2-5" file-name="src/main.rs" caption="Ignoring a non-number guess and asking for another guess instead of crashing the program">
+Kita bisa lakukan itu dengan mengubah baris yang mengonversi `guess` dari
+`String` ke `u32`, seperti yang ditunjukkan di Listing 2-5.
+
+<Listing number="2-5" file-name="src/main.rs" caption="Mengabaikan tebakan yang bukan angka dan minta tebakan baru lagi, bukannya bikin program crash.">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-05/src/main.rs:here}}
@@ -849,29 +879,31 @@ the user can continue guessing. We can do that by altering the line where
 
 </Listing>
 
-We switch from an `expect` call to a `match` expression to move from crashing
-on an error to handling the error. Remember that `parse` returns a `Result`
-type and `Result` is an enum that has the variants `Ok` and `Err`. We’re using
-a `match` expression here, as we did with the `Ordering` result of the `cmp`
-method.
+Kita mengganti pemanggilan `expect` dengan ekspresi `match` supaya bukan lagi
+**crash saat error**, tapi **menangani error dengan benar**. Ingat, `parse`
+mengembalikan tipe `Result`, dan `Result` adalah enum yang punya dua varian:
+`Ok` dan `Err`. Di sini kita pakai `match`, sama seperti saat kita menangani
+hasil `Ordering` dari method `cmp`.
 
-If `parse` is able to successfully turn the string into a number, it will
-return an `Ok` value that contains the resultant number. That `Ok` value will
-match the first arm’s pattern, and the `match` expression will just return the
-`num` value that `parse` produced and put inside the `Ok` value. That number
-will end up right where we want it in the new `guess` variable we’re creating.
+Kalau `parse` berhasil mengubah string menjadi angka, dia akan mengembalikan
+`Ok` yang berisi angka hasil konversi tersebut. Nilai `Ok` itu bakal cocok
+dengan pattern di arm pertama, dan `match` akan mengembalikan nilai `num` di
+dalamnya. Angka itulah yang kemudian disimpan ke variabel `guess` baru yang kita
+buat.
 
-If `parse` is _not_ able to turn the string into a number, it will return an
-`Err` value that contains more information about the error. The `Err` value
-does not match the `Ok(num)` pattern in the first `match` arm, but it does
-match the `Err(_)` pattern in the second arm. The underscore, `_`, is a
-catch-all value; in this example, we’re saying we want to match all `Err`
-values, no matter what information they have inside them. So, the program will
-execute the second arm’s code, `continue`, which tells the program to go to the
-next iteration of the `loop` and ask for another guess. So, effectively, the
-program ignores all errors that `parse` might encounter!
+Kalau `parse` **tidak** bisa mengubah string menjadi angka, dia akan
+mengembalikan `Err` yang berisi informasi tentang errornya. Nilai `Err` ini
+tidak cocok dengan pattern `Ok(num)` di arm pertama, tapi cocok dengan pattern
+`Err(_)` di arm kedua. Tanda underscore `_` adalah penangkap umum (catch-all);
+di sini artinya kita ingin menangkap semua `Err`, apa pun isi detail errornya.
+Jadi program akan menjalankan kode di arm kedua, yaitu `continue`, yang menyuruh
+program lanjut ke iterasi berikutnya dari `loop` dan meminta tebakan baru lagi.
 
-Now everything in the program should work as expected. Let’s try it:
+Artinya, program sekarang **mengabaikan semua error yang mungkin terjadi saat
+`parse`**, dan tetap berjalan dengan mulus.
+
+Sekarang seharusnya seluruh program sudah bekerja sesuai harapan. Yuk kita coba
+menjalankannya!
 
 <!-- manual-regeneration
 cd listings/ch02-guessing-game-tutorial/listing-02-05/
@@ -905,12 +937,13 @@ You guessed: 61
 You win!
 ```
 
-Awesome! With one tiny final tweak, we will finish the guessing game. Recall
-that the program is still printing the secret number. That worked well for
-testing, but it ruins the game. Let’s delete the `println!` that outputs the
-secret number. Listing 2-6 shows the final code.
+Keren! Dengan satu sentuhan kecil terakhir, kita bakal selesai bikin game
+tebak angka ini. Ingat, program kita masih nge-print angka rahasianya. Itu
+memang berguna buat testing tadi, tapi jelas bikin gamenya nggak seru. Jadi
+sekarang hapus aja `println!` yang nampilin angka rahasia itu. Listing 2-6
+nunjukin kode finalnya.
 
-<Listing number="2-6" file-name="src/main.rs" caption="Complete guessing game code">
+<Listing number="2-6" file-name="src/main.rs" caption="Kode lengkap game tebak angka">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-06/src/main.rs}}
@@ -918,17 +951,20 @@ secret number. Listing 2-6 shows the final code.
 
 </Listing>
 
-At this point, you’ve successfully built the guessing game. Congratulations!
+Pada tahap ini, kamu sudah berhasil menyelesaikan pembuatan game tebak angka.
+Selamat!
 
-## Summary
+## Ringkasan
 
-This project was a hands-on way to introduce you to many new Rust concepts:
-`let`, `match`, functions, the use of external crates, and more. In the next
-few chapters, you’ll learn about these concepts in more detail. Chapter 3
-covers concepts that most programming languages have, such as variables, data
-types, and functions, and shows how to use them in Rust. Chapter 4 explores
-ownership, a feature that makes Rust different from other languages. Chapter 5
-discusses structs and method syntax, and Chapter 6 explains how enums work.
+Project ini adalah cara belajar _hands-on_ buat ngenalin kamu ke banyak konsep
+baru di Rust: `let`, `match`, fungsi, penggunaan external crate, dan lain-lain.
+Di bab-bab selanjutnya, kamu bakal pelajari konsep-konsep ini lebih dalam lagi.
+Chapter 3 bakal bahas konsep umum yang biasanya ada di hampir semua bahasa
+pemrograman, seperti variabel, tipe data, dan fungsi, serta gimana cara pakainya
+di Rust. Chapter 4 bakal ngebahas ownership, fitur khas Rust yang bikin dia beda
+dari bahasa lain. Chapter 5 ngebahas `struct` dan sintaks method. Chapter 6
+bakal ngejelasin cara kerja `enum`.
+
 
 [prelude]: ../std/prelude/index.html
 [variables-and-mutability]: ch03-01-variables-and-mutability.html#variables-and-mutability
