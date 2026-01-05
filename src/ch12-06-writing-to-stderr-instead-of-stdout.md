@@ -2,64 +2,61 @@
 
 <a id="writing-error-messages-to-standard-error-instead-of-standard-output"></a>
 
-## Redirecting Errors to Standard Error
+## Ngeredirect Error ke Standard Error
 
-At the moment, we’re writing all of our output to the terminal using the
-`println!` macro. In most terminals, there are two kinds of output: _standard
-output_ (`stdout`) for general information and _standard error_ (`stderr`) for
-error messages. This distinction enables users to choose to direct the
-successful output of a program to a file but still print error messages to the
-screen.
+Sekarang ini, kita masih nge-print semua output ke terminal pakai macro
+`println!`. Di kebanyakan terminal, sebenarnya ada dua jenis output:
+*standard output* (`stdout`) buat info biasa dan *standard error* (`stderr`)
+buat pesan error. Pemisahan ini bikin user bisa ngirim hasil sukses program ke
+file, tapi pesan errornya tetap muncul di layar.
 
-The `println!` macro is only capable of printing to standard output, so we have
-to use something else to print to standard error.
+Masalahnya, `println!` cuma bisa nge-print ke standard output, jadi kita perlu
+cara lain buat nge-print ke standard error.
 
-### Checking Where Errors Are Written
+### Ngecek Error Sekarang Lagi Dicetak ke Mana
 
-First, let’s observe how the content printed by `minigrep` is currently being
-written to standard output, including any error messages we want to write to
-standard error instead. We’ll do that by redirecting the standard output stream
-to a file while intentionally causing an error. We won’t redirect the standard
-error stream, so any content sent to standard error will continue to display on
-the screen.
+Pertama, kita cek dulu sebenernya konten yang diprint `minigrep` sekarang itu
+keluar ke standard output semua, termasuk error yang sebenernya pengen kita
+arahin ke standard error. Kita bakal ngetes ini dengan nge-redirect output
+standard ke file sambil sengaja bikin error. Kita gak bakal nge-redirect
+standard error, jadi kalau ada sesuatu dikirim ke standard error, itu tetap
+bakal muncul di layar.
 
-Command line programs are expected to send error messages to the standard error
-stream so that we can still see error messages on the screen even if we
-redirect the standard output stream to a file. Our program is not currently
-well behaved: We’re about to see that it saves the error message output to a
-file instead!
+Program command line yang “sopan” itu harusnya ngirim error ke standard error
+biar kita masih bisa lihat error di layar meskipun standard output lagi
+di-redirect ke file. Tapi program kita sekarang belum sopan nih: kita bakal
+lihat kalau dia malah nyimpen pesan error ke file!
 
-To demonstrate this behavior, we’ll run the program with `>` and the file path,
-_output.txt_, that we want to redirect the standard output stream to. We won’t
-pass any arguments, which should cause an error:
+Buat nunjukin ini, kita jalanin program pakai tanda `>` dan nama file,
+*output.txt*, buat tujuan redirect standard output. Kita gak bakal masukin
+argumen apa pun, jadi pasti muncul error:
 
 ```console
 $ cargo run > output.txt
 ```
 
-The `>` syntax tells the shell to write the contents of standard output to
-_output.txt_ instead of the screen. We didn’t see the error message we were
-expecting printed to the screen, so that means it must have ended up in the
-file. This is what _output.txt_ contains:
+Sintaks `>` ngasih tau shell buat nulis isi standard output ke *output.txt*
+bukannya ke layar. Kita gak lihat pesan error yang seharusnya muncul di layar,
+berarti kemungkinan besar malah masuk ke file. Ini isi file *output.txt*:
 
 ```text
 Problem parsing arguments: not enough arguments
 ```
 
-Yup, our error message is being printed to standard output. It’s much more
-useful for error messages like this to be printed to standard error so that
-only data from a successful run ends up in the file. We’ll change that.
+Yap, error kita lagi-lagi dicetak ke standard output. Jauh lebih berguna kalau
+pesan error kayak gini diprint ke standard error, jadi yang masuk file cuma
+output sukses aja. Yuk kita benerin.
 
-### Printing Errors to Standard Error
+### Nge-print Error ke Standard Error
 
-We’ll use the code in Listing 12-24 to change how error messages are printed.
-Because of the refactoring we did earlier in this chapter, all the code that
-prints error messages is in one function, `main`. The standard library provides
-the `eprintln!` macro that prints to the standard error stream, so let’s change
-the two places we were calling `println!` to print errors to use `eprintln!`
-instead.
+Kita bakal pakai kode di Listing 12-24 buat ngubah cara nge-print error.
+Untungnya, karena refactoring yang udah kita lakukan sebelumnya, semua kode
+yang nge-print error sekarang ada cuma di satu fungsi: `main`. Standard library
+udah nyediain macro `eprintln!` yang nge-print ke standard error, jadi kita
+tinggal ganti dua pemanggilan `println!` yang dipakai buat error jadi
+`eprintln!`.
 
-<Listing number="12-24" file-name="src/main.rs" caption="Writing error messages to standard error instead of standard output using `eprintln!`">
+<Listing number="12-24" file-name="src/main.rs" caption="Nulis pesan error ke standard error bukan standard output pakai `eprintln!`">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-24/src/main.rs:here}}
@@ -67,26 +64,26 @@ instead.
 
 </Listing>
 
-Let’s now run the program again in the same way, without any arguments and
-redirecting standard output with `>`:
+Sekarang kita jalanin program lagi dengan cara yang sama: tanpa argumen dan
+tetap nge-redirect standard output pakai `>`:
 
 ```console
 $ cargo run > output.txt
 Problem parsing arguments: not enough arguments
 ```
 
-Now we see the error onscreen and _output.txt_ contains nothing, which is the
-behavior we expect of command line programs.
+Sekarang errornya muncul di layar dan *output.txt* kosong. Ini behavior yang
+memang diharapkan dari program command line.
 
-Let’s run the program again with arguments that don’t cause an error but still
-redirect standard output to a file, like so:
+Sekarang kita coba lagi, tapi kali ini pakai argumen yang valid dan tetap
+redirect standard output ke file:
 
 ```console
 $ cargo run -- to poem.txt > output.txt
 ```
 
-We won’t see any output to the terminal, and _output.txt_ will contain our
-results:
+Kita gak bakal lihat output apa pun di terminal, dan isi *output.txt* bakal
+jadi:
 
 <span class="filename">Filename: output.txt</span>
 
@@ -95,18 +92,23 @@ Are you nobody, too?
 How dreary to be somebody!
 ```
 
-This demonstrates that we’re now using standard output for successful output
-and standard error for error output as appropriate.
+Ini nunjukin kalau sekarang kita udah bener: standard output dipakai buat hasil
+yang sukses, dan standard error khusus buat pesan error.
 
-## Summary
+## Ringkasan
 
-This chapter recapped some of the major concepts you’ve learned so far and
-covered how to perform common I/O operations in Rust. By using command line
-arguments, files, environment variables, and the `eprintln!` macro for printing
-errors, you’re now prepared to write command line applications. Combined with
-the concepts in previous chapters, your code will be well organized, store data
-effectively in the appropriate data structures, handle errors nicely, and be
-well tested.
+Di chapter ini kita nge-recap beberapa konsep besar yang udah kamu pelajari
+sejauh ini dan ngebahas gimana caranya ngelakuin operasi I/O umum di Rust.
+Dengan pakai argumen command line, file, environment variable, dan macro
+`eprintln!` buat nge-print error, sekarang kamu udah siap bikin aplikasi
+command line sendiri.
 
-Next, we’ll explore some Rust features that were influenced by functional
-languages: closures and iterators.
+Digabung sama konsep-konsep di chapter sebelumnya, sekarang kode kamu:
+
+* lebih rapi dan terorganisir,
+* bisa nyimpen data dengan struktur yang tepat,
+* punya error handling yang oke,
+* dan tentu aja, udah bisa dites dengan baik.
+
+Selanjutnya, kita bakal eksplor fitur Rust yang terinspirasi dari bahasa
+functional: closures dan iterators.

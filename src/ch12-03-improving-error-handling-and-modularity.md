@@ -1,79 +1,83 @@
-## Refactoring to Improve Modularity and Error Handling
+## Refactoring untuk Meningkatkan Modularitas dan Penanganan Error
 
-To improve our program, we’ll fix four problems that have to do with the
-program’s structure and how it’s handling potential errors. First, our `main`
-function now performs two tasks: It parses arguments and reads files. As our
-program grows, the number of separate tasks the `main` function handles will
-increase. As a function gains responsibilities, it becomes more difficult to
-reason about, harder to test, and harder to change without breaking one of its
-parts. It’s best to separate functionality so that each function is responsible
-for one task.
+Untuk meningkatkan program kita, kita akan memperbaiki empat masalah yang
+berkaitan dengan struktur program dan cara program menangani kemungkinan error.
+Pertama, fungsi `main` kita sekarang melakukan dua tugas: mem-parsing argumen
+dan membaca file. Seiring program berkembang, jumlah tugas terpisah yang
+ditangani `main` akan bertambah. Semakin banyak tanggung jawab sebuah fungsi,
+semakin sulit untuk dipahami, diuji, dan diubah tanpa merusak bagian lainnya.
+Akan lebih baik jika kita memisahkan fungsionalitas sehingga setiap fungsi hanya
+bertanggung jawab pada satu tugas.
 
-This issue also ties into the second problem: Although `query` and `file_path`
-are configuration variables to our program, variables like `contents` are used
-to perform the program’s logic. The longer `main` becomes, the more variables
-we’ll need to bring into scope; the more variables we have in scope, the harder
-it will be to keep track of the purpose of each. It’s best to group the
-configuration variables into one structure to make their purpose clear.
+Masalah ini juga berkaitan dengan masalah kedua: `query` dan `file_path` adalah
+variabel konfigurasi untuk program kita, sedangkan variabel seperti `contents`
+digunakan untuk menjalankan logika program. Semakin panjang fungsi `main`,
+semakin banyak variabel yang harus dimasukkan ke dalam scope; semakin banyak
+variabel di dalam scope, semakin sulit melacak tujuan masing-masing. Lebih baik
+mengelompokkan variabel konfigurasi ke dalam satu struktur agar tujuannya lebih
+jelas.
 
-The third problem is that we’ve used `expect` to print an error message when
-reading the file fails, but the error message just prints `Should have been
-able to read the file`. Reading a file can fail in a number of ways: For
-example, the file could be missing, or we might not have permission to open it.
-Right now, regardless of the situation, we’d print the same error message for
-everything, which wouldn’t give the user any information!
+Masalah ketiga adalah kita menggunakan `expect` untuk mencetak pesan error
+ketika pembacaan file gagal, tetapi pesan error-nya hanya menampilkan
+`Should have been able to read the file`. Membaca file bisa gagal karena
+berbagai alasan: misalnya file tidak ada, atau kita tidak punya izin untuk
+membukanya. Saat ini, apa pun penyebabnya, kita tetap mencetak pesan error yang
+sama, yang tidak memberikan informasi berarti bagi pengguna!
 
-Fourth, we use `expect` to handle an error, and if the user runs our program
-without specifying enough arguments, they’ll get an `index out of bounds` error
-from Rust that doesn’t clearly explain the problem. It would be best if all the
-error-handling code were in one place so that future maintainers had only one
-place to consult the code if the error-handling logic needed to change. Having
-all the error-handling code in one place will also ensure that we’re printing
-messages that will be meaningful to our end users.
+Keempat, kita menggunakan `expect` untuk menangani error, dan jika pengguna
+menjalankan program tanpa memberikan argumen yang cukup, mereka akan mendapatkan
+error `index out of bounds` dari Rust yang tidak menjelaskan masalah sebenarnya.
+Akan lebih baik jika semua kode penanganan error berada di satu tempat sehingga
+pengembang di masa depan hanya perlu melihat satu bagian jika logika penanganan
+error perlu diubah. Mengumpulkan seluruh penanganan error di satu tempat juga
+memastikan bahwa kita mencetak pesan yang benar-benar berguna bagi pengguna
+akhir.
 
-Let’s address these four problems by refactoring our project.
+Mari kita tangani keempat masalah ini dengan melakukan refactoring pada project
+kita.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="separation-of-concerns-for-binary-projects"></a>
 
-### Separating Concerns in Binary Projects
+### Memisahkan Tanggung Jawab dalam Proyek Biner
 
-The organizational problem of allocating responsibility for multiple tasks to
-the `main` function is common to many binary projects. As a result, many Rust
-programmers find it useful to split up the separate concerns of a binary
-program when the `main` function starts getting large. This process has the
-following steps:
+Masalah organisasi berupa pembagian banyak tugas ke dalam fungsi `main` adalah
+hal yang umum pada banyak proyek biner. Karena itu, banyak programmer Rust
+merasa berguna untuk memisahkan berbagai tanggung jawab program biner ketika
+fungsi `main` mulai membesar. Proses ini memiliki langkah-langkah berikut:
 
-- Split your program into a _main.rs_ file and a _lib.rs_ file and move your
-  program’s logic to _lib.rs_.
-- As long as your command line parsing logic is small, it can remain in
-  the `main` function.
-- When the command line parsing logic starts getting complicated, extract it
-  from the `main` function into other functions or types.
+- Pisahkan program Anda menjadi file _main.rs_ dan _lib.rs_, lalu pindahkan
+  logika program ke _lib.rs_.
+- Selama logika parsing command line masih kecil, ia bisa tetap berada di dalam
+  fungsi `main`.
+- Ketika logika parsing command line mulai menjadi rumit, ekstrak logika
+  tersebut dari fungsi `main` ke fungsi atau tipe lain.
 
-The responsibilities that remain in the `main` function after this process
-should be limited to the following:
+Tanggung jawab yang tersisa dalam fungsi `main` setelah proses ini sebaiknya
+terbatas pada hal-hal berikut:
 
-- Calling the command line parsing logic with the argument values
-- Setting up any other configuration
-- Calling a `run` function in _lib.rs_
-- Handling the error if `run` returns an error
+- Memanggil logika parsing command line dengan nilai argumen
+- Menyiapkan konfigurasi lain yang diperlukan
+- Memanggil fungsi `run` di _lib.rs_
+- Menangani error jika `run` mengembalikan error
 
-This pattern is about separating concerns: _main.rs_ handles running the
-program and _lib.rs_ handles all the logic of the task at hand. Because you
-can’t test the `main` function directly, this structure lets you test all of
-your program’s logic by moving it out of the `main` function. The code that
-remains in the `main` function will be small enough to verify its correctness
-by reading it. Let’s rework our program by following this process.
+Pola ini bertujuan untuk memisahkan tanggung jawab: _main.rs_ menangani eksekusi
+program, dan _lib.rs_ menangani seluruh logika tugas utama. Karena Anda tidak
+bisa menguji fungsi `main` secara langsung, struktur ini memungkinkan Anda
+menguji seluruh logika program dengan memindahkannya keluar dari fungsi `main`.
+Kode yang tersisa di dalam `main` akan cukup kecil sehingga bisa diverifikasi
+kebenarannya hanya dengan membaca. Mari kita perbarui program kita dengan
+mengikuti proses ini.
 
-#### Extracting the Argument Parser
+#### Mengekstrak Argument Parser
 
-We’ll extract the functionality for parsing arguments into a function that
-`main` will call. Listing 12-5 shows the new start of the `main` function that
-calls a new function `parse_config`, which we’ll define in _src/main.rs_.
+Kita akan mengekstrak fungsionalitas untuk parsing argumen ke dalam sebuah
+fungsi yang akan dipanggil oleh `main`. Listing 12-5 memperlihatkan awal baru
+dari fungsi `main` yang memanggil fungsi baru `parse_config`, yang akan kita
+definisikan di _src/main.rs_.
 
-<Listing number="12-5" file-name="src/main.rs" caption="Extracting a `parse_config` function from `main`">
+<Listing number="12-5" file-name="src/main.rs" caption=" Mengekstrak fungsi `parse_config` dari `main` ">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-05/src/main.rs:here}}
@@ -81,40 +85,41 @@ calls a new function `parse_config`, which we’ll define in _src/main.rs_.
 
 </Listing>
 
-We’re still collecting the command line arguments into a vector, but instead of
-assigning the argument value at index 1 to the variable `query` and the
-argument value at index 2 to the variable `file_path` within the `main`
-function, we pass the whole vector to the `parse_config` function. The
-`parse_config` function then holds the logic that determines which argument
-goes in which variable and passes the values back to `main`. We still create
-the `query` and `file_path` variables in `main`, but `main` no longer has the
-responsibility of determining how the command line arguments and variables
-correspond.
+Kita masih mengumpulkan argumen baris perintah ke dalam sebuah vektor, tetapi
+alih-alih langsung mengambil nilai argumen pada indeks 1 dan menyimpannya ke
+variabel `query` serta nilai pada indeks 2 ke variabel `file_path` di dalam
+fungsi `main`, sekarang kita meneruskan seluruh vektor tersebut ke fungsi
+`parse_config`. Fungsi `parse_config` kemudian memuat logika yang menentukan
+argumen mana yang masuk ke variabel mana dan mengembalikan nilai-nilainya
+kembali ke `main`. Kita masih membuat variabel `query` dan `file_path` di
+`main`, tetapi `main` tidak lagi bertanggung jawab untuk memetakan argumen baris
+perintah ke variabel yang sesuai.
 
-This rework may seem like overkill for our small program, but we’re refactoring
-in small, incremental steps. After making this change, run the program again to
-verify that the argument parsing still works. It’s good to check your progress
-often, to help identify the cause of problems when they occur.
+Perubahan ini mungkin terlihat berlebihan untuk program kecil seperti ini,
+tetapi kita sedang melakukan refaktor secara bertahap dan terukur. Setelah
+membuat perubahan tersebut, jalankan kembali programnya untuk memastikan parsing
+argumen masih bekerja dengan benar. Penting untuk sering memeriksa progres,
+supaya jika ada masalah, kita bisa lebih mudah mengetahui penyebabnya.
 
-#### Grouping Configuration Values
+#### Mengelompokkan Nilai Konfigurasi
 
-We can take another small step to improve the `parse_config` function further.
-At the moment, we’re returning a tuple, but then we immediately break that
-tuple into individual parts again. This is a sign that perhaps we don’t have
-the right abstraction yet.
+Kita bisa mengambil satu langkah kecil lagi untuk memperbaiki fungsi
+`parse_config`. Saat ini kita mengembalikan sebuah tuple, namun kemudian
+langsung memecah tuple tersebut menjadi bagian-bagian terpisah kembali. Ini
+merupakan tanda bahwa mungkin abstraksi kita belum tepat.
 
-Another indicator that shows there’s room for improvement is the `config` part
-of `parse_config`, which implies that the two values we return are related and
-are both part of one configuration value. We’re not currently conveying this
-meaning in the structure of the data other than by grouping the two values into
-a tuple; we’ll instead put the two values into one struct and give each of the
-struct fields a meaningful name. Doing so will make it easier for future
-maintainers of this code to understand how the different values relate to each
-other and what their purpose is.
+Indikator lain adalah kata `config` pada `parse_config`, yang memberi kesan
+bahwa kedua nilai yang kita kembalikan itu saling berhubungan dan merupakan
+bagian dari satu nilai konfigurasi. Saat ini kita belum menyampaikan makna
+tersebut dalam struktur datanya, selain hanya dengan mengelompokkannya dalam
+tuple. Jadi, kita akan memasukkan kedua nilai itu ke dalam sebuah struct dan
+memberikan nama field yang bermakna. Dengan begitu, akan lebih mudah bagi
+pengembang lain di masa depan untuk memahami bagaimana nilai-nilai tersebut
+saling terkait dan apa fungsi masing-masing.
 
-Listing 12-6 shows the improvements to the `parse_config` function.
+Listing 12-6 menunjukkan perbaikan pada fungsi `parse_config`.
 
-<Listing number="12-6" file-name="src/main.rs" caption="Refactoring `parse_config` to return an instance of a `Config` struct">
+<Listing number="12-6" file-name="src/main.rs" caption=" Refactoring `parse_config` untuk mengembalikan sebuah instance dari struct `Config` ">
 
 ```rust,should_panic,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-06/src/main.rs:here}}
@@ -122,63 +127,71 @@ Listing 12-6 shows the improvements to the `parse_config` function.
 
 </Listing>
 
-We’ve added a struct named `Config` defined to have fields named `query` and
-`file_path`. The signature of `parse_config` now indicates that it returns a
-`Config` value. In the body of `parse_config`, where we used to return
-string slices that reference `String` values in `args`, we now define `Config`
-to contain owned `String` values. The `args` variable in `main` is the owner of
-the argument values and is only letting the `parse_config` function borrow
-them, which means we’d violate Rust’s borrowing rules if `Config` tried to take
-ownership of the values in `args`.
+Kita telah menambahkan sebuah struct bernama `Config` yang didefinisikan
+memiliki field bernama `query` dan `file_path`. Tanda tangan fungsi
+`parse_config` sekarang menunjukkan bahwa fungsi ini mengembalikan sebuah nilai
+`Config`. Di dalam tubuh fungsi `parse_config`, di mana sebelumnya kita
+mengembalikan potongan string (string slices) yang mereferensikan nilai `String`
+di `args`, sekarang kita mendefinisikan `Config` untuk memiliki nilai `String`
+yang memiliki kepemilikan sendiri (owned).
 
-There are a number of ways we could manage the `String` data; the easiest,
-though somewhat inefficient, route is to call the `clone` method on the values.
-This will make a full copy of the data for the `Config` instance to own, which
-takes more time and memory than storing a reference to the string data.
-However, cloning the data also makes our code very straightforward because we
-don’t have to manage the lifetimes of the references; in this circumstance,
-giving up a little performance to gain simplicity is a worthwhile trade-off.
+Variabel `args` di `main` adalah pemilik dari nilai argumen tersebut dan hanya
+meminjamkan nilainya ke fungsi `parse_config`, yang berarti kita akan melanggar
+aturan peminjaman Rust jika `Config` mencoba mengambil alih kepemilikan
+nilai-nilai di `args`.
 
-> ### The Trade-Offs of Using `clone`
+Ada beberapa cara untuk menangani data `String`; cara yang paling mudah,
+walaupun agak tidak efisien, adalah memanggil metode `clone` pada nilai-nilai
+tersebut. Ini akan membuat salinan penuh dari data tersebut agar instance
+`Config` dapat memilikinya, yang membutuhkan lebih banyak waktu dan memori
+dibandingkan hanya menyimpan referensi ke data string. Namun, melakukan clone
+juga membuat kode kita jauh lebih sederhana karena kita tidak perlu mengatur
+lifetime dari referensi; dalam kasus ini, mengorbankan sedikit performa demi
+kesederhanaan adalah pertukaran yang sepadan.
+
+> ### Pertukaran Saat Menggunakan `clone`
 >
-> There’s a tendency among many Rustaceans to avoid using `clone` to fix
-> ownership problems because of its runtime cost. In
-> [Chapter 13][ch13]<!-- ignore -->, you’ll learn how to use more efficient
-> methods in this type of situation. But for now, it’s okay to copy a few
-> strings to continue making progress because you’ll make these copies only
-> once and your file path and query string are very small. It’s better to have
-> a working program that’s a bit inefficient than to try to hyperoptimize code
-> on your first pass. As you become more experienced with Rust, it’ll be
-> easier to start with the most efficient solution, but for now, it’s
-> perfectly acceptable to call `clone`.
+> Ada kecenderungan di kalangan Rustacean untuk menghindari penggunaan `clone`
+> untuk memperbaiki masalah kepemilikan karena biaya runtime-nya. Di
+> [Bab 13][ch13], kamu akan mempelajari cara yang lebih efisien dalam situasi
+> seperti ini. Namun untuk sekarang, tidak apa-apa menyalin beberapa string agar
+> tetap bisa lanjut, karena kamu hanya akan membuat salinan ini sekali dan path
+> file serta query string-mu sangat kecil. Lebih baik memiliki program yang
+> bekerja meskipun sedikit tidak efisien dibandingkan mencoba terlalu
+> mengoptimasi kode pada percobaan pertama. Seiring bertambahnya pengalamanmu
+> dengan Rust, akan lebih mudah memulai dengan solusi paling efisien, tetapi
+> untuk saat ini, menggunakan `clone` adalah hal yang sepenuhnya dapat diterima.
 
-We’ve updated `main` so that it places the instance of `Config` returned by
-`parse_config` into a variable named `config`, and we updated the code that
-previously used the separate `query` and `file_path` variables so that it now
-uses the fields on the `Config` struct instead.
+Kita telah memperbarui `main` sehingga instance `Config` yang dikembalikan oleh
+`parse_config` disimpan ke dalam variabel bernama `config`, dan kita memperbarui
+kode yang sebelumnya menggunakan variabel terpisah `query` dan `file_path` agar
+sekarang menggunakan field pada struct `Config`.
 
-Now our code more clearly conveys that `query` and `file_path` are related and
-that their purpose is to configure how the program will work. Any code that
-uses these values knows to find them in the `config` instance in the fields
-named for their purpose.
+Sekarang kode kita lebih jelas menunjukkan bahwa `query` dan `file_path` saling
+berhubungan dan bahwa tujuan mereka adalah untuk mengonfigurasi bagaimana
+program akan berjalan. Kode apa pun yang menggunakan nilai-nilai ini tahu bahwa
+mereka dapat ditemukan di instance `config` pada field yang dinamai sesuai
+fungsinya.
 
-#### Creating a Constructor for `Config`
+#### Membuat Constructor untuk `Config`
 
-So far, we’ve extracted the logic responsible for parsing the command line
-arguments from `main` and placed it in the `parse_config` function. Doing so
-helped us see that the `query` and `file_path` values were related, and that
-relationship should be conveyed in our code. We then added a `Config` struct to
-name the related purpose of `query` and `file_path` and to be able to return the
-values’ names as struct field names from the `parse_config` function.
+Sejauh ini, kita telah memisahkan logika yang bertanggung jawab untuk
+mem-parsing argumen command line dari `main` dan memindahkannya ke fungsi
+`parse_config`. Hal ini membantu kita melihat bahwa nilai `query` dan
+`file_path` saling berhubungan, dan hubungan tersebut sebaiknya terlihat jelas
+dalam kode kita. Kita kemudian menambahkan struct `Config` untuk memberi nama
+tujuan yang saling terkait dari `query` dan `file_path`, serta agar kita bisa
+mengembalikan nilai-nilai tersebut sebagai nama field struct dari fungsi
+`parse_config`.
 
-So, now that the purpose of the `parse_config` function is to create a `Config`
-instance, we can change `parse_config` from a plain function to a function
-named `new` that is associated with the `Config` struct. Making this change
-will make the code more idiomatic. We can create instances of types in the
-standard library, such as `String`, by calling `String::new`. Similarly, by
-changing `parse_config` into a `new` function associated with `Config`, we’ll
-be able to create instances of `Config` by calling `Config::new`. Listing 12-7
-shows the changes we need to make.
+Jadi sekarang, karena tujuan fungsi `parse_config` adalah membuat sebuah
+instance `Config`, kita dapat mengubah `parse_config` dari fungsi biasa menjadi
+fungsi bernama `new` yang terkait dengan struct `Config`. Melakukan perubahan
+ini akan membuat kode lebih idiomatis. Kita bisa membuat instance dari tipe-tipe
+di standard library, seperti `String`, dengan memanggil `String::new`. Dengan
+cara yang sama, dengan mengubah `parse_config` menjadi fungsi `new` yang terkait
+dengan `Config`, kita akan dapat membuat instance `Config` dengan memanggil
+`Config::new`. Listing 12-7 menunjukkan perubahan yang perlu kita lakukan.
 
 <Listing number="12-7" file-name="src/main.rs" caption="Changing `parse_config` into `Config::new`">
 
@@ -188,31 +201,32 @@ shows the changes we need to make.
 
 </Listing>
 
-We’ve updated `main` where we were calling `parse_config` to instead call
-`Config::new`. We’ve changed the name of `parse_config` to `new` and moved it
-within an `impl` block, which associates the `new` function with `Config`. Try
-compiling this code again to make sure it works.
+Kita sudah memperbarui `main` yang sebelumnya memanggil `parse_config`, agar
+sekarang memanggil `Config::new`. Kita juga mengganti nama `parse_config`
+menjadi `new` dan memindahkannya ke dalam blok `impl`, yang mengasosiasikan
+fungsi `new` dengan `Config`. Cobalah kompilasi kode ini lagi untuk memastikan
+semuanya berfungsi.
 
-### Fixing the Error Handling
+### Memperbaiki Penanganan Error
 
-Now we’ll work on fixing our error handling. Recall that attempting to access
-the values in the `args` vector at index 1 or index 2 will cause the program to
-panic if the vector contains fewer than three items. Try running the program
-without any arguments; it will look like this:
+Sekarang kita akan memperbaiki penanganan error. Ingat bahwa mencoba mengakses
+nilai dalam vektor `args` pada indeks 1 atau indeks 2 akan menyebabkan program
+panic jika vektor tersebut berisi kurang dari tiga item. Cobalah menjalankan
+program tanpa argumen apa pun; hasilnya akan tampak seperti ini:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-07/output.txt}}
 ```
 
-The line `index out of bounds: the len is 1 but the index is 1` is an error
-message intended for programmers. It won’t help our end users understand what
-they should do instead. Let’s fix that now.
+Baris `index out of bounds: the len is 1 but the index is 1` adalah pesan error
+yang ditujukan untuk programmer. Pesan ini tidak akan membantu pengguna akhir
+memahami apa yang seharusnya mereka lakukan. Mari kita perbaiki sekarang.
 
-#### Improving the Error Message
+#### Meningkatkan Pesan Error
 
-In Listing 12-8, we add a check in the `new` function that will verify that the
-slice is long enough before accessing index 1 and index 2. If the slice isn’t
-long enough, the program panics and displays a better error message.
+Pada Listing 12-8, kita menambahkan pengecekan di fungsi `new` untuk memastikan
+slice cukup panjang sebelum mengakses indeks 1 dan indeks 2. Jika slice tidak
+cukup panjang, program akan panic dan menampilkan pesan error yang lebih jelas.
 
 <Listing number="12-8" file-name="src/main.rs" caption="Adding a check for the number of arguments">
 
@@ -222,50 +236,52 @@ long enough, the program panics and displays a better error message.
 
 </Listing>
 
-This code is similar to [the `Guess::new` function we wrote in Listing
-9-13][ch9-custom-types]<!-- ignore -->, where we called `panic!` when the
-`value` argument was out of the range of valid values. Instead of checking for
-a range of values here, we’re checking that the length of `args` is at least
-`3` and the rest of the function can operate under the assumption that this
-condition has been met. If `args` has fewer than three items, this condition
-will be `true`, and we call the `panic!` macro to end the program immediately.
+Kode ini mirip dengan fungsi `Guess::new` yang kita tulis pada Listing 9-13, di
+mana kita memanggil `panic!` ketika argumen `value` berada di luar rentang nilai
+yang valid. Alih-alih memeriksa rentang nilai di sini, kita memeriksa apakah
+panjang `args` setidaknya `3`, sehingga sisa fungsi bisa berasumsi bahwa kondisi
+tersebut telah terpenuhi. Jika `args` memiliki kurang dari tiga item, kondisi
+ini akan bernilai `true`, dan kita memanggil makro `panic!` untuk segera
+menghentikan program.
 
-With these extra few lines of code in `new`, let’s run the program without any
-arguments again to see what the error looks like now:
+Dengan beberapa baris tambahan di fungsi `new` ini, mari kita jalankan ulang
+program tanpa argumen apa pun untuk melihat seperti apa error-nya sekarang.
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-08/output.txt}}
 ```
 
-This output is better: We now have a reasonable error message. However, we also
-have extraneous information we don’t want to give to our users. Perhaps the
-technique we used in Listing 9-13 isn’t the best one to use here: A call to
-`panic!` is more appropriate for a programming problem than a usage problem,
-[as discussed in Chapter 9][ch9-error-guidelines]<!-- ignore -->. Instead,
-we’ll use the other technique you learned about in Chapter 9—[returning a
-`Result`][ch9-result]<!-- ignore --> that indicates either success or an error.
+Keluaran ini sudah lebih baik: sekarang kita punya pesan error yang masuk akal.
+Namun, masih ada informasi tambahan yang tidak perlu kita berikan ke pengguna.
+Mungkin teknik yang kita gunakan pada Listing 9-13 bukan yang terbaik untuk
+kasus ini: pemanggilan `panic!` lebih cocok untuk masalah pemrograman daripada
+masalah penggunaan program, seperti dibahas di Bab 9. Sebagai gantinya, kita
+akan menggunakan teknik lain yang sudah kamu pelajari di Bab 9—mengembalikan
+`Result` yang menunjukkan apakah operasi berhasil atau terjadi error.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="returning-a-result-from-new-instead-of-calling-panic"></a>
 
-#### Returning a `Result` Instead of Calling `panic!`
+#### Mengembalikan `Result` Alih-alih Memanggil `panic!`
 
-We can instead return a `Result` value that will contain a `Config` instance in
-the successful case and will describe the problem in the error case. We’re also
-going to change the function name from `new` to `build` because many
-programmers expect `new` functions to never fail. When `Config::build` is
-communicating to `main`, we can use the `Result` type to signal there was a
-problem. Then, we can change `main` to convert an `Err` variant into a more
-practical error for our users without the surrounding text about `thread
-'main'` and `RUST_BACKTRACE` that a call to `panic!` causes.
+Sebagai gantinya, kita bisa mengembalikan nilai `Result` yang akan berisi
+instance `Config` jika berhasil, dan akan menjelaskan masalahnya jika terjadi
+error. Kita juga akan mengganti nama fungsi dari `new` menjadi `build` karena
+banyak programmer mengharapkan fungsi `new` **tidak pernah gagal**. Saat
+`Config::build` berkomunikasi dengan `main`, kita bisa menggunakan tipe `Result`
+untuk memberi sinyal bahwa ada masalah. Lalu, kita bisa mengubah `main` agar
+mengonversi varian `Err` menjadi pesan error yang lebih ramah bagi pengguna,
+tanpa teks tambahan seperti `thread 'main'` dan `RUST_BACKTRACE` yang muncul
+ketika kita memanggil `panic!`.
 
-Listing 12-9 shows the changes we need to make to the return value of the
-function we’re now calling `Config::build` and the body of the function needed
-to return a `Result`. Note that this won’t compile until we update `main` as
-well, which we’ll do in the next listing.
+Listing 12-9 menunjukkan perubahan yang perlu kita lakukan pada nilai kembalian
+fungsi yang sekarang kita sebut `Config::build`, serta perubahan pada isi
+fungsinya agar bisa mengembalikan `Result`. Perlu dicatat bahwa kode ini belum
+bisa dikompilasi sampai kita memperbarui `main`, yang akan kita lakukan pada
+listing berikutnya.
 
-<Listing number="12-9" file-name="src/main.rs" caption="Returning a `Result` from `Config::build`">
+<Listing number="12-9" file-name="src/main.rs" caption=" Mengembalikan `Result` dari `Config::build` ">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-09/src/main.rs:here}}
@@ -273,33 +289,34 @@ well, which we’ll do in the next listing.
 
 </Listing>
 
-Our `build` function returns a `Result` with a `Config` instance in the success
-case and a string literal in the error case. Our error values will always be
-string literals that have the `'static` lifetime.
+Fungsi `build` kita sekarang mengembalikan `Result` dengan `Config` pada kasus
+sukses dan literal string pada kasus error. Nilai error kita selalu berupa
+string literal yang punya lifetime `'static`.
 
-We’ve made two changes in the body of the function: Instead of calling `panic!`
-when the user doesn’t pass enough arguments, we now return an `Err` value, and
-we’ve wrapped the `Config` return value in an `Ok`. These changes make the
-function conform to its new type signature.
+Kita membuat dua perubahan di dalam fungsi: Alih-alih memanggil `panic!` saat
+user tidak memberikan argumen yang cukup, sekarang kita mengembalikan `Err`, dan
+kita membungkus nilai `Config` dalam `Ok`. Perubahan ini membuat fungsi sesuai
+dengan tipe barunya.
 
-Returning an `Err` value from `Config::build` allows the `main` function to
-handle the `Result` value returned from the `build` function and exit the
-process more cleanly in the error case.
+Dengan mengembalikan `Err` dari `Config::build`, fungsi `main` bisa menangani
+nilai `Result` tersebut dan menghentikan program dengan lebih rapi saat terjadi
+error.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="calling-confignew-and-handling-errors"></a>
 
-#### Calling `Config::build` and Handling Errors
+#### Memanggil `Config::build` dan Menangani Error
 
-To handle the error case and print a user-friendly message, we need to update
-`main` to handle the `Result` being returned by `Config::build`, as shown in
-Listing 12-10. We’ll also take the responsibility of exiting the command line
-tool with a nonzero error code away from `panic!` and instead implement it by
-hand. A nonzero exit status is a convention to signal to the process that
-called our program that the program exited with an error state.
+Untuk menangani kasus error dan menampilkan pesan yang ramah bagi pengguna, kita
+perlu memperbarui `main` agar menangani `Result` yang dikembalikan oleh
+`Config::build`, seperti yang ditunjukkan pada Listing 12-10. Kita juga akan
+mengambil alih tanggung jawab keluar dari program dengan kode error non-nol dari
+`panic!` dan menerapkannya secara manual. Status keluar non-nol adalah konvensi
+untuk memberi sinyal ke proses yang memanggil program bahwa program berhenti
+dalam keadaan error.
 
-<Listing number="12-10" file-name="src/main.rs" caption="Exiting with an error code if building a `Config` fails">
+<Listing number="12-10" file-name="src/main.rs" caption=" Keluar dengan kode error jika pembuatan `Config` gagal ">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-10/src/main.rs:here}}
@@ -307,52 +324,55 @@ called our program that the program exited with an error state.
 
 </Listing>
 
-In this listing, we’ve used a method we haven’t covered in detail yet:
-`unwrap_or_else`, which is defined on `Result<T, E>` by the standard library.
-Using `unwrap_or_else` allows us to define some custom, non-`panic!` error
-handling. If the `Result` is an `Ok` value, this method’s behavior is similar
-to `unwrap`: It returns the inner value that `Ok` is wrapping. However, if the
-value is an `Err` value, this method calls the code in the closure, which is
-an anonymous function we define and pass as an argument to `unwrap_or_else`.
-We’ll cover closures in more detail in [Chapter 13][ch13]<!-- ignore -->. For
-now, you just need to know that `unwrap_or_else` will pass the inner value of
-the `Err`, which in this case is the static string `"not enough arguments"`
-that we added in Listing 12-9, to our closure in the argument `err` that
-appears between the vertical pipes. The code in the closure can then use the
-`err` value when it runs.
+Dalam listing ini, kita menggunakan sebuah metode yang belum kita bahas secara
+rinci: `unwrap_or_else`, yang didefinisikan pada `Result<T, E>` di pustaka
+standar. Menggunakan `unwrap_or_else` memungkinkan kita mendefinisikan
+penanganan error kustom tanpa `panic!`. Jika `Result` bernilai `Ok`, perilaku
+metode ini mirip dengan `unwrap`: ia mengembalikan nilai di dalam `Ok`. Namun,
+jika bernilai `Err`, metode ini akan memanggil kode di dalam _closure_, yaitu
+fungsi anonim yang kita definisikan dan berikan sebagai argumen ke
+`unwrap_or_else`.
 
-We’ve added a new `use` line to bring `process` from the standard library into
-scope. The code in the closure that will be run in the error case is only two
-lines: We print the `err` value and then call `process::exit`. The
-`process::exit` function will stop the program immediately and return the
-number that was passed as the exit status code. This is similar to the
-`panic!`-based handling we used in Listing 12-8, but we no longer get all the
-extra output. Let’s try it:
+Kita akan membahas _closure_ lebih dalam di [Bab 13], tetapi untuk saat ini
+cukup pahami bahwa `unwrap_or_else` akan mengoper nilai di dalam `Err`—dalam
+kasus ini string statis `"not enough arguments"` yang kita tambahkan pada
+Listing 12-9—ke _closure_ melalui parameter `err` (yang berada di antara tanda
+garis vertikal `|err|`). Kode di dalam _closure_ kemudian dapat menggunakan
+nilai `err` tersebut saat dijalankan.
+
+Kita juga menambahkan baris `use` baru untuk membawa `process` dari pustaka
+standar ke dalam scope. Kode dalam _closure_ yang dijalankan ketika terjadi
+error hanya terdiri dari dua baris: kita mencetak nilai `err`, lalu memanggil
+`process::exit`. Fungsi `process::exit` akan langsung menghentikan program dan
+mengembalikan angka yang diberikan sebagai _exit status code_. Ini mirip dengan
+penanganan berbasis `panic!` pada Listing 12-8, tetapi sekarang kita tidak lagi
+mendapatkan keluaran tambahan yang berlebihan. Mari kita coba.
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-10/output.txt}}
 ```
 
-Great! This output is much friendlier for our users.
+Keren! Keluaran ini jauh lebih ramah bagi para pengguna kita.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="extracting-logic-from-the-main-function"></a>
 
-### Extracting Logic from `main`
+### Mengekstrak Logika dari `main`
 
-Now that we’ve finished refactoring the configuration parsing, let’s turn to
-the program’s logic. As we stated in [“Separating Concerns in Binary
-Projects”](#separation-of-concerns-for-binary-projects)<!-- ignore -->, we’ll
-extract a function named `run` that will hold all the logic currently in the
-`main` function that isn’t involved with setting up configuration or handling
-errors. When we’re done, the `main` function will be concise and easy to verify
-by inspection, and we’ll be able to write tests for all the other logic.
+Sekarang setelah kita selesai melakukan refactor pada parsing konfigurasi, mari
+kita beralih ke logika program. Seperti yang sudah kita bahas di bagian
+[“Memisahkan Tanggung Jawab pada Proyek Binary”](#separation-of-concerns-for-binary-projects)<!-- ignore -->,
+kita akan mengekstrak sebuah fungsi bernama `run` yang akan menampung semua
+logika yang saat ini ada di fungsi `main` dan tidak berhubungan dengan
+pengaturan konfigurasi atau penanganan error. Setelah selesai, fungsi `main`
+akan menjadi ringkas dan mudah dicek hanya dengan melihatnya, dan kita juga bisa
+menuliskan test untuk seluruh logika lainnya.
 
-Listing 12-11 shows the small, incremental improvement of extracting a `run`
-function.
+Listing 12-11 menunjukkan peningkatan kecil dan bertahap dengan mengekstrak
+fungsi `run`.
 
-<Listing number="12-11" file-name="src/main.rs" caption="Extracting a `run` function containing the rest of the program logic">
+<Listing number="12-11" file-name="src/main.rs" caption=" Mengekstrak fungsi `run` yang berisi sisa logika program ">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-11/src/main.rs:here}}
@@ -360,25 +380,26 @@ function.
 
 </Listing>
 
-The `run` function now contains all the remaining logic from `main`, starting
-from reading the file. The `run` function takes the `Config` instance as an
-argument.
+Fungsi `run` sekarang berisi semua logika yang tersisa dari `main`, dimulai dari
+proses membaca file. Fungsi `run` menerima instance `Config` sebagai argumennya.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="returning-errors-from-the-run-function"></a>
 
-#### Returning Errors from `run`
+### Mengembalikan Error dari `run`
 
-With the remaining program logic separated into the `run` function, we can
-improve the error handling, as we did with `Config::build` in Listing 12-9.
-Instead of allowing the program to panic by calling `expect`, the `run`
-function will return a `Result<T, E>` when something goes wrong. This will let
-us further consolidate the logic around handling errors into `main` in a
-user-friendly way. Listing 12-12 shows the changes we need to make to the
-signature and body of `run`.
+Dengan sisa logika program sudah dipisahkan ke dalam fungsi `run`, sekarang kita
+bisa memperbaiki penanganan error seperti yang kita lakukan pada `Config::build`
+di Listing 12-9. Alih-alih membiarkan program _panic_ dengan memanggil `expect`,
+fungsi `run` akan mengembalikan `Result<T, E>` ketika terjadi masalah. Dengan
+begitu, kita bisa memusatkan logika penanganan error di `main` agar lebih ramah
+bagi pengguna.
 
-<Listing number="12-12" file-name="src/main.rs" caption="Changing the `run` function to return `Result`">
+Listing 12-12 menunjukkan perubahan yang perlu kita lakukan pada **signature**
+dan isi fungsi `run`.
+
+<Listing number="12-12" file-name="src/main.rs" caption=" Mengubah fungsi `run` agar mengembalikan `Result` ">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-12/src/main.rs:here}}
@@ -386,47 +407,51 @@ signature and body of `run`.
 
 </Listing>
 
-We’ve made three significant changes here. First, we changed the return type of
-the `run` function to `Result<(), Box<dyn Error>>`. This function previously
-returned the unit type, `()`, and we keep that as the value returned in the
-`Ok` case.
+Kita telah membuat tiga perubahan penting di sini. Pertama, kita mengubah tipe
+nilai balik fungsi `run` menjadi `Result<(), Box<dyn Error>>`. Sebelumnya fungsi
+ini mengembalikan tipe unit `()`, dan kita tetap mempertahankannya sebagai nilai
+yang dikembalikan pada kondisi `Ok`.
 
-For the error type, we used the trait object `Box<dyn Error>` (and we brought
-`std::error::Error` into scope with a `use` statement at the top). We’ll cover
-trait objects in [Chapter 18][ch18]<!-- ignore -->. For now, just know that
-`Box<dyn Error>` means the function will return a type that implements the
-`Error` trait, but we don’t have to specify what particular type the return
-value will be. This gives us flexibility to return error values that may be of
-different types in different error cases. The `dyn` keyword is short for
+Untuk tipe error-nya, kita menggunakan trait object `Box<dyn Error>` (dan kita
+memasukkan `std::error::Error` ke dalam scope dengan `use`). Kita akan membahas
+trait object di **Bab 18** nanti. Untuk sekarang, cukup pahami bahwa
+`Box<dyn Error>` berarti fungsi ini akan mengembalikan tipe apa pun yang
+mengimplementasikan trait `Error`, tanpa harus menentukan secara spesifik tipe
+error-nya. Ini memberi fleksibilitas untuk mengembalikan berbagai jenis error
+pada situasi yang berbeda. Kata kunci `dyn` sendiri merupakan singkatan dari
 _dynamic_.
 
-Second, we’ve removed the call to `expect` in favor of the `?` operator, as we
-talked about in [Chapter 9][ch9-question-mark]<!-- ignore -->. Rather than
-`panic!` on an error, `?` will return the error value from the current function
-for the caller to handle.
+Kedua, kita menghapus pemanggilan `expect` dan menggantinya dengan operator `?`,
+seperti yang telah dibahas di **Bab 9**. Alih-alih memanggil `panic!` saat
+terjadi error, `?` akan mengembalikan nilai error dari fungsi saat ini untuk
+ditangani oleh pemanggilnya.
 
-Third, the `run` function now returns an `Ok` value in the success case.
-We’ve declared the `run` function’s success type as `()` in the signature,
-which means we need to wrap the unit type value in the `Ok` value. This
-`Ok(())` syntax might look a bit strange at first. But using `()` like this is
-the idiomatic way to indicate that we’re calling `run` for its side effects
-only; it doesn’t return a value we need.
+Ketiga, fungsi `run` sekarang mengembalikan nilai `Ok` pada kondisi sukses. Kita
+telah mendeklarasikan tipe sukses `run` sebagai `()` di tanda tangan fungsi,
+jadi kita perlu membungkus nilai unit tersebut dalam `Ok`. Sintaks `Ok(())`
+mungkin terlihat agak aneh pada awalnya, tetapi penggunaan `()` seperti ini
+adalah cara idiomatis Rust untuk menunjukkan bahwa kita memanggil `run` hanya
+untuk efek sampingnya; fungsi ini tidak mengembalikan nilai yang perlu kita
+gunakan.
 
-When you run this code, it will compile but will display a warning:
+Saat Anda menjalankan kode ini, program akan berhasil dikompilasi, tetapi akan
+muncul sebuah peringatan:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-12/output.txt}}
 ```
 
-Rust tells us that our code ignored the `Result` value and the `Result` value
-might indicate that an error occurred. But we’re not checking to see whether or
-not there was an error, and the compiler reminds us that we probably meant to
-have some error-handling code here! Let’s rectify that problem now.
+Rust memberi tahu kita bahwa kode kita mengabaikan nilai `Result`, padahal nilai
+`Result` tersebut mungkin menunjukkan bahwa terjadi error. Namun kita tidak
+memeriksa apakah terjadi error atau tidak, dan compiler mengingatkan kita bahwa
+kemungkinan besar kita memang perlu menambahkan kode penanganan error di sini!
+Sekarang mari kita perbaiki masalah itu.
 
-#### Handling Errors Returned from `run` in `main`
+#### Menangani Error yang Dikembalikan dari `run` di `main`
 
-We’ll check for errors and handle them using a technique similar to one we used
-with `Config::build` in Listing 12-10, but with a slight difference:
+Kita akan memeriksa error dan menanganinya menggunakan teknik yang mirip dengan
+yang kita gunakan pada `Config::build` di Listing 12-10, tetapi dengan sedikit
+perbedaan:
 
 <span class="filename">Filename: src/main.rs</span>
 
@@ -434,32 +459,34 @@ with `Config::build` in Listing 12-10, but with a slight difference:
 {{#rustdoc_include ../listings/ch12-an-io-project/no-listing-01-handling-errors-in-main/src/main.rs:here}}
 ```
 
-We use `if let` rather than `unwrap_or_else` to check whether `run` returns an
-`Err` value and to call `process::exit(1)` if it does. The `run` function
-doesn’t return a value that we want to `unwrap` in the same way that
-`Config::build` returns the `Config` instance. Because `run` returns `()` in
-the success case, we only care about detecting an error, so we don’t need
-`unwrap_or_else` to return the unwrapped value, which would only be `()`.
+Kita menggunakan `if let` alih-alih `unwrap_or_else` untuk memeriksa apakah
+`run` mengembalikan nilai `Err` dan memanggil `process::exit(1)` jika iya.
+Fungsi `run` tidak mengembalikan nilai yang perlu kita `unwrap` seperti
+`Config::build` yang mengembalikan instance `Config`. Karena `run` hanya
+mengembalikan `()` pada kasus sukses, kita hanya peduli mendeteksi error saja,
+jadi kita tidak membutuhkan `unwrap_or_else` untuk mengembalikan nilai yang
+di-unwrap, yang sebenarnya hanya `()`.
 
-The bodies of the `if let` and the `unwrap_or_else` functions are the same in
-both cases: We print the error and exit.
+Bagian isi dari `if let` dan `unwrap_or_else` pada kedua kasus tersebut sama:
+kita mencetak pesan error dan keluar dari program.
 
-### Splitting Code into a Library Crate
+### Memisahkan Kode ke dalam Library Crate
 
-Our `minigrep` project is looking good so far! Now we’ll split the
-_src/main.rs_ file and put some code into the _src/lib.rs_ file. That way, we
-can test the code and have a _src/main.rs_ file with fewer responsibilities.
+Proyek `minigrep` kita sejauh ini sudah terlihat bagus! Sekarang kita akan
+membagi file _src/main.rs_ dan memindahkan sebagian kode ke dalam _src/lib.rs_.
+Dengan begitu, kita bisa menguji kode tersebut dan membuat _src/main.rs_
+memiliki tanggung jawab yang lebih sedikit.
 
-Let’s define the code responsible for searching text in _src/lib.rs_ rather
-than in _src/main.rs_, which will let us (or anyone else using our
-`minigrep` library) call the searching function from more contexts than our
-`minigrep` binary.
+Mari kita pindahkan kode yang bertanggung jawab untuk melakukan pencarian teks
+ke dalam _src/lib.rs_, bukan di _src/main.rs_, sehingga kita (atau siapa pun
+yang menggunakan library `minigrep` kita) bisa memanggil fungsi pencarian
+tersebut dari konteks lain, tidak hanya dari binary `minigrep`.
 
-First, let’s define the `search` function signature in _src/lib.rs_ as shown in
-Listing 12-13, with a body that calls the `unimplemented!` macro. We’ll explain
-the signature in more detail when we fill in the implementation.
+Pertama, mari kita definisikan signature fungsi `search` di _src/lib.rs_ seperti
+pada Listing 12-13, dengan body yang memanggil macro `unimplemented!`. Kita akan
+menjelaskan signature-nya lebih detail setelah kita mengisi implementasinya.
 
-<Listing number="12-13" file-name="src/lib.rs" caption="Defining the `search` function in *src/lib.rs*">
+<Listing number="12-13" file-name="src/lib.rs" caption=" Mendefinisikan fungsi `search` di *src/lib.rs* ">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-13/src/lib.rs}}
@@ -467,14 +494,15 @@ the signature in more detail when we fill in the implementation.
 
 </Listing>
 
-We’ve used the `pub` keyword on the function definition to designate `search`
-as part of our library crate’s public API. We now have a library crate that we
-can use from our binary crate and that we can test!
+Kita menggunakan keyword `pub` pada definisi fungsi untuk menjadikan `search`
+bagian dari **public API** library crate kita. Sekarang kita punya library crate
+yang bisa dipakai oleh binary crate kita, dan juga bisa kita uji!
 
-Now we need to bring the code defined in _src/lib.rs_ into the scope of the
-binary crate in _src/main.rs_ and call it, as shown in Listing 12-14.
+Selanjutnya, kita perlu membawa kode yang didefinisikan di _src/lib.rs_ ke dalam
+scope binary crate di _src/main.rs_ dan memanggilnya, seperti yang ditunjukkan
+pada Listing 12-14.
 
-<Listing number="12-14" file-name="src/main.rs" caption="Using the `minigrep` library crate’s `search` function in *src/main.rs*">
+<Listing number="12-14" file-name="src/main.rs" caption=" Menggunakan fungsi `search` dari library crate `minigrep` di *src/main.rs* ">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-14/src/main.rs:here}}
@@ -482,32 +510,29 @@ binary crate in _src/main.rs_ and call it, as shown in Listing 12-14.
 
 </Listing>
 
-We add a `use minigrep::search` line to bring the `search` function from
-the library crate into the binary crate’s scope. Then, in the `run` function,
-rather than printing out the contents of the file, we call the `search`
-function and pass the `config.query` value and `contents` as arguments. Then,
-`run` will use a `for` loop to print each line returned from `search` that
-matched the query. This is also a good time to remove the `println!` calls in
-the `main` function that displayed the query and the file path so that our
-program only prints the search results (if no errors occur).
+Kita menambahkan baris `use minigrep::search` untuk membawa fungsi `search` dari
+library crate ke dalam cakupan (scope) binary crate. Lalu, di fungsi `run`,
+alih-alih mencetak seluruh isi file, kita memanggil fungsi `search` dan mengoper
+nilai `config.query` serta `contents` sebagai argumen. Setelah itu, `run` akan
+menggunakan loop `for` untuk mencetak setiap baris hasil yang dikembalikan
+`search` yang cocok dengan query. Ini juga saat yang tepat untuk menghapus
+pemanggilan `println!` di fungsi `main` yang sebelumnya menampilkan query dan
+path file, sehingga sekarang program hanya mencetak hasil pencarian (jika tidak
+ada error).
 
-Note that the search function will be collecting all the results into a vector
-it returns before any printing happens. This implementation could be slow to
-display results when searching large files, because results aren’t printed as
-they’re found; we’ll discuss a possible way to fix this using iterators in
-Chapter 13.
+Perhatikan bahwa fungsi `search` akan mengumpulkan semua hasil ke dalam sebuah
+vector dan mengembalikannya sebelum proses pencetakan dilakukan. Implementasi
+ini bisa terasa lambat saat mencari pada file yang sangat besar karena hasil
+tidak langsung dicetak ketika ditemukan; kita akan membahas kemungkinan solusi
+dengan _iterators_ di Chapter 13.
 
-Whew! That was a lot of work, but we’ve set ourselves up for success in the
-future. Now it’s much easier to handle errors, and we’ve made the code more
-modular. Almost all of our work will be done in _src/lib.rs_ from here on out.
+Whew! Cukup banyak kerja sejauh ini, tapi sekarang kita sudah menyiapkan
+struktur program yang jauh lebih baik untuk pengembangan ke depannya. Kini
+penanganan error menjadi lebih mudah dan kode jauh lebih modular. Mulai
+sekarang, hampir semua pekerjaan akan dilakukan di _src/lib.rs_.
 
-Let’s take advantage of this newfound modularity by doing something that would
-have been difficult with the old code but is easy with the new code: We’ll
-write some tests!
+Sekarang mari kita manfaatkan modularitas baru ini untuk melakukan sesuatu yang
+sebelumnya akan sulit dilakukan, tapi sekarang jadi mudah: kita akan menulis
+beberapa _test_!
 
 [ch13]: ch13-00-functional-features.html
-[ch9-custom-types]: ch09-03-to-panic-or-not-to-panic.html#creating-custom-types-for-validation
-[ch9-error-guidelines]: ch09-03-to-panic-or-not-to-panic.html#guidelines-for-error-handling
-[ch9-result]: ch09-02-recoverable-errors-with-result.html
-[ch18]: ch18-00-oop.html
-[ch9-question-mark]: ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator
