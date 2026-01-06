@@ -121,9 +121,9 @@
   - [Macros](ch20-05-macros.md)
 
 - [Proyek Final: Membangun Web Server Multithreaded](ch21-00-final-project-a-web-server.md)
-  - [Building a Single-Threaded Web Server](ch21-01-single-threaded.md)
-  - [From Single-Threaded to Multithreaded Server](ch21-02-multithreaded.md)
-  - [Graceful Shutdown and Cleanup](ch21-03-graceful-shutdown-and-cleanup.md)
+  - [Membangun Web Server Single-Threaded](ch21-01-single-threaded.md)
+  - [Dari Server Single-Threaded ke Multithreaded](ch21-02-multithreaded.md)
+  - [Shutdown Santai & Cleanup yang Rapi](ch21-03-graceful-shutdown-and-cleanup.md)
 
 - [Appendix](appendix-00.md)
   - [A - Keywords](appendix-01-keywords.md)
