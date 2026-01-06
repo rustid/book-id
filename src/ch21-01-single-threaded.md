@@ -1,28 +1,27 @@
-## Building a Single-Threaded Web Server
+## Membangun Web Server Single-Threaded
 
-We’ll start by getting a single-threaded web server working. Before we begin,
-let’s look at a quick overview of the protocols involved in building web
-servers. The details of these protocols are beyond the scope of this book, but
-a brief overview will give you the information you need.
+Kita bakal mulai dulu dengan bikin web server yang jalan pake **single thread**.
+Sebelum mulai, kita lihat dulu gambaran singkat tentang protokol yang terlibat
+saat bikin web server. Detail lengkap soal protokol ini sebenernya di luar fokus
+buku ini, tapi gambaran singkatnya udah cukup kok buat kebutuhan kita.
 
-The two main protocols involved in web servers are _Hypertext Transfer
-Protocol_ _(HTTP)_ and _Transmission Control Protocol_ _(TCP)_. Both protocols
-are _request-response_ protocols, meaning a _client_ initiates requests and a
-_server_ listens to the requests and provides a response to the client. The
-contents of those requests and responses are defined by the protocols.
+Dua protokol utama yang dipake web server adalah **Hypertext Transfer Protocol
+(HTTP)** dan **Transmission Control Protocol (TCP)**. Dua-duanya adalah protokol
+tipe _request-response_, artinya **client** bakal ngirim request dan **server**
+bakal dengerin lalu ngasih response balik. Isi request dan response itu diatur
+sama protokolnya.
 
-TCP is the lower-level protocol that describes the details of how information
-gets from one server to another but doesn’t specify what that information is.
-HTTP builds on top of TCP by defining the contents of the requests and
-responses. It’s technically possible to use HTTP with other protocols, but in
-the vast majority of cases, HTTP sends its data over TCP. We’ll work with the
-raw bytes of TCP and HTTP requests and responses.
+TCP itu protokol level bawah yang ngatur gimana data dikirim dari satu server ke
+server lain, tapi dia gak nentuin isi datanya itu apa. HTTP dibangun di atas TCP
+buat ngatur isi request dan response-nya. Secara teknis HTTP bisa jalan di atas
+protokol lain, tapi hampir semua kasus HTTP dikirim lewat TCP. Di sini kita
+bakal kerja langsung sama raw bytes request dan response HTTP dan TCP.
 
-### Listening to the TCP Connection
+### Ngedengerin Koneksi TCP
 
-Our web server needs to listen to a TCP connection, so that’s the first part
-we’ll work on. The standard library offers a `std::net` module that lets us do
-this. Let’s make a new project in the usual fashion:
+Web server kita harus bisa dengerin koneksi TCP, jadi ini hal pertama yang bakal
+kita kerjain. Standard library Rust punya module `std::net` yang bisa bantu
+kita. Bikin project baru kayak biasa:
 
 ```console
 $ cargo new hello
@@ -30,11 +29,11 @@ $ cargo new hello
 $ cd hello
 ```
 
-Now enter the code in Listing 21-1 in _src/main.rs_ to start. This code will
-listen at the local address `127.0.0.1:7878` for incoming TCP streams. When it
-gets an incoming stream, it will print `Connection established!`.
+Sekarang masukin kode Listing 21-1 ke _src/main.rs_. Kode ini bakal dengerin
+alamat lokal `127.0.0.1:7878` buat nerima TCP stream baru. Kalau ada koneksi
+masuk, dia bakal nge-print `Connection established!`.
 
-<Listing number="21-1" file-name="src/main.rs" caption="Listening for incoming streams and printing a message when we receive a stream">
+<Listing number="21-1" file-name="src/main.rs" caption="Ngedengerin incoming stream dan nge-print pesan kalau ada stream masuk">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-01/src/main.rs}}
@@ -42,53 +41,40 @@ gets an incoming stream, it will print `Connection established!`.
 
 </Listing>
 
-Using `TcpListener`, we can listen for TCP connections at the address
-`127.0.0.1:7878`. In the address, the section before the colon is an IP address
-representing your computer (this is the same on every computer and doesn’t
-represent the authors’ computer specifically), and `7878` is the port. We’ve
-chosen this port for two reasons: HTTP isn’t normally accepted on this port, so
-our server is unlikely to conflict with any other web server you might have
-running on your machine, and 7878 is _rust_ typed on a telephone.
+Dengan `TcpListener`, kita bisa dengerin koneksi TCP di alamat `127.0.0.1:7878`.
+Bagian sebelum titik dua itu IP address komputer kamu (ini sama di semua
+komputer, bukan khusus penulis ya), dan `7878` itu portnya. Kita pilih port ini
+karena:
 
-The `bind` function in this scenario works like the `new` function in that it
-will return a new `TcpListener` instance. The function is called `bind`
-because, in networking, connecting to a port to listen to is known as “binding
-to a port.”
+- HTTP biasanya gak jalan di port ini, jadi kecil kemungkinan bentrok dengan
+  server lain
+- dan “7878” kalau diketik di keypad telepon bacaannya mirip “rust” 😎
 
-The `bind` function returns a `Result<T, E>`, which indicates that it’s
-possible for binding to fail, for example, if we ran two instances of our
-program and so had two programs listening to the same port. Because we’re
-writing a basic server just for learning purposes, we won’t worry about
-handling these kinds of errors; instead, we use `unwrap` to stop the program if
-errors happen.
+Fungsi `bind` di sini mirip kayak `new`, yang balikannya instance `TcpListener`
+baru. Disebut `bind` karena di dunia networking, proses ngiket ke port buat
+dengerin koneksi itu disebut “binding to a port”.
 
-The `incoming` method on `TcpListener` returns an iterator that gives us a
-sequence of streams (more specifically, streams of type `TcpStream`). A single
-_stream_ represents an open connection between the client and the server.
-_Connection_ is the name for the full request and response process in which a
-client connects to the server, the server generates a response, and the server
-closes the connection. As such, we will read from the `TcpStream` to see what
-the client sent and then write our response to the stream to send data back to
-the client. Overall, this `for` loop will process each connection in turn and
-produce a series of streams for us to handle.
+`bind` balikin `Result<T, E>` karena bisa aja gagal, misalnya kalau kita jalanin
+dua instance program ini sekaligus di port yang sama. Karena ini cuma server
+buat belajar, kita gak ribet handle errornya — cukup `unwrap` aja biar program
+stop kalau error.
 
-For now, our handling of the stream consists of calling `unwrap` to terminate
-our program if the stream has any errors; if there aren’t any errors, the
-program prints a message. We’ll add more functionality for the success case in
-the next listing. The reason we might receive errors from the `incoming` method
-when a client connects to the server is that we’re not actually iterating over
-connections. Instead, we’re iterating over _connection attempts_. The
-connection might not be successful for a number of reasons, many of them
-operating system specific. For example, many operating systems have a limit to
-the number of simultaneous open connections they can support; new connection
-attempts beyond that number will produce an error until some of the open
-connections are closed.
+Method `incoming` di `TcpListener` balikin iterator berisi stream TCP
+(`TcpStream`). Satu _stream_ itu satu koneksi aktif antara client dan server.
+“Connection” itu keseluruhan proses request–response: client connect, server
+balas, lalu server tutup koneksi. Jadi kita bakal baca dari `TcpStream` buat
+lihat apa yang dikirim client, lalu nulis response ke stream buat dibalikin ke
+client. Loop `for` bakal proses tiap koneksi satu-satu.
 
-Let’s try running this code! Invoke `cargo run` in the terminal and then load
-_127.0.0.1:7878_ in a web browser. The browser should show an error message
-like “Connection reset” because the server isn’t currently sending back any
-data. But when you look at your terminal, you should see several messages that
-were printed when the browser connected to the server!
+Untuk sekarang, kita cuma `unwrap` stream biar program berhenti kalau error;
+kalau aman, kita print pesan. Nanti bagian suksesnya bakal kita tambahin. Kenapa
+bisa error? Karena yang kita iterasi sebenernya “usaha koneksi”, bukan selalu
+koneksi yang berhasil. OS punya batas maksimal koneksi, kalau lewat batas bisa
+gagal.
+
+Ayo coba jalanin! Jalankan `cargo run`, terus buka _127.0.0.1:7878_ di browser.
+Browser bakal nunjukin error kayak “Connection reset” karena server belum
+ngirimin apa-apa. Tapi di terminal kamu harusnya kelihatan ini:
 
 ```text
      Running `target/debug/hello`
@@ -97,42 +83,28 @@ Connection established!
 Connection established!
 ```
 
-Sometimes you’ll see multiple messages printed for one browser request; the
-reason might be that the browser is making a request for the page as well as a
-request for other resources, like the _favicon.ico_ icon that appears in the
-browser tab.
+Kadang satu request bisa bikin beberapa pesan muncul. Bisa karena browser juga
+minta resource lain kayak _favicon.ico_. Bisa juga browser nyoba connect ulang
+karena server gak ngasih response. Kalau `stream` drop (keluar scope), koneksi
+ditutup, browser bisa nyoba lagi otomatis.
 
-It could also be that the browser is trying to connect to the server multiple
-times because the server isn’t responding with any data. When `stream` goes out
-of scope and is dropped at the end of the loop, the connection is closed as
-part of the `drop` implementation. Browsers sometimes deal with closed
-connections by retrying, because the problem might be temporary.
+Beberapa browser juga sengaja buka banyak koneksi kosong dulu biar nanti kalau
+ada request beneran bisa lebih cepat. Server kita bakal tetap lihat koneksinya,
+walaupun belum ada requestnya.
 
-Browsers also sometimes open multiple connections to the server without sending
-any requests so that if they *do* later send requests, those requests can
-happen more quickly. When this occurs, our server will see each connection,
-regardless of whether there are any requests over that connection. Many
-versions of Chrome-based browsers do this, for example; you can disable that
-optimization by using private browsing mode or using a different browser.
+Intinya, kita udah sukses dapet koneksi TCP 🎉
 
-The important factor is that we’ve successfully gotten a handle to a TCP
-connection!
+Jangan lupa stop pakai <kbd>ctrl</kbd>-<kbd>C</kbd> kalau mau berhenti, dan
+setiap abis ngedit kode, jalankan ulang `cargo run`.
 
-Remember to stop the program by pressing <kbd>ctrl</kbd>-<kbd>C</kbd> when
-you’re done running a particular version of the code. Then, restart the program
-by invoking the `cargo run` command after you’ve made each set of code changes
-to make sure you’re running the newest code.
+### Ngebaca Request
 
-### Reading the Request
+Sekarang kita siap baca request dari browser! Biar rapi, kita bikin fungsi baru
+buat handle koneksi. Di fungsi baru `handle_connection`, kita bakal baca data
+dari stream lalu print buat lihat apa yang dikirim browser. Ubah kodenya jadi
+kayak Listing 21-2.
 
-Let’s implement the functionality to read the request from the browser! To
-separate the concerns of first getting a connection and then taking some action
-with the connection, we’ll start a new function for processing connections. In
-this new `handle_connection` function, we’ll read data from the TCP stream and
-print it so that we can see the data being sent from the browser. Change the
-code to look like Listing 21-2.
-
-<Listing number="21-2" file-name="src/main.rs" caption="Reading from the `TcpStream` and printing the data">
+<Listing number="21-2" file-name="src/main.rs" caption="Membaca `TcpStream` dan nge-print datanya">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-02/src/main.rs}}
@@ -140,87 +112,26 @@ code to look like Listing 21-2.
 
 </Listing>
 
-We bring `std::io::BufReader` and `std::io::prelude` into scope to get access
-to traits and types that let us read from and write to the stream. In the `for`
-loop in the `main` function, instead of printing a message that says we made a
-connection, we now call the new `handle_connection` function and pass the
-`stream` to it.
+Kita import `BufReader` dan trait I/O supaya bisa baca tulis stream. Di loop
+`main`, sekarang kita panggil `handle_connection` sambil passing `stream`.
 
-In the `handle_connection` function, we create a new `BufReader` instance that
-wraps a reference to the `stream`. The `BufReader` adds buffering by managing
-calls to the `std::io::Read` trait methods for us.
+Di `handle_connection`, kita bungkus stream pake `BufReader` biar bacanya lebih
+efisien. Kita bikin variabel `http_request` buat nampung semua baris request.
+`lines()` bakal balikin iterator `Result<String, Error>`, jadi kita `map` dan
+`unwrap` biar dapet `String`.
 
-We create a variable named `http_request` to collect the lines of the request
-the browser sends to our server. We indicate that we want to collect these
-lines in a vector by adding the `Vec<_>` type annotation.
+Browser nandain request selesai dengan dua newline kosong berturut-turut, jadi
+kita ambil line sampai ketemu string kosong. Setelah terkumpul, kita print pake
+pretty debug supaya gampang dibaca.
 
-`BufReader` implements the `std::io::BufRead` trait, which provides the `lines`
-method. The `lines` method returns an iterator of `Result<String,
-std::io::Error>` by splitting the stream of data whenever it sees a newline
-byte. To get each `String`, we `map` and `unwrap` each `Result`. The `Result`
-might be an error if the data isn’t valid UTF-8 or if there was a problem
-reading from the stream. Again, a production program should handle these errors
-more gracefully, but we’re choosing to stop the program in the error case for
-simplicity.
+Coba jalanin lagi, buka browser ke alamat tadi. Browser masih error, tapi di
+terminal sekarang bakal kelihatan request HTTP lengkapnya.
 
-The browser signals the end of an HTTP request by sending two newline
-characters in a row, so to get one request from the stream, we take lines until
-we get a line that is the empty string. Once we’ve collected the lines into the
-vector, we’re printing them out using pretty debug formatting so that we can
-take a look at the instructions the web browser is sending to our server.
+Sekarang kita udah tau browser ngirim apa. Saatnya balas 😎
 
-Let’s try this code! Start the program and make a request in a web browser
-again. Note that we’ll still get an error page in the browser, but our
-program’s output in the terminal will now look similar to this:
+### Ngeliat Lebih Deket HTTP Request
 
-<!-- manual-regeneration
-cd listings/ch21-web-server/listing-21-02
-cargo run
-make a request to 127.0.0.1:7878
-Can't automate because the output depends on making requests
--->
-
-```console
-$ cargo run
-   Compiling hello v0.1.0 (file:///projects/hello)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.42s
-     Running `target/debug/hello`
-Request: [
-    "GET / HTTP/1.1",
-    "Host: 127.0.0.1:7878",
-    "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:99.0) Gecko/20100101 Firefox/99.0",
-    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language: en-US,en;q=0.5",
-    "Accept-Encoding: gzip, deflate, br",
-    "DNT: 1",
-    "Connection: keep-alive",
-    "Upgrade-Insecure-Requests: 1",
-    "Sec-Fetch-Dest: document",
-    "Sec-Fetch-Mode: navigate",
-    "Sec-Fetch-Site: none",
-    "Sec-Fetch-User: ?1",
-    "Cache-Control: max-age=0",
-]
-```
-
-Depending on your browser, you might get slightly different output. Now that
-we’re printing the request data, we can see why we get multiple connections
-from one browser request by looking at the path after `GET` in the first line
-of the request. If the repeated connections are all requesting _/_, we know the
-browser is trying to fetch _/_ repeatedly because it’s not getting a response
-from our program.
-
-Let’s break down this request data to understand what the browser is asking of
-our program.
-
-<!-- Old headings. Do not remove or links may break. -->
-
-<a id="a-closer-look-at-an-http-request"></a>
-<a id="looking-closer-at-an-http-request"></a>
-
-### Looking More Closely at an HTTP Request
-
-HTTP is a text-based protocol, and a request takes this format:
+HTTP itu protokol berbasis teks, format requestnya:
 
 ```text
 Method Request-URI HTTP-Version CRLF
@@ -228,41 +139,30 @@ headers CRLF
 message-body
 ```
 
-The first line is the _request line_ that holds information about what the
-client is requesting. The first part of the request line indicates the method
-being used, such as `GET` or `POST`, which describes how the client is making
-this request. Our client used a `GET` request, which means it is asking for
-information.
+Baris pertama adalah **request line**.
 
-The next part of the request line is _/_, which indicates the _uniform resource
-identifier_ _(URI)_ the client is requesting: A URI is almost, but not quite,
-the same as a _uniform resource locator_ _(URL)_. The difference between URIs
-and URLs isn’t important for our purposes in this chapter, but the HTTP spec
-uses the term _URI_, so we can just mentally substitute _URL_ for _URI_ here.
+- bagian pertama: method (`GET`, `POST`, dll)
+- bagian kedua: URI yang diminta (contohnya `/`)
+- bagian terakhir: versi HTTP
 
-The last part is the HTTP version the client uses, and then the request line
-ends in a CRLF sequence. (_CRLF_ stands for _carriage return_ and _line feed_,
-which are terms from the typewriter days!) The CRLF sequence can also be
-written as `\r\n`, where `\r` is a carriage return and `\n` is a line feed. The
-_CRLF sequence_ separates the request line from the rest of the request data.
-Note that when the CRLF is printed, we see a new line start rather than `\r\n`.
+CRLF (`\r\n`) adalah pemisah antar bagian.
 
-Looking at the request line data we received from running our program so far,
-we see that `GET` is the method, _/_ is the request URI, and `HTTP/1.1` is the
-version.
+Di output kita kelihatan:
 
-After the request line, the remaining lines starting from `Host:` onward are
-headers. `GET` requests have no body.
+- method → `GET`
+- path → `/`
+- versi → `HTTP/1.1`
 
-Try making a request from a different browser or asking for a different
-address, such as _127.0.0.1:7878/test_, to see how the request data changes.
+Sisanya adalah header. `GET` biasanya gak punya body.
 
-Now that we know what the browser is asking for, let’s send back some data!
+Coba request alamat lain misalnya _127.0.0.1:7878/test_ biar lihat perbedaan
+requestnya.
 
-### Writing a Response
+Sekarang kita udah paham apa yang diminta browser, waktunya balas balik!
 
-We’re going to implement sending data in response to a client request.
-Responses have the following format:
+### Nulis Response
+
+Response HTTP formatnya kayak gini:
 
 ```text
 HTTP-Version Status-Code Reason-Phrase CRLF
@@ -270,26 +170,22 @@ headers CRLF
 message-body
 ```
 
-The first line is a _status line_ that contains the HTTP version used in the
-response, a numeric status code that summarizes the result of the request, and
-a reason phrase that provides a text description of the status code. After the
-CRLF sequence are any headers, another CRLF sequence, and the body of the
-response.
-
-Here is an example response that uses HTTP version 1.1 and has a status code of
-200, an OK reason phrase, no headers, and no body:
+Contoh response super simpel:
 
 ```text
 HTTP/1.1 200 OK\r\n\r\n
 ```
 
-The status code 200 is the standard success response. The text is a tiny
-successful HTTP response. Let’s write this to the stream as our response to a
-successful request! From the `handle_connection` function, remove the
-`println!` that was printing the request data and replace it with the code in
-Listing 21-3.
+Ini berarti:
 
-<Listing number="21-3" file-name="src/main.rs" caption="Writing a tiny successful HTTP response to the stream">
+- sukses
+- gak ada header
+- gak ada body
+
+Sekarang kita tulis response ini ke stream. Ganti `println!` sebelumnya dengan
+kode di Listing 21-3.
+
+<Listing number="21-3" file-name="src/main.rs" caption="Nulis HTTP response sederhana ke stream">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-03/src/main.rs:here}}
@@ -297,27 +193,18 @@ Listing 21-3.
 
 </Listing>
 
-The first new line defines the `response` variable that holds the success
-message’s data. Then, we call `as_bytes` on our `response` to convert the
-string data to bytes. The `write_all` method on `stream` takes a `&[u8]` and
-sends those bytes directly down the connection. Because the `write_all`
-operation could fail, we use `unwrap` on any error result as before. Again, in
-a real application, you would add error handling here.
+Kita simpan response di variabel `response`, ubah jadi bytes pakai `as_bytes`,
+lalu kirim ke stream. Kalau gagal, `unwrap` bakal berhentiin program.
 
-With these changes, let’s run our code and make a request. We’re no longer
-printing any data to the terminal, so we won’t see any output other than the
-output from Cargo. When you load _127.0.0.1:7878_ in a web browser, you should
-get a blank page instead of an error. You’ve just handcoded receiving an HTTP
-request and sending a response!
+Sekarang coba jalanin dan buka browser lagi. Kamu bakal dapat halaman kosong —
+tapi sekarang server kita udah bener-bener balas request 🎉
 
-### Returning Real HTML
+### Balikin HTML Beneran
 
-Let’s implement the functionality for returning more than a blank page. Create
-the new file _hello.html_ in the root of your project directory, not in the
-_src_ directory. You can input any HTML you want; Listing 21-4 shows one
-possibility.
+Sekarang kita balikin halaman HTML beneran. Bikin file baru _hello.html_ di root
+project (bukan di _src_). Isi bebas, contohnya kayak Listing 21-4.
 
-<Listing number="21-4" file-name="hello.html" caption="A sample HTML file to return in a response">
+<Listing number="21-4" file-name="hello.html" caption="Contoh HTML yang bakal dikirim sebagai response">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-05/hello.html}}
@@ -325,12 +212,13 @@ possibility.
 
 </Listing>
 
-This is a minimal HTML5 document with a heading and some text. To return this
-from the server when a request is received, we’ll modify `handle_connection` as
-shown in Listing 21-5 to read the HTML file, add it to the response as a body,
-and send it.
+Sekarang ubah `handle_connection` jadi kayak Listing 21-5 supaya:
 
-<Listing number="21-5" file-name="src/main.rs" caption="Sending the contents of *hello.html* as the body of the response">
+- baca file HTML
+- masukin ke response body
+- kirim ke client
+
+<Listing number="21-5" file-name="src/main.rs" caption="Ngirim isi *hello.html* sebagai body response">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-05/src/main.rs:here}}
@@ -338,38 +226,18 @@ and send it.
 
 </Listing>
 
-We’ve added `fs` to the `use` statement to bring the standard library’s
-filesystem module into scope. The code for reading the contents of a file to a
-string should look familiar; we used it when we read the contents of a file for
-our I/O project in Listing 12-4.
+Sekarang jalankan `cargo run`, buka browser ke _127.0.0.1:7878_, dan halaman
+HTML kamu bakal muncul ✨
 
-Next, we use `format!` to add the file’s contents as the body of the success
-response. To ensure a valid HTTP response, we add the `Content-Length` header,
-which is set to the size of our response body—in this case, the size of
-`hello.html`.
+Saat ini kita masih ngabaikan isi request dan selalu balikin file yang sama,
+walaupun user akses path lain. Jadi server kita masih “ polos banget”.
 
-Run this code with `cargo run` and load _127.0.0.1:7878_ in your browser; you
-should see your HTML rendered!
+### Validasi Request & Respon Selektif
 
-Currently, we’re ignoring the request data in `http_request` and just sending
-back the contents of the HTML file unconditionally. That means if you try
-requesting _127.0.0.1:7878/something-else_ in your browser, you’ll still get
-back this same HTML response. At the moment, our server is very limited and
-does not do what most web servers do. We want to customize our responses
-depending on the request and only send back the HTML file for a well-formed
-request to _/_.
+Sekarang kita bikin server cuma balikin HTML kalau request-nya ke `/`. Kalau
+selain itu, kita balikin error. Edit `handle_connection` kayak Listing 21-6.
 
-### Validating the Request and Selectively Responding
-
-Right now, our web server will return the HTML in the file no matter what the
-client requested. Let’s add functionality to check that the browser is
-requesting _/_ before returning the HTML file and to return an error if the
-browser requests anything else. For this we need to modify `handle_connection`,
-as shown in Listing 21-6. This new code checks the content of the request
-received against what we know a request for _/_ looks like and adds `if` and
-`else` blocks to treat requests differently.
-
-<Listing number="21-6" file-name="src/main.rs" caption="Handling requests to */* differently from other requests">
+<Listing number="21-6" file-name="src/main.rs" caption="Ngebedain request ke */* sama selain itu">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-06/src/main.rs:here}}
@@ -377,32 +245,17 @@ received against what we know a request for _/_ looks like and adds `if` and
 
 </Listing>
 
-We’re only going to be looking at the first line of the HTTP request, so rather
-than reading the entire request into a vector, we’re calling `next` to get the
-first item from the iterator. The first `unwrap` takes care of the `Option` and
-stops the program if the iterator has no items. The second `unwrap` handles the
-`Result` and has the same effect as the `unwrap` that was in the `map` added in
-Listing 21-2.
+Kita cuma baca baris pertama request, cek apakah sama dengan GET `/`. Kalau iya
+→ balikin html. Kalau enggak → nanti kita isi else-nya.
 
-Next, we check the `request_line` to see if it equals the request line of a GET
-request to the _/_ path. If it does, the `if` block returns the contents of our
-HTML file.
+Kalau sekarang kamu request:
 
-If the `request_line` does _not_ equal the GET request to the _/_ path, it
-means we’ve received some other request. We’ll add code to the `else` block in
-a moment to respond to all other requests.
+- `/` → dapet HTML
+- selain itu → error koneksi
 
-Run this code now and request _127.0.0.1:7878_; you should get the HTML in
-_hello.html_. If you make any other request, such as
-_127.0.0.1:7878/something-else_, you’ll get a connection error like those you
-saw when running the code in Listing 21-1 and Listing 21-2.
+Sekarang lanjut, kita tambahin response 404 kayak Listing 21-7.
 
-Now let’s add the code in Listing 21-7 to the `else` block to return a response
-with the status code 404, which signals that the content for the request was
-not found. We’ll also return some HTML for a page to render in the browser
-indicating the response to the end user.
-
-<Listing number="21-7" file-name="src/main.rs" caption="Responding with status code 404 and an error page if anything other than */* was requested">
+<Listing number="21-7" file-name="src/main.rs" caption="Balikin 404 + halaman error kalau bukan */*">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-07/src/main.rs:here}}
@@ -410,13 +263,9 @@ indicating the response to the end user.
 
 </Listing>
 
-Here, our response has a status line with status code 404 and the reason phrase
-`NOT FOUND`. The body of the response will be the HTML in the file _404.html_.
-You’ll need to create a _404.html_ file next to _hello.html_ for the error
-page; again, feel free to use any HTML you want, or use the example HTML in
-Listing 21-8.
+Bikin file _404.html_ juga (contohnya Listing 21-8).
 
-<Listing number="21-8" file-name="404.html" caption="Sample content for the page to send back with any 404 response">
+<Listing number="21-8" file-name="404.html" caption="Contoh halaman error buat response 404">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-07/404.html}}
@@ -424,26 +273,19 @@ Listing 21-8.
 
 </Listing>
 
-With these changes, run your server again. Requesting _127.0.0.1:7878_ should
-return the contents of _hello.html_, and any other request, like
-_127.0.0.1:7878/foo_, should return the error HTML from _404.html_.
+Sekarang:
 
-<!-- Old headings. Do not remove or links may break. -->
+- buka `/` → dapet hello.html
+- buka `/apa-aja` → dapet halaman 404
 
-<a id="a-touch-of-refactoring"></a>
+### Sedikit Refactoring
 
-### Refactoring
+Sekarang `if` dan `else` kita agak banyak duplikasi: dua-duanya masih baca file
+dan kirim stream. Bedanya cuma status dan nama file.
 
-At the moment, the `if` and `else` blocks have a lot of repetition: They’re
-both reading files and writing the contents of the files to the stream. The
-only differences are the status line and the filename. Let’s make the code more
-concise by pulling out those differences into separate `if` and `else` lines
-that will assign the values of the status line and the filename to variables;
-we can then use those variables unconditionally in the code to read the file
-and write the response. Listing 21-9 shows the resultant code after replacing
-the large `if` and `else` blocks.
+Mari kita ringkas kayak Listing 21-9.
 
-<Listing number="21-9" file-name="src/main.rs" caption="Refactoring the `if` and `else` blocks to contain only the code that differs between the two cases">
+<Listing number="21-9" file-name="src/main.rs" caption="Ngerapihin kode biar lebih clean dan gak duplikatif">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-09/src/main.rs:here}}
@@ -451,23 +293,16 @@ the large `if` and `else` blocks.
 
 </Listing>
 
-Now the `if` and `else` blocks only return the appropriate values for the
-status line and filename in a tuple; we then use destructuring to assign these
-two values to `status_line` and `filename` using a pattern in the `let`
-statement, as discussed in Chapter 19.
+Sekarang lebih clean, gampang dibaca, dan gampang di-maintain.
 
-The previously duplicated code is now outside the `if` and `else` blocks and
-uses the `status_line` and `filename` variables. This makes it easier to see
-the difference between the two cases, and it means we have only one place to
-update the code if we want to change how the file reading and response writing
-work. The behavior of the code in Listing 21-9 will be the same as that in
-Listing 21-7.
+Keren! 🎉 Sekarang kita punya web server sederhana, sekitar 40 baris Rust:
 
-Awesome! We now have a simple web server in approximately 40 lines of Rust code
-that responds to one request with a page of content and responds to all other
-requests with a 404 response.
+- bisa nerima koneksi
+- baca request
+- balikin halaman normal
+- balikin halaman 404 kalau salah path
 
-Currently, our server runs in a single thread, meaning it can only serve one
-request at a time. Let’s examine how that can be a problem by simulating some
-slow requests. Then, we’ll fix it so that our server can handle multiple
-requests at once.
+Tapi sekarang servernya masih **single-threaded**, artinya cuma bisa handle satu
+request dalam satu waktu. Di bagian selanjutnya kita bakal lihat kenapa ini
+masalah kalau ada request lambat, dan gimana cara bikin servernya bisa handle
+banyak request sekaligus.
