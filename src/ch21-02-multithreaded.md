@@ -42,7 +42,7 @@ _/sleep_. Kalau dapet request ini, server bakal tidur 5 detik dulu baru kirim
 HTML sukses. Arm ketiga sama kayak blok `else` di Listing 21-9.
 
 Di sini keliatan banget server kita masih sangat sederhana—library beneran tentu
-punya cara lebih rapi buat handle banyak route 😆
+punya cara lebih rapi buat handle banyak route
 
 Sekarang jalanin server pakai `cargo run`. Buka dua tab browser:
 
@@ -68,7 +68,7 @@ meningkat.
 
 Kita bakal batasi jumlah thread biar aman dari DoS attack. Kalau tiap request
 bikin thread baru tanpa batas, orang iseng tinggal spam 10 juta request dan
-server kamu tamat 💀
+server kamu tamat
 
 Jadi:
 
@@ -96,7 +96,7 @@ apa**. Kayak biasa, kita tulis dulu “cara pakainya”, baru bangun
 implementasinya.
 
 Kali ini kita pakai gaya **compiler-driven development**: tulis dulu kode yang
-kita pengen, biarin compiler marah, terus kita perbaiki berdasarkan errornya 😎
+kita pengen, biarin compiler marah, terus kita perbaiki berdasarkan errornya
 
 Tapi sebelum itu, kita lihat dulu pendekatan naive sebagai titik awal.
 
@@ -129,8 +129,8 @@ bakal lihat sekarang `/` **gak ikut nunggu lagi**.
 Tapi ya balik lagi: kalau request jutaan, thread jutaan juga… system kamu bisa
 langsung KO.
 
-Dan ya, ini juga kasus pas banget di mana **async/await** bersinar ✨ Tapi
-sekarang kita fokus ke thread pool dulu.
+Dan ya, ini juga kasus pas banget di mana **async/await** bersinar Tapi sekarang
+kita fokus ke thread pool dulu.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -167,7 +167,7 @@ pool.execute(|| {
 Mirip `thread::spawn`, tapi jumlah thread fix.
 
 Kodenya belum bisa compile—dan emang sengaja. Kita biarin compiler jadi mentor
-kita 😎
+kita
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -234,11 +234,9 @@ Kita definisikan dulu skeleton-nya:
 
 Kita pakai `FnOnce + Send + 'static` biar closure aman dipindahin antar thread.
 
-Dan yea, akhirnya compile 🎉 Walau… servernya masih gak ngapa-ngapain 🤣
+Dan yea, akhirnya compile Walau… servernya masih gak ngapa-ngapain
 
-> Jadi, “Kalau Rust compile berarti pasti jalan” itu gak selalu benar ya 😆
-
----
+> Jadi, “Kalau Rust compile berarti pasti jalan” itu gak selalu benar ya
 
 #### Validasi Jumlah Thread di `new`
 
@@ -251,8 +249,6 @@ Pool dengan 0 thread itu konyol, jadi kita proteksi:
 ```
 
 </Listing>
-
----
 
 #### Nyediain Tempat Buat Nyimpen Thread
 
@@ -270,8 +266,6 @@ Listing 21-14:
 </Listing>
 
 Sekarang compile lagi. Masih aman.
-
----
 
 <a id ="a-worker-struct-responsible-for-sending-code-from-the-threadpool-to-a-thread"></a>
 
@@ -302,8 +296,6 @@ Listing 21-15:
 </Listing>
 
 Sekarang worker udah ada, tapi belum ngejalanin job.
-
----
 
 #### Ngirim Job ke Thread Lewat Channel
 
@@ -342,9 +334,7 @@ Listing 21-18:
 
 </Listing>
 
-Compile ✔️
-
----
+Compile
 
 #### Implementasi `execute`
 
@@ -372,18 +362,14 @@ Listing 21-20:
 
 </Listing>
 
-Dan… Thread pool kita resmi jalan 🎉🎉🎉
+Dan… Thread pool kita resmi jalan
 
 Coba `cargo run` terus spam request.
 
 Outputnya bakal keliatan worker ngerjain job bergantian.
 
----
-
 Catatan penting: Kalau kamu penasaran versi `while let` (21-21), itu kelihatan
 keren tapi salah perilaku. Karena Mutex lock-nya kepegang terlalu lama.
-
----
 
 Sekarang:
 
@@ -391,4 +377,4 @@ Sekarang:
 - maksimal cuma 4 thread
 - request lambat gak ganggu request lain
 
-Server kita udah jauh lebih “dewasa” 🤘
+Server kita udah jauh lebih “dewasa”

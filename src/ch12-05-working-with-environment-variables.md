@@ -84,7 +84,7 @@ Coba cek testnya:
 {{#include ../listings/ch12-an-io-project/listing-12-21/output.txt}}
 ```
 
-Mantap, lulus semua 🎉
+Mantap, lulus semua
 
 Sekarang kita panggil fungsi `search_case_insensitive` dari `run`. Pertama, kita
 nambah opsi konfigurasi ke struct `Config` buat nge-switch antara mode
@@ -143,12 +143,12 @@ query `to`, yang cuma harus match huruf kecil.
 {{#include ../listings/ch12-an-io-project/listing-12-23/output.txt}}
 ```
 
-Masih jalan ✔️
+Masih jalan
 
 Sekarang kita jalanin lagi tapi dengan `IGNORE_CASE=1`
 
 ```console
-$ IGNORE_CASE=1 cargo run -- to poem.txt
+IGNORE_CASE=1 cargo run -- to poem.txt
 ```
 
 Kalau kamu pake PowerShell, caranya beda dikit:
@@ -173,7 +173,7 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-Gas, berhasil 🎉 Sekarang `minigrep` bisa pencarian case-insensitive yang
+Gas, berhasil Sekarang `minigrep` bisa pencarian case-insensitive yang
 dikontrol environment variable. Jadi sekarang kamu tau gimana caranya ngatur
 opsi lewat argumen command line maupun environment variable.
 

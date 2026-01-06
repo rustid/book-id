@@ -609,7 +609,7 @@ You guessed: 5
 ```
 
 Kamu harusnya dapat angka acak yang berbeda-beda tiap kali jalanin program, dan
-semuanya bakal berada di antara 1 sampai 100. Mantap! 🎉
+semuanya bakal berada di antara 1 sampai 100. Mantap!
 
 ## Membandingkan Tebakan dengan Angka Rahasia
 
@@ -771,7 +771,7 @@ You guessed: 76
 Too big!
 ```
 
-Keren! 🎉 Meskipun ada spasi di depan tebakan, program tetap bisa ngerti kalau
+Keren! Meskipun ada spasi di depan tebakan, program tetap bisa ngerti kalau
 user nebak angka 76. Coba jalanin programnya beberapa kali untuk ngetes berbagai
 kondisi: tebak angka yang tepat, tebak angka yang terlalu besar, dan tebak angka
 yang terlalu kecil.
@@ -965,8 +965,6 @@ di Rust. Chapter 4 bakal ngebahas ownership, fitur khas Rust yang bikin dia beda
 dari bahasa lain. Chapter 5 ngebahas `struct` dan sintaks method. Chapter 6
 bakal ngejelasin cara kerja `enum`.
 
-[prelude]: ../std/prelude/index.html
-[variables-and-mutability]: ch03-01-variables-and-mutability.html#variables-and-mutability
 [comments]: ch03-04-comments.html
 [string]: ../std/string/struct.String.html
 [iostdin]: ../std/io/struct.Stdin.html

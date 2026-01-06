@@ -48,7 +48,7 @@ karena:
 
 - HTTP biasanya gak jalan di port ini, jadi kecil kemungkinan bentrok dengan
   server lain
-- dan “7878” kalau diketik di keypad telepon bacaannya mirip “rust” 😎
+- dan “7878” kalau diketik di keypad telepon bacaannya mirip “rust”
 
 Fungsi `bind` di sini mirip kayak `new`, yang balikannya instance `TcpListener`
 baru. Disebut `bind` karena di dunia networking, proses ngiket ke port buat
@@ -92,7 +92,7 @@ Beberapa browser juga sengaja buka banyak koneksi kosong dulu biar nanti kalau
 ada request beneran bisa lebih cepat. Server kita bakal tetap lihat koneksinya,
 walaupun belum ada requestnya.
 
-Intinya, kita udah sukses dapet koneksi TCP 🎉
+Intinya, kita udah sukses dapet koneksi TCP
 
 Jangan lupa stop pakai <kbd>ctrl</kbd>-<kbd>C</kbd> kalau mau berhenti, dan
 setiap abis ngedit kode, jalankan ulang `cargo run`.
@@ -127,7 +127,7 @@ pretty debug supaya gampang dibaca.
 Coba jalanin lagi, buka browser ke alamat tadi. Browser masih error, tapi di
 terminal sekarang bakal kelihatan request HTTP lengkapnya.
 
-Sekarang kita udah tau browser ngirim apa. Saatnya balas 😎
+Sekarang kita udah tau browser ngirim apa. Saatnya balas
 
 ### Ngeliat Lebih Deket HTTP Request
 
@@ -197,7 +197,7 @@ Kita simpan response di variabel `response`, ubah jadi bytes pakai `as_bytes`,
 lalu kirim ke stream. Kalau gagal, `unwrap` bakal berhentiin program.
 
 Sekarang coba jalanin dan buka browser lagi. Kamu bakal dapat halaman kosong —
-tapi sekarang server kita udah bener-bener balas request 🎉
+tapi sekarang server kita udah bener-bener balas request
 
 ### Balikin HTML Beneran
 
@@ -227,7 +227,7 @@ Sekarang ubah `handle_connection` jadi kayak Listing 21-5 supaya:
 </Listing>
 
 Sekarang jalankan `cargo run`, buka browser ke _127.0.0.1:7878_, dan halaman
-HTML kamu bakal muncul ✨
+HTML kamu bakal muncul
 
 Saat ini kita masih ngabaikan isi request dan selalu balikin file yang sama,
 walaupun user akses path lain. Jadi server kita masih “ polos banget”.
@@ -295,7 +295,7 @@ Mari kita ringkas kayak Listing 21-9.
 
 Sekarang lebih clean, gampang dibaca, dan gampang di-maintain.
 
-Keren! 🎉 Sekarang kita punya web server sederhana, sekitar 40 baris Rust:
+Keren! Sekarang kita punya web server sederhana, sekitar 40 baris Rust:
 
 - bisa nerima koneksi
 - baca request

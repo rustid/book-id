@@ -129,7 +129,7 @@ request sebelum shutdown santai, kayak di Listing 21-25.
 
 </Listing>
 
-Jelas di dunia nyata server gak mungkin cuma nerima dua request doang 😂 Ini
+Jelas di dunia nyata server gak mungkin cuma nerima dua request doang Ini
 cuma buat ngebuktiin kalau graceful shutdown kita udah berfungsi.
 
 Method `take` adalah bagian dari `Iterator`, dan dia ngebatesin iterasi ke dua
@@ -167,7 +167,7 @@ dapet error dari `recv`, kita udah coba `join Worker 0`. Karena dia belum error,
 main thread nunggu. Sementara itu `Worker 3` lanjut kerja dan thread lain dapet
 error dan keluar. Begitu `Worker 0` selesai, sisanya udah pada kelar duluan.
 
-Mantap! 🎉 Sekarang kita udah selesai projectnya:
+Mantap! Sekarang kita udah selesai projectnya:
 
 - web server basic
 - support thread pool
@@ -204,7 +204,7 @@ Kalau mau lanjut improve, ini ide-idenya:
 
 ## Ringkasan
 
-Keren banget! Kamu udah sampai akhir buku 🎉 Makasih udah nemenin perjalanan
+Keren banget! Kamu udah sampai akhir buku Makasih udah nemenin perjalanan
 Rust ini. Sekarang kamu udah siap bikin project Rust sendiri atau contribute ke
 project orang lain. Jangan lupa, komunitas Rust itu ramah banget dan selalu siap
-bantu kalau kamu nemu masalah di perjalanan Rust kamu 🤘
+bantu kalau kamu nemu masalah di perjalanan Rust kamu
