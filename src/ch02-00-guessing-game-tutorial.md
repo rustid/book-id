@@ -8,10 +8,10 @@ selanjutnya baru kita kupas lebih dalam. Sekarang fokus dulu ke basic-nya sambil
 praktik.
 
 Kita bakal ngerjain problem klasik buat pemula: **game tebak angka**, Kurang
-lebih gini cara mainnya: Program bakal bikin angka random dari 1 sampai 100
-Kamu diminta masukin tebakan Abis itu program bakal ngasih tau tebakan kamu 
-**kekecilan** atau **kegedean** kalo pas… **boom!** Tebakan kamu bener, 
-program bakal ngucapin selamat dan selesai
+lebih gini cara mainnya: Program bakal bikin angka random dari 1 sampai 100 Kamu
+diminta masukin tebakan Abis itu program bakal ngasih tau tebakan kamu
+**kekecilan** atau **kegedean** kalo pas… **boom!** Tebakan kamu bener, program
+bakal ngucapin selamat dan selesai
 
 ## Setup Project Baru
 
@@ -72,8 +72,8 @@ Sekarang buka lagi file _src/main.rs_. Semua kode bakal kamu tulis di file ini.
 
 ## Memproses Tebakan
 
-Bagian pertama dari program tebak angka ini bakal: minta input dari user,
-ngolah inputnya, terus ngecek apakah inputnya udah sesuai format yang diharapkan.
+Bagian pertama dari program tebak angka ini bakal: minta input dari user, ngolah
+inputnya, terus ngecek apakah inputnya udah sesuai format yang diharapkan.
 Pertama-tama, kita bakal ngasih pemain kesempatan buat masukin tebakan. Masukin
 kode di **Listing 2-1** ke dalam file `src/main.rs`.
 
@@ -575,7 +575,7 @@ sampai 100.
 
 Baris baru kedua cuma buat nge-print angka rahasianya. Ini berguna selama masa
 pengembangan biar gampang ngetes, tapi nanti bakal kita hapus di versi final.
-Soalnya nggak seru dong kalau game langsung kasih jawabannya 
+Soalnya nggak seru dong kalau game langsung kasih jawabannya
 
 Sekarang coba jalankan programnya beberapa kali:
 
@@ -937,11 +937,11 @@ You guessed: 61
 You win!
 ```
 
-Keren! Dengan satu sentuhan kecil terakhir, kita bakal selesai bikin game
-tebak angka ini. Ingat, program kita masih nge-print angka rahasianya. Itu
-memang berguna buat testing tadi, tapi jelas bikin gamenya nggak seru. Jadi
-sekarang hapus aja `println!` yang nampilin angka rahasia itu. Listing 2-6
-nunjukin kode finalnya.
+Keren! Dengan satu sentuhan kecil terakhir, kita bakal selesai bikin game tebak
+angka ini. Ingat, program kita masih nge-print angka rahasianya. Itu memang
+berguna buat testing tadi, tapi jelas bikin gamenya nggak seru. Jadi sekarang
+hapus aja `println!` yang nampilin angka rahasia itu. Listing 2-6 nunjukin kode
+finalnya.
 
 <Listing number="2-6" file-name="src/main.rs" caption="Kode lengkap game tebak angka">
 
@@ -964,7 +964,6 @@ pemrograman, seperti variabel, tipe data, dan fungsi, serta gimana cara pakainya
 di Rust. Chapter 4 bakal ngebahas ownership, fitur khas Rust yang bikin dia beda
 dari bahasa lain. Chapter 5 ngebahas `struct` dan sintaks method. Chapter 6
 bakal ngejelasin cara kerja `enum`.
-
 
 [prelude]: ../std/prelude/index.html
 [variables-and-mutability]: ch03-01-variables-and-mutability.html#variables-and-mutability

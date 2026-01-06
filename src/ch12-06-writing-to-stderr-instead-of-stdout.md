@@ -5,10 +5,10 @@
 ## Ngeredirect Error ke Standard Error
 
 Sekarang ini, kita masih nge-print semua output ke terminal pakai macro
-`println!`. Di kebanyakan terminal, sebenarnya ada dua jenis output:
-*standard output* (`stdout`) buat info biasa dan *standard error* (`stderr`)
-buat pesan error. Pemisahan ini bikin user bisa ngirim hasil sukses program ke
-file, tapi pesan errornya tetap muncul di layar.
+`println!`. Di kebanyakan terminal, sebenarnya ada dua jenis output: _standard
+output_ (`stdout`) buat info biasa dan _standard error_ (`stderr`) buat pesan
+error. Pemisahan ini bikin user bisa ngirim hasil sukses program ke file, tapi
+pesan errornya tetap muncul di layar.
 
 Masalahnya, `println!` cuma bisa nge-print ke standard output, jadi kita perlu
 cara lain buat nge-print ke standard error.
@@ -28,16 +28,16 @@ di-redirect ke file. Tapi program kita sekarang belum sopan nih: kita bakal
 lihat kalau dia malah nyimpen pesan error ke file!
 
 Buat nunjukin ini, kita jalanin program pakai tanda `>` dan nama file,
-*output.txt*, buat tujuan redirect standard output. Kita gak bakal masukin
+_output.txt_, buat tujuan redirect standard output. Kita gak bakal masukin
 argumen apa pun, jadi pasti muncul error:
 
 ```console
 $ cargo run > output.txt
 ```
 
-Sintaks `>` ngasih tau shell buat nulis isi standard output ke *output.txt*
+Sintaks `>` ngasih tau shell buat nulis isi standard output ke _output.txt_
 bukannya ke layar. Kita gak lihat pesan error yang seharusnya muncul di layar,
-berarti kemungkinan besar malah masuk ke file. Ini isi file *output.txt*:
+berarti kemungkinan besar malah masuk ke file. Ini isi file _output.txt_:
 
 ```text
 Problem parsing arguments: not enough arguments
@@ -50,11 +50,10 @@ output sukses aja. Yuk kita benerin.
 ### Nge-print Error ke Standard Error
 
 Kita bakal pakai kode di Listing 12-24 buat ngubah cara nge-print error.
-Untungnya, karena refactoring yang udah kita lakukan sebelumnya, semua kode
-yang nge-print error sekarang ada cuma di satu fungsi: `main`. Standard library
-udah nyediain macro `eprintln!` yang nge-print ke standard error, jadi kita
-tinggal ganti dua pemanggilan `println!` yang dipakai buat error jadi
-`eprintln!`.
+Untungnya, karena refactoring yang udah kita lakukan sebelumnya, semua kode yang
+nge-print error sekarang ada cuma di satu fungsi: `main`. Standard library udah
+nyediain macro `eprintln!` yang nge-print ke standard error, jadi kita tinggal
+ganti dua pemanggilan `println!` yang dipakai buat error jadi `eprintln!`.
 
 <Listing number="12-24" file-name="src/main.rs" caption="Nulis pesan error ke standard error bukan standard output pakai `eprintln!`">
 
@@ -72,7 +71,7 @@ $ cargo run > output.txt
 Problem parsing arguments: not enough arguments
 ```
 
-Sekarang errornya muncul di layar dan *output.txt* kosong. Ini behavior yang
+Sekarang errornya muncul di layar dan _output.txt_ kosong. Ini behavior yang
 memang diharapkan dari program command line.
 
 Sekarang kita coba lagi, tapi kali ini pakai argumen yang valid dan tetap
@@ -82,7 +81,7 @@ redirect standard output ke file:
 $ cargo run -- to poem.txt > output.txt
 ```
 
-Kita gak bakal lihat output apa pun di terminal, dan isi *output.txt* bakal
+Kita gak bakal lihat output apa pun di terminal, dan isi _output.txt_ bakal
 jadi:
 
 <span class="filename">Filename: output.txt</span>
@@ -100,15 +99,15 @@ yang sukses, dan standard error khusus buat pesan error.
 Di chapter ini kita nge-recap beberapa konsep besar yang udah kamu pelajari
 sejauh ini dan ngebahas gimana caranya ngelakuin operasi I/O umum di Rust.
 Dengan pakai argumen command line, file, environment variable, dan macro
-`eprintln!` buat nge-print error, sekarang kamu udah siap bikin aplikasi
-command line sendiri.
+`eprintln!` buat nge-print error, sekarang kamu udah siap bikin aplikasi command
+line sendiri.
 
 Digabung sama konsep-konsep di chapter sebelumnya, sekarang kode kamu:
 
-* lebih rapi dan terorganisir,
-* bisa nyimpen data dengan struktur yang tepat,
-* punya error handling yang oke,
-* dan tentu aja, udah bisa dites dengan baik.
+- lebih rapi dan terorganisir,
+- bisa nyimpen data dengan struktur yang tepat,
+- punya error handling yang oke,
+- dan tentu aja, udah bisa dites dengan baik.
 
 Selanjutnya, kita bakal eksplor fitur Rust yang terinspirasi dari bahasa
 functional: closures dan iterators.

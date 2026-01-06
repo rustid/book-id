@@ -7,11 +7,11 @@
 
 Sekarang server kita masih ngeproses request **satu per satu**. Artinya, server
 gak bakal proses koneksi kedua sebelum koneksi pertama selesai. Kalau server
-dapet makin banyak request, eksekusi model *serial* kayak gini makin gak ideal.
+dapet makin banyak request, eksekusi model _serial_ kayak gini makin gak ideal.
 Kalau ada satu request yang prosesnya lama, request-request berikutnya harus
 nunggu sampai yang lama selesai, bahkan kalau request barunya sebenernya bisa
-diproses cepat. Kita bakal benerin ini, tapi sebelumnya kita lihat dulu masalahnya
-secara langsung.
+diproses cepat. Kita bakal benerin ini, tapi sebelumnya kita lihat dulu
+masalahnya secara langsung.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -19,9 +19,10 @@ secara langsung.
 
 ### Simulasi Request yang Lambat
 
-Kita bakal lihat gimana satu request lambat bisa ngeganggu request lain di server
-kita sekarang. Listing 21-10 nambahin handler buat request ke */sleep* yang bakal
-nyimulasikan respons lambat dengan **delay 5 detik** sebelum ngerespon.
+Kita bakal lihat gimana satu request lambat bisa ngeganggu request lain di
+server kita sekarang. Listing 21-10 nambahin handler buat request ke _/sleep_
+yang bakal nyimulasikan respons lambat dengan **delay 5 detik** sebelum
+ngerespon.
 
 <Listing number="21-10" file-name="src/main.rs" caption="Ngesimulasikan request lambat dengan `sleep` selama lima detik">
 
@@ -31,77 +32,71 @@ nyimulasikan respons lambat dengan **delay 5 detik** sebelum ngerespon.
 
 </Listing>
 
-Sekarang kita ganti dari `if` ke `match` karena udah ada tiga kondisi.
-Kita harus match langsung ke *slice* dari `request_line` buat bandingin
-dengan literal string; `match` gak otomatis melakukan referencing/dereferencing
-kayak pengecekan `==`.
+Sekarang kita ganti dari `if` ke `match` karena udah ada tiga kondisi. Kita
+harus match langsung ke _slice_ dari `request_line` buat bandingin dengan
+literal string; `match` gak otomatis melakukan referencing/dereferencing kayak
+pengecekan `==`.
 
-Arm pertama sama kayak blok `if` di Listing 21-9.
-Arm kedua buat request ke */sleep*. Kalau dapet request ini, server bakal tidur
-5 detik dulu baru kirim HTML sukses.
-Arm ketiga sama kayak blok `else` di Listing 21-9.
+Arm pertama sama kayak blok `if` di Listing 21-9. Arm kedua buat request ke
+_/sleep_. Kalau dapet request ini, server bakal tidur 5 detik dulu baru kirim
+HTML sukses. Arm ketiga sama kayak blok `else` di Listing 21-9.
 
 Di sini keliatan banget server kita masih sangat sederhana—library beneran tentu
 punya cara lebih rapi buat handle banyak route 😆
 
-Sekarang jalanin server pakai `cargo run`.
-Buka dua tab browser:
+Sekarang jalanin server pakai `cargo run`. Buka dua tab browser:
 
-* *[http://127.0.0.1:7878](http://127.0.0.1:7878)*
-* *[http://127.0.0.1:7878/sleep](http://127.0.0.1:7878/sleep)*
+- _[http://127.0.0.1:7878](http://127.0.0.1:7878)_
+- _[http://127.0.0.1:7878/sleep](http://127.0.0.1:7878/sleep)_
 
-Kalau buka `/` beberapa kali, responsnya bakal cepat.
-Tapi kalau buka `/sleep`, lalu coba buka `/`, kamu bakal lihat
-kalau `/` **ikut nunggu** 5 detik sampai `/sleep` selesai dulu.
+Kalau buka `/` beberapa kali, responsnya bakal cepat. Tapi kalau buka `/sleep`,
+lalu coba buka `/`, kamu bakal lihat kalau `/` **ikut nunggu** 5 detik sampai
+`/sleep` selesai dulu.
 
-Ada banyak cara buat ngatasi antrean request kayak gini,
-termasuk pakai async kayak di Chapter 17,
-tapi di sini kita bakal pakai **thread pool**.
+Ada banyak cara buat ngatasi antrean request kayak gini, termasuk pakai async
+kayak di Chapter 17, tapi di sini kita bakal pakai **thread pool**.
 
 ### Ningkatin Throughput dengan Thread Pool
 
 **Thread pool** itu kumpulan thread yang udah dibuat duluan dan siap kerja.
 Ketika ada task masuk, salah satu thread di pool bakal ditugasin ngerjain.
-Thread lain tetap standby buat task berikutnya.
-Kalau tugas selesai, thread balik lagi ke pool.
+Thread lain tetap standby buat task berikutnya. Kalau tugas selesai, thread
+balik lagi ke pool.
 
-Dengan ini server bisa proses beberapa koneksi sekaligus,
-jadi throughput meningkat.
+Dengan ini server bisa proses beberapa koneksi sekaligus, jadi throughput
+meningkat.
 
-Kita bakal batasi jumlah thread biar aman dari DoS attack.
-Kalau tiap request bikin thread baru tanpa batas,
-orang iseng tinggal spam 10 juta request dan server kamu tamat 💀
+Kita bakal batasi jumlah thread biar aman dari DoS attack. Kalau tiap request
+bikin thread baru tanpa batas, orang iseng tinggal spam 10 juta request dan
+server kamu tamat 💀
 
 Jadi:
 
-* kita punya jumlah thread tetap
-* request masuk dimasukin ke queue
-* tiap thread ambil job dari queue
-* kerjain
-* balik ngantri lagi
+- kita punya jumlah thread tetap
+- request masuk dimasukin ke queue
+- tiap thread ambil job dari queue
+- kerjain
+- balik ngantri lagi
 
-Dengan ini kita bisa handle sampai **N request paralel**
-(di mana N = jumlah thread).
-Kalau semuanya lagi sibuk ngerjain task lama, request baru tetap ngantri,
-tapi pool kita jauh lebih kuat dibanding satu thread doang.
+Dengan ini kita bisa handle sampai **N request paralel** (di mana N = jumlah
+thread). Kalau semuanya lagi sibuk ngerjain task lama, request baru tetap
+ngantri, tapi pool kita jauh lebih kuat dibanding satu thread doang.
 
-Ini cuma satu dari banyak teknik buat naikin performa server.
-Kamu juga bisa explore:
+Ini cuma satu dari banyak teknik buat naikin performa server. Kamu juga bisa
+explore:
 
-* fork/join
-* async I/O single-threaded
-* async I/O multithreaded
+- fork/join
+- async I/O single-threaded
+- async I/O multithreaded
 
 Karena Rust itu low-level friendly, semua itu memungkinkan.
 
-Sebelum implementasi thread pool,
-kita pikirin dulu **seharusnya API-nya seperti apa**.
-Kayak biasa, kita tulis dulu “cara pakainya”, baru bangun implementasinya.
+Sebelum implementasi thread pool, kita pikirin dulu **seharusnya API-nya seperti
+apa**. Kayak biasa, kita tulis dulu “cara pakainya”, baru bangun
+implementasinya.
 
-Kali ini kita pakai gaya **compiler-driven development**:
-tulis dulu kode yang kita pengen,
-biarin compiler marah,
-terus kita perbaiki berdasarkan errornya 😎
+Kali ini kita pakai gaya **compiler-driven development**: tulis dulu kode yang
+kita pengen, biarin compiler marah, terus kita perbaiki berdasarkan errornya 😎
 
 Tapi sebelum itu, kita lihat dulu pendekatan naive sebagai titik awal.
 
@@ -111,9 +106,9 @@ Tapi sebelum itu, kita lihat dulu pendekatan naive sebagai titik awal.
 
 #### Bikin Thread Baru untuk Tiap Request
 
-Pertama bayangin kalau tiap koneksi kita bikin thread baru.
-Ini bukan solusi akhir karena jelas bakal bahaya,
-tapi ini titik awal buat bikin server multithreaded.
+Pertama bayangin kalau tiap koneksi kita bikin thread baru. Ini bukan solusi
+akhir karena jelas bakal bahaya, tapi ini titik awal buat bikin server
+multithreaded.
 
 Listing 21-11 nunjukin perubahan di `main`.
 
@@ -125,23 +120,17 @@ Listing 21-11 nunjukin perubahan di `main`.
 
 </Listing>
 
-Kayak yang kamu pelajari di Chapter 16,
-`thread::spawn` bakal bikin thread baru
+Kayak yang kamu pelajari di Chapter 16, `thread::spawn` bakal bikin thread baru
 dan ngejalanin closure di dalamnya.
 
-Kalau kamu coba jalanin ini,
-buka `/sleep`,
-terus buka `/` di tab lain,
-kamu bakal lihat sekarang `/` **gak ikut nunggu lagi**.
+Kalau kamu coba jalanin ini, buka `/sleep`, terus buka `/` di tab lain, kamu
+bakal lihat sekarang `/` **gak ikut nunggu lagi**.
 
-Tapi ya balik lagi:
-kalau request jutaan,
-thread jutaan juga…
-system kamu bisa langsung KO.
+Tapi ya balik lagi: kalau request jutaan, thread jutaan juga… system kamu bisa
+langsung KO.
 
-Dan ya, ini juga kasus pas banget
-di mana **async/await** bersinar ✨
-Tapi sekarang kita fokus ke thread pool dulu.
+Dan ya, ini juga kasus pas banget di mana **async/await** bersinar ✨ Tapi
+sekarang kita fokus ke thread pool dulu.
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -149,8 +138,7 @@ Tapi sekarang kita fokus ke thread pool dulu.
 
 #### Bikin Jumlah Thread yang Terbatas
 
-Kita pengen API thread pool tetap mirip
-biar gampang migrasinya.
+Kita pengen API thread pool tetap mirip biar gampang migrasinya.
 
 Listing 21-12 nunjukin API idealnya:
 
@@ -176,11 +164,10 @@ pool.execute(|| {
 });
 ```
 
-Mirip `thread::spawn`,
-tapi jumlah thread fix.
+Mirip `thread::spawn`, tapi jumlah thread fix.
 
-Kodenya belum bisa compile—dan emang sengaja.
-Kita biarin compiler jadi mentor kita 😎
+Kodenya belum bisa compile—dan emang sengaja. Kita biarin compiler jadi mentor
+kita 😎
 
 <!-- Old headings. Do not remove or links may break. -->
 
@@ -188,8 +175,7 @@ Kita biarin compiler jadi mentor kita 😎
 
 #### Ngebangun `ThreadPool` dengan Compiler-Driven Development
 
-Masukin kode Listing 21-12,
-jalanin `cargo check`.
+Masukin kode Listing 21-12, jalanin `cargo check`.
 
 Error pertama:
 
@@ -197,12 +183,11 @@ Error pertama:
 {{#include ../listings/ch21-web-server/listing-21-12/output.txt}}
 ```
 
-Compiler bilang:
-“Bro, `ThreadPool` gak ada tuh”
+Compiler bilang: “Bro, `ThreadPool` gak ada tuh”
 
 Oke, kita bikin library dulu.
 
-Bikin *src/lib.rs*:
+Bikin _src/lib.rs_:
 
 <Listing file-name="src/lib.rs">
 
@@ -220,9 +205,7 @@ Import ke main:
 {{#rustdoc_include ../listings/ch21-web-server/no-listing-01-define-threadpool-struct/src/main.rs:here}}
 ```
 
-Cek lagi,
-error berikutnya bilang:
-“`new` gak ada”
+Cek lagi, error berikutnya bilang: “`new` gak ada”
 
 Kita tambahin:
 
@@ -234,13 +217,10 @@ Kita tambahin:
 
 </Listing>
 
-Kenapa `usize`?
-Karena jumlah thread gak mungkin negatif,
-dan dipakai buat ukuran koleksi.
+Kenapa `usize`? Karena jumlah thread gak mungkin negatif, dan dipakai buat
+ukuran koleksi.
 
-Cek lagi,
-sekarang error:
-“`execute` gak ada”
+Cek lagi, sekarang error: “`execute` gak ada”
 
 Kita definisikan dulu skeleton-nya:
 
@@ -252,22 +232,17 @@ Kita definisikan dulu skeleton-nya:
 
 </Listing>
 
-Kita pakai `FnOnce + Send + 'static`
-biar closure aman dipindahin antar thread.
+Kita pakai `FnOnce + Send + 'static` biar closure aman dipindahin antar thread.
 
-Dan yea,
-akhirnya compile 🎉
-Walau… servernya masih gak ngapa-ngapain 🤣
+Dan yea, akhirnya compile 🎉 Walau… servernya masih gak ngapa-ngapain 🤣
 
-> Jadi, “Kalau Rust compile berarti pasti jalan”
-> itu gak selalu benar ya 😆
+> Jadi, “Kalau Rust compile berarti pasti jalan” itu gak selalu benar ya 😆
 
 ---
 
 #### Validasi Jumlah Thread di `new`
 
-Pool dengan 0 thread itu konyol,
-jadi kita proteksi:
+Pool dengan 0 thread itu konyol, jadi kita proteksi:
 
 <Listing number="21-13" file-name="src/lib.rs" caption="`ThreadPool::new` panic kalau size = 0">
 
@@ -281,9 +256,8 @@ jadi kita proteksi:
 
 #### Nyediain Tempat Buat Nyimpen Thread
 
-Kita butuh nyimpen thread.
-`thread::spawn` balikin `JoinHandle`,
-jadi kita simpen itu.
+Kita butuh nyimpen thread. `thread::spawn` balikin `JoinHandle`, jadi kita
+simpen itu.
 
 Listing 21-14:
 
@@ -295,8 +269,7 @@ Listing 21-14:
 
 </Listing>
 
-Sekarang compile lagi.
-Masih aman.
+Sekarang compile lagi. Masih aman.
 
 ---
 
@@ -304,17 +277,12 @@ Masih aman.
 
 #### Ngirim Kode dari `ThreadPool` ke Thread
 
-Masalah:
-`thread::spawn` butuh closure langsung.
-Tapi kita pengen thread standby dulu,
-nunggu job dikirim nantinya.
+Masalah: `thread::spawn` butuh closure langsung. Tapi kita pengen thread standby
+dulu, nunggu job dikirim nantinya.
 
-Solusinya:
-kita bikin struct **Worker**.
+Solusinya: kita bikin struct **Worker**.
 
-Worker itu kayak pegawai restoran:
-nunggu order,
-kalau ada → kerjain.
+Worker itu kayak pegawai restoran: nunggu order, kalau ada → kerjain.
 
 Plan:
 
@@ -333,8 +301,7 @@ Listing 21-15:
 
 </Listing>
 
-Sekarang worker udah ada,
-tapi belum ngejalanin job.
+Sekarang worker udah ada, tapi belum ngejalanin job.
 
 ---
 
@@ -360,11 +327,10 @@ Listing 21-16:
 
 </Listing>
 
-Kita coba oper receiver ke tiap worker (Listing 21-17),
-tapi error karena channel cuma boleh 1 consumer.
+Kita coba oper receiver ke tiap worker (Listing 21-17), tapi error karena
+channel cuma boleh 1 consumer.
 
-Jadi:
-pakai `Arc<Mutex<T>>`
+Jadi: pakai `Arc<Mutex<T>>`
 
 Listing 21-18:
 
@@ -406,29 +372,23 @@ Listing 21-20:
 
 </Listing>
 
-Dan…
-Thread pool kita resmi jalan 🎉🎉🎉
+Dan… Thread pool kita resmi jalan 🎉🎉🎉
 
-Coba `cargo run`
-terus spam request.
+Coba `cargo run` terus spam request.
 
-Outputnya bakal keliatan
-worker ngerjain job bergantian.
+Outputnya bakal keliatan worker ngerjain job bergantian.
 
 ---
 
-Catatan penting:
-Kalau kamu penasaran versi `while let`
-(21-21),
-itu kelihatan keren tapi salah perilaku.
-Karena Mutex lock-nya kepegang terlalu lama.
+Catatan penting: Kalau kamu penasaran versi `while let` (21-21), itu kelihatan
+keren tapi salah perilaku. Karena Mutex lock-nya kepegang terlalu lama.
 
 ---
 
 Sekarang:
 
-* thread pool jalan
-* maksimal cuma 4 thread
-* request lambat gak ganggu request lain
+- thread pool jalan
+- maksimal cuma 4 thread
+- request lambat gak ganggu request lain
 
 Server kita udah jauh lebih “dewasa” 🤘
