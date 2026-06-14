@@ -1,54 +1,62 @@
-## Processing a Series of Items with Iterators
+## Memproses Serangkaian Item dengan Iterators
 
-The iterator pattern allows you to perform some task on a sequence of items in
-turn. An iterator is responsible for the logic of iterating over each item and
-determining when the sequence has finished. When you use iterators, you don’t
-have to reimplement that logic yourself.
+Pola (pattern) _iterator_ memungkinkan kita buat melakukan suatu tugas secara 
+berurutan pada serangkaian item. Sebuah iterator bertanggung jawab atas logika 
+untuk melakukan iterasi melewati setiap item dan menentukan kapan rangkaian 
+tersebut sudah selesai. Saat kita memakai iterator, kita tidak perlu repot-repot 
+mengimplementasikan ulang logika tersebut sendiri.
 
-In Rust, iterators are *lazy*, meaning they have no effect until you call
-methods that consume the iterator to use it up. For example, the code in
-Listing 13-10 creates an iterator over the items in the vector `v1` by calling
-the `iter` method defined on `Vec<T>`. This code by itself doesn’t do anything
-useful.
+Di Rust, iterators itu _lazy_ (malas), yang artinya mereka tidak punya efek 
+apa-apa sampai kita memanggil method-method yang bakal mengonsumsi (consume) 
+iterator itu untuk memakainya sampai habis. Sebagai contoh, kode di Listing 
+13-10 membuat sebuah iterator atas item-item di dalam vector `v1` dengan 
+memanggil method `iter` yang didefinisikan pada `Vec<T>`. Kode ini kalau 
+berdiri sendiri tidak melakukan hal berguna apa pun.
+
+<Listing number="13-10" file-name="src/main.rs" caption="Membuat sebuah iterator">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-10/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 13-10: Creating an iterator</span>
+</Listing>
 
-The iterator is stored in the `v1_iter` variable. Once we’ve created an
-iterator, we can use it in a variety of ways. In Listing 3-5 in Chapter 3, we
-iterated over an array using a `for` loop to execute some code on each of its
-items. Under the hood this implicitly created and then consumed an iterator,
-but we glossed over how exactly that works until now.
+Iterator ini disimpan di dalam variabel `v1_iter`. Setelah kita membuat sebuah 
+iterator, kita bisa memakainya dalam berbagai cara. Di Listing 3-5, kita 
+beriterasi melewati sebuah _array_ memakai _for loop_ untuk mengeksekusi 
+beberapa kode pada masing-masing itemnya. Di balik layar, hal ini secara 
+implisit membuat lalu mengonsumsi sebuah iterator, tapi kita melewatkan detail 
+tentang gimana sebenarnya itu bekerja sampai saat ini.
 
-In the example in Listing 13-11, we separate the creation of the iterator from
-the use of the iterator in the `for` loop. When the `for` loop is called using
-the iterator in `v1_iter`, each element in the iterator is used in one
-iteration of the loop, which prints out each value.
+Di contoh pada Listing 13-11, kita memisahkan proses pembuatan iterator dari 
+penggunaan iterator tersebut di dalam _for loop_. Saat _for loop_ ini dipanggil 
+memakai iterator di `v1_iter`, setiap elemen di iterator tersebut dipakai 
+dalam satu putaran (iteration) _loop_, yang mana mencetak setiap nilainya.
+
+<Listing number="13-11" file-name="src/main.rs" caption="Memakai iterator di dalam sebuah _for loop_">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-11/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 13-11: Using an iterator in a `for` loop</span>
+</Listing>
 
-In languages that don’t have iterators provided by their standard libraries,
-you would likely write this same functionality by starting a variable at index
-0, using that variable to index into the vector to get a value, and
-incrementing the variable value in a loop until it reached the total number of
-items in the vector.
+Di bahasa pemrograman yang tidak menyediakan iterator dari _standard library_-nya, 
+kita kemungkinan bakal menulis fungsionalitas yang sama ini dengan memulai 
+sebuah variabel di indeks 0, memakai variabel tersebut buat mengindeks ke dalam 
+vector untuk mendapatkan nilai, lalu menambah nilai variabel itu di dalam _loop_ 
+sampai jumlahnya mencapai total item yang ada di vector.
 
-Iterators handle all that logic for you, cutting down on repetitive code you
-could potentially mess up. Iterators give you more flexibility to use the same
-logic with many different kinds of sequences, not just data structures you can
-index into, like vectors. Let’s examine how iterators do that.
+Iterators menangani semua logika tersebut buat kita, mengurangi kode yang 
+berulang-ulang (repetitive code) yang mana bisa saja kita bikin salah. 
+Iterators ngasih kita fleksibilitas lebih buat memakai logika yang sama dengan 
+berbagai jenis urutan data, bukan cuma struktur data yang bisa kita indeks aja, 
+kayak vector. Mari kita teliti gimana cara iterators melakukan itu.
 
-### The `Iterator` Trait and the `next` Method
+### Trait `Iterator` dan Method `next`
 
-All iterators implement a trait named `Iterator` that is defined in the
-standard library. The definition of the trait looks like this:
+Semua iterators mengimplementasikan sebuah trait bernama `Iterator` yang 
+didefinisikan di _standard library_. Definisi dari trait ini kelihatan kayak gini:
 
 ```rust
 pub trait Iterator {
@@ -56,173 +64,184 @@ pub trait Iterator {
 
     fn next(&mut self) -> Option<Self::Item>;
 
-    // methods with default implementations elided
+    // methods dengan implementasi default dihilangkan
 }
 ```
 
-Notice this definition uses some new syntax: `type Item` and `Self::Item`,
-which are defining an *associated type* with this trait. We’ll talk about
-associated types in depth in Chapter 19. For now, all you need to know is that
-this code says implementing the `Iterator` trait requires that you also define
-an `Item` type, and this `Item` type is used in the return type of the `next`
-method. In other words, the `Item` type will be the type returned from the
-iterator.
+Perhatikan bahwa definisi ini memakai beberapa sintaks baru: `type Item` dan 
+`Self::Item`, yang mendefinisikan sebuah _associated type_ dengan trait ini. 
+Kita bakal membahas _associated types_ lebih mendalam di Bab 20. Buat sekarang, 
+yang perlu kita tahu adalah bahwa kode ini bilang kalau buat mengimplementasikan 
+trait `Iterator`, kita juga harus mendefinisikan tipe `Item`, dan tipe `Item` 
+ini dipakai di tipe kembalian (return type) dari method `next`. Dengan kata 
+lain, tipe `Item` bakal jadi tipe yang dikembalikan dari iterator tersebut.
 
-The `Iterator` trait only requires implementors to define one method: the
-`next` method, which returns one item of the iterator at a time wrapped in
-`Some` and, when iteration is over, returns `None`.
+Trait `Iterator` cuma mewajibkan para peng-implementasi (implementors) buat 
+mendefinisikan satu method saja: yaitu method `next`, yang mengembalikan satu 
+item dari iterator pada satu waktu, dibungkus di dalam `Some`, dan, ketika 
+iterasi selesai, mengembalikan `None`.
 
-We can call the `next` method on iterators directly; Listing 13-12 demonstrates
-what values are returned from repeated calls to `next` on the iterator created
-from the vector.
+Kita bisa memanggil method `next` pada iterators secara langsung; Listing 13-12 
+mendemonstrasikan nilai-nilai apa aja yang dikembalikan dari pemanggilan 
+berulang ke `next` pada iterator yang dibikin dari vector.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="13-12" file-name="src/lib.rs" caption="Memanggil method `next` pada sebuah iterator">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-12/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 13-12: Calling the `next` method on an
-iterator</span>
+</Listing>
 
-Note that we needed to make `v1_iter` mutable: calling the `next` method on an
-iterator changes internal state that the iterator uses to keep track of where
-it is in the sequence. In other words, this code *consumes*, or uses up, the
-iterator. Each call to `next` eats up an item from the iterator. We didn’t need
-to make `v1_iter` mutable when we used a `for` loop because the loop took
-ownership of `v1_iter` and made it mutable behind the scenes.
+Perhatikan bahwa kita harus membikin `v1_iter` jadi _mutable_: memanggil 
+method `next` pada sebuah iterator bakal mengubah _state_ (keadaan) internal 
+yang dipakai sama iterator tersebut untuk melacak (keep track of) ada di mana 
+dia saat ini di urutan tersebut. Dengan kata lain, kode ini mengonsumsi 
+(_consumes_), atau menghabiskan, iterator-nya. Setiap pemanggilan ke `next` 
+bakal "memakan" satu item dari iterator-nya. Kita tidak perlu membikin 
+`v1_iter` jadi _mutable_ saat kita memakai _for loop_ karena _loop_ tersebut 
+mengambil kepemilikan (ownership) dari `v1_iter` dan membikinnya _mutable_ di 
+balik layar.
 
-Also note that the values we get from the calls to `next` are immutable
-references to the values in the vector. The `iter` method produces an iterator
-over immutable references. If we want to create an iterator that takes
-ownership of `v1` and returns owned values, we can call `into_iter` instead of
-`iter`. Similarly, if we want to iterate over mutable references, we can call
-`iter_mut` instead of `iter`.
+Perhatikan juga bahwa nilai yang kita dapat dari pemanggilan `next` adalah 
+referensi _immutable_ ke nilai-nilai yang ada di vector-nya. Method `iter` 
+menghasilkan sebuah iterator yang berisi referensi _immutable_. Kalau kita 
+mau membuat iterator yang mengambil kepemilikan dari `v1` lalu mengembalikan 
+nilai yang _owned_ (dimiliki), kita bisa memanggil `into_iter` alih-alih `iter`. 
+Sama juga halnya, kalau kita mau beriterasi melewati referensi _mutable_, kita 
+bisa memanggil `iter_mut` alih-alih `iter`.
 
-### Methods that Consume the Iterator
+### Method-method yang Mengonsumsi Iterator
 
-The `Iterator` trait has a number of different methods with default
-implementations provided by the standard library; you can find out about these
-methods by looking in the standard library API documentation for the `Iterator`
-trait. Some of these methods call the `next` method in their definition, which
-is why you’re required to implement the `next` method when implementing the
-`Iterator` trait.
+Trait `Iterator` punya sejumlah method berbeda dengan implementasi default 
+yang disediakan oleh _standard library_; kita bisa tahu soal method-method 
+ini dengan melihat dokumentasi API _standard library_ untuk trait `Iterator`. 
+Beberapa dari method ini memanggil method `next` di dalam definisi mereka, 
+dan inilah alasannya kenapa kita diwajibkan buat mengimplementasikan method 
+`next` saat kita mau mengimplementasikan trait `Iterator`.
 
-Methods that call `next` are called *consuming adaptors*, because calling them
-uses up the iterator. One example is the `sum` method, which takes ownership of
-the iterator and iterates through the items by repeatedly calling `next`, thus
-consuming the iterator. As it iterates through, it adds each item to a running
-total and returns the total when iteration is complete. Listing 13-13 has a
-test illustrating a use of the `sum` method:
+Method-method yang memanggil `next` ini disebut _consuming adapters_, karena 
+memanggil mereka bakal menghabiskan iterator-nya. Salah satu contohnya adalah 
+method `sum`, yang mengambil kepemilikan dari iterator lalu beriterasi melewati 
+item-itemnya dengan memanggil `next` secara berulang, yang mana ini bakal 
+mengonsumsi iterator tersebut. Selama ia beriterasi, method ini menambahkan 
+tiap item ke dalam sebuah total berjalan (running total) lalu mengembalikan 
+totalnya saat iterasi selesai. Listing 13-13 punya contoh tes yang 
+mengilustrasikan pemakaian method `sum`.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="13-13" file-name="src/lib.rs" caption="Memanggil method `sum` buat mendapatkan total dari semua item di dalam iterator">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-13/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 13-13: Calling the `sum` method to get the total
-of all items in the iterator</span>
+</Listing>
 
-We aren’t allowed to use `v1_iter` after the call to `sum` because `sum` takes
-ownership of the iterator we call it on.
+Kita tidak diizinkan buat memakai `v1_iter` lagi setelah memanggil `sum` karena 
+`sum` mengambil kepemilikan dari iterator tempat dia dipanggil.
 
-### Methods that Produce Other Iterators
+### Method-method yang Menghasilkan Iterator Lain
 
-*Iterator adaptors* are methods defined on the `Iterator` trait that don’t
-consume the iterator. Instead, they produce different iterators by changing
-some aspect of the original iterator.
+_Iterator adapters_ adalah method-method yang didefinisikan pada trait `Iterator` 
+yang tidak mengonsumsi iterator-nya. Alih-alih mengonsumsi, mereka malah 
+menghasilkan iterator-iterator yang berbeda dengan cara mengubah beberapa aspek 
+dari iterator aslinya.
 
-Listing 13-14 shows an example of calling the iterator adaptor method `map`,
-which takes a closure to call on each item as the items are iterated through.
-The `map` method returns a new iterator that produces the modified items. The
-closure here creates a new iterator in which each item from the vector will be
-incremented by 1:
+Listing 13-14 menunjukkan contoh dari pemanggilan method iterator adapter `map`, 
+yang menerima sebuah _closure_ buat dipanggil pada setiap item saat item-item 
+tersebut dilewati dalam proses iterasi. Method `map` mengembalikan sebuah 
+iterator baru yang menghasilkan item-item yang sudah dimodifikasi tersebut. 
+_Closure_ di sini membuat iterator baru di mana tiap item dari vector bakal 
+ditambahkan 1.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="13-14" file-name="src/main.rs" caption="Memanggil iterator adapter `map` buat membuat iterator baru">
 
 ```rust,not_desired_behavior
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-14/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 13-14: Calling the iterator adaptor `map` to
-create a new iterator</span>
+</Listing>
 
-However, this code produces a warning:
+Namun, kode ini menghasilkan sebuah peringatan (warning):
 
 ```console
 {{#include ../listings/ch13-functional-features/listing-13-14/output.txt}}
 ```
 
-The code in Listing 13-14 doesn’t do anything; the closure we’ve specified
-never gets called. The warning reminds us why: iterator adaptors are lazy, and
-we need to consume the iterator here.
+Kode di Listing 13-14 tidak melakukan apa-apa; _closure_ yang sudah kita 
+tentukan itu tidak akan pernah dipanggil. Peringatannya mengingatkan kita soal 
+alasannya kenapa: _iterator adapters_ itu _lazy_ (malas), dan kita harus 
+mengonsumsi iterator-nya di sini.
 
-To fix this warning and consume the iterator, we’ll use the `collect` method,
-which we used in Chapter 12 with `env::args` in Listing 12-1. This method
-consumes the iterator and collects the resulting values into a collection data
-type.
+Untuk membereskan peringatan ini dan mengonsumsi iterator-nya, kita bakal 
+memakai method `collect`, yang sudah kita pakai bersama `env::args` di Listing 
+12-1. Method ini mengonsumsi iterator-nya lalu mengumpulkan (collects) nilai-
+nilai yang dihasilkan ke dalam sebuah tipe data koleksi.
 
-In Listing 13-15, we collect the results of iterating over the iterator that’s
-returned from the call to `map` into a vector. This vector will end up
-containing each item from the original vector incremented by 1.
+Di Listing 13-15, kita mengumpulkan hasil dari iterasi iterator yang dikembalikan 
+oleh panggilan ke `map` menjadi sebuah vector. Vector ini nantinya bakal berisi 
+setiap item dari vector aslinya, masing-masing ditambah 1.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="13-15" file-name="src/main.rs" caption="Memanggil method `map` buat membuat iterator baru, lalu memanggil method `collect` buat mengonsumsi iterator baru itu dan membuat sebuah vector">
 
 ```rust
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-15/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 13-15: Calling the `map` method to create a new
-iterator and then calling the `collect` method to consume the new iterator and
-create a vector</span>
+</Listing>
 
-Because `map` takes a closure, we can specify any operation we want to perform
-on each item. This is a great example of how closures let you customize some
-behavior while reusing the iteration behavior that the `Iterator` trait
-provides.
+Karena `map` menerima sebuah _closure_, kita bisa menentukan operasi apa pun yang 
+mau kita lakukan pada tiap itemnya. Ini adalah contoh yang bagus tentang gimana 
+_closures_ memungkinkan kita buat mengkustomisasi beberapa perilaku tertentu 
+sambil menggunakan kembali perilaku iterasi yang disediakan sama trait `Iterator`.
 
-You can chain multiple calls to iterator adaptors to perform complex actions in
-a readable way. But because all iterators are lazy, you have to call one of the
-consuming adaptor methods to get results from calls to iterator adaptors.
+Kita bisa menyambung (chain) beberapa panggilan ke berbagai _iterator adapters_ 
+buat melakukan tindakan yang rumit pakai cara yang tetap enak dibaca. Tapi karena 
+semua iterator itu _lazy_, kita harus memanggil salah satu dari method _consuming 
+adapter_ buat mendapatkan hasil dari rentetan panggilan ke _iterator adapters_ 
+tersebut.
 
-### Using Closures that Capture Their Environment
+### Menggunakan Closures yang Menangkap Lingkungannya
 
-Many iterator adapters take closures as arguments, and commonly the closures
-we’ll specify as arguments to iterator adapters will be closures that capture
-their environment.
+Banyak _iterator adapters_ menerima _closures_ sebagai argumen, dan biasanya 
+_closures_ yang bakal kita berikan sebagai argumen ke _iterator adapters_ itu 
+adalah _closures_ yang bakal menangkap lingkungan (environment) mereka.
 
-For this example, we’ll use the `filter` method that takes a closure. The
-closure gets an item from the iterator and returns a `bool`. If the closure
-returns `true`, the value will be included in the iteration produced by
-`filter`. If the closure returns `false`, the value won’t be included.
+Untuk contoh ini, kita bakal memakai method `filter` yang menerima sebuah 
+_closure_. _Closure_ ini mengambil item dari iterator lalu mengembalikan sebuah 
+`bool`. Kalau _closure_-nya mengembalikan `true`, nilainya bakal diikutsertakan 
+dalam iterasi yang dihasilkan oleh `filter`. Kalau _closure_-nya mengembalikan 
+`false`, nilainya tidak bakal diikutsertakan.
 
-In Listing 13-16, we use `filter` with a closure that captures the `shoe_size`
-variable from its environment to iterate over a collection of `Shoe` struct
-instances. It will return only shoes that are the specified size.
+Di Listing 13-16, kita memakai `filter` bersama sebuah _closure_ yang menangkap 
+variabel `shoe_size` dari lingkungannya untuk beriterasi melewati sekumpulan 
+instance struct `Shoe`. Ini cuma bakal mengembalikan sepatu-sepatu yang punya 
+ukuran sama dengan yang ditentukan.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="13-16" file-name="src/lib.rs" caption="Memakai method `filter` bersama sebuah _closure_ yang menangkap `shoe_size`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch13-functional-features/listing-13-16/src/lib.rs}}
 ```
 
-<span class="caption">Listing 13-16: Using the `filter` method with a closure
-that captures `shoe_size`</span>
+</Listing>
 
-The `shoes_in_size` function takes ownership of a vector of shoes and a shoe
-size as parameters. It returns a vector containing only shoes of the specified
-size.
+Fungsi `shoes_in_size` mengambil kepemilikan dari sebuah vector sepatu (shoes) 
+dan ukuran sepatu sebagai parameternya. Ia mengembalikan vector yang hanya 
+berisi sepatu-sepatu dengan ukuran yang ditentukan tersebut.
 
-In the body of `shoes_in_size`, we call `into_iter` to create an iterator
-that takes ownership of the vector. Then we call `filter` to adapt that
-iterator into a new iterator that only contains elements for which the closure
-returns `true`.
+Di dalam body dari `shoes_in_size`, kita memanggil `into_iter` buat membuat 
+sebuah iterator yang mengambil kepemilikan dari vector-nya. Kemudian kita 
+memanggil `filter` buat mengadaptasi iterator itu menjadi iterator baru yang 
+hanya mengandung elemen-elemen yang bikin _closure_-nya mengembalikan `true`.
 
-The closure captures the `shoe_size` parameter from the environment and
-compares the value with each shoe’s size, keeping only shoes of the size
-specified. Finally, calling `collect` gathers the values returned by the
-adapted iterator into a vector that’s returned by the function.
+_Closure_-nya menangkap parameter `shoe_size` dari lingkungan di sekitarnya dan 
+membandingkan nilai itu dengan setiap ukuran dari sepatunya, mempertahankan 
+hanya sepatu-sepatu dengan ukuran yang sesuai. Terakhir, memanggil `collect` 
+bakal mengumpulkan (gathers) nilai-nilai yang dikembalikan oleh iterator yang 
+diadaptasi ini ke dalam sebuah vector yang kemudian dikembalikan oleh fungsi 
+tersebut.
 
-The test shows that when we call `shoes_in_size`, we get back only shoes
-that have the same size as the value we specified.
+Pengujian ini menunjukkan bahwa saat kita memanggil `shoes_in_size`, kita cuma 
+bakal dapat balik sepatu-sepatu yang punya ukuran yang sama dengan nilai yang 
+kita tentukan.

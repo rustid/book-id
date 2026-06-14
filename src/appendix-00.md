@@ -1,4 +1,4 @@
-# Appendix
+# Lampiran
 
-The following sections contain reference material you may find useful in your
-Rust journey.
+Bagian-bagian berikut berisi materi referensi yang mungkin berguna bagi Kita dalam perjalanan
+Rust Kita.

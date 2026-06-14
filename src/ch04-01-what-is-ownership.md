@@ -1,487 +1,521 @@
-## What Is Ownership?
+## Apa itu Ownership?
 
-*Ownership* is a set of rules that govern how a Rust program manages memory.
-All programs have to manage the way they use a computer’s memory while running.
-Some languages have garbage collection that regularly looks for no-longer-used
-memory as the program runs; in other languages, the programmer must explicitly
-allocate and free the memory. Rust uses a third approach: memory is managed
-through a system of ownership with a set of rules that the compiler checks. If
-any of the rules are violated, the program won’t compile. None of the features
-of ownership will slow down your program while it’s running.
+_Ownership_ (Kepemilikan) adalah sekumpulan aturan yang ngatur gimana program 
+Rust ngelola memori. Semua program harus ngatur cara mereka pake memori 
+komputer pas lagi jalan. Beberapa bahasa punya _garbage collection_ (GC) yang 
+secara rutin nyari memori yang udah nggak kepake pas programnya jalan; di bahasa 
+lain, programmer harus secara eksplisit ngalokasiin dan ngebebasin memorinya. 
+Rust pake pendekatan ketiga: memori dikelola lewat sistem _ownership_ dengan 
+sekumpulan aturan yang dicek sama _compiler_. Kalau ada aturan yang dilanggar, 
+programnya nggak bakal ke-compile. Nggak ada satu pun fitur dari _ownership_ 
+yang bakal bikin program kita jadi lemot pas lagi jalan.
 
-Because ownership is a new concept for many programmers, it does take some time
-to get used to. The good news is that the more experienced you become with Rust
-and the rules of the ownership system, the easier you’ll find it to naturally
-develop code that is safe and efficient. Keep at it!
+Karena _ownership_ itu konsep baru buat banyak programmer, emang butuh waktu 
+buat terbiasa. Kabar baiknya, makin kita berpengalaman sama Rust dan aturan 
+sistem _ownership_-nya, kita bakal makin gampang buat nulis kode yang aman dan 
+efisien secara alami. Semangat terus ya!
 
-When you understand ownership, you’ll have a solid foundation for understanding
-the features that make Rust unique. In this chapter, you’ll learn ownership by
-working through some examples that focus on a very common data structure:
-strings.
+Pas kita paham _ownership_, kita bakal punya pondasi yang kuat buat mahamin 
+fitur-fitur yang bikin Rust unik. Di bab ini, kita bakal belajar _ownership_ 
+lewat beberapa contoh yang fokus ke struktur data yang sangat umum: _strings_.
 
-> ### The Stack and the Heap
+> ### Stack dan Heap
 >
-> Many programming languages don’t require you to think about the stack and the
-> heap very often. But in a systems programming language like Rust, whether a
-> value is on the stack or the heap affects how the language behaves and why
-> you have to make certain decisions. Parts of ownership will be described in
-> relation to the stack and the heap later in this chapter, so here is a brief
-> explanation in preparation.
+> Banyak bahasa pemrograman nggak nuntut kita buat sering-sering mikirin soal 
+> _stack_ sama _heap_. Tapi di bahasa pemrograman sistem kayak Rust, apakah 
+> sebuah nilai ada di _stack_ atau _heap_ itu ngaruh ke gimana bahasanya 
+> berperilaku dan kenapa kita harus ngambil keputusan tertentu. Bagian-bagian 
+> dari _ownership_ bakal dijelasin hubungannya sama _stack_ dan _heap_ nanti di 
+> bab ini, jadi ini penjelasan singkat buat persiapan.
 >
-> Both the stack and the heap are parts of memory available to your code to use
-> at runtime, but they are structured in different ways. The stack stores
-> values in the order it gets them and removes the values in the opposite
-> order. This is referred to as *last in, first out*. Think of a stack of
-> plates: when you add more plates, you put them on top of the pile, and when
-> you need a plate, you take one off the top. Adding or removing plates from
-> the middle or bottom wouldn’t work as well! Adding data is called *pushing
-> onto the stack*, and removing data is called *popping off the stack*. All
-> data stored on the stack must have a known, fixed size. Data with an unknown
-> size at compile time or a size that might change must be stored on the heap
-> instead.
+> Baik _stack_ maupun _heap_ adalah bagian dari memori yang tersedia buat dipake 
+> kode kita pas _runtime_, tapi mereka disusun dengan cara yang beda. _Stack_ 
+> nyimpen nilai sesuai urutan yang dia dapet terus ngapus nilainya dengan urutan 
+> kebalikannya. Ini disebut _last in, first out_ (LIFO). Bayangin tumpukan 
+> piring: pas kita nambahin piring lagi, kita taruh di atas tumpukannya, dan pas 
+> kita butuh piring, kita ambil satu dari paling atas. Nambahin atau ngambil 
+> piring dari tengah atau bawah nggak bakal semudah itu! Nambahin data disebut 
+> _pushing onto the stack_, dan ngambil data disebut _popping off the stack_. 
+> Semua data yang disimpan di _stack_ harus punya ukuran yang udah tau dan 
+> tetap. Data dengan ukuran yang nggak tau pas _compile time_ atau ukuran yang 
+> mungkin berubah harus disimpan di _heap_.
 >
-> The heap is less organized: when you put data on the heap, you request a
-> certain amount of space. The memory allocator finds an empty spot in the heap
-> that is big enough, marks it as being in use, and returns a *pointer*, which
-> is the address of that location. This process is called *allocating on the
-> heap* and is sometimes abbreviated as just *allocating* (pushing values onto
-> the stack is not considered allocating). Because the pointer to the heap is a
-> known, fixed size, you can store the pointer on the stack, but when you want
-> the actual data, you must follow the pointer. Think of being seated at a
-> restaurant. When you enter, you state the number of people in your group, and
-> the host finds an empty table that fits everyone and leads you there. If
-> someone in your group comes late, they can ask where you’ve been seated to
-> find you.
+> _Heap_ itu kurang teratur: pas kita naruh data di _heap_, kita minta sejumlah 
+> tempat tertentu. _Memory allocator_ bakal nemuin tempat kosong di _heap_ yang 
+> cukup gede, nandain tempat itu lagi dipake, terus balikin sebuah _pointer_, 
+> yaitu alamat dari lokasi itu. Proses ini disebut _allocating on the heap_ dan 
+> kadang disingkat jadi _allocating_ doang (naruh nilai ke _stack_ nggak 
+> dianggap sebagai _allocating_). Karena _pointer_ ke _heap_ itu ukurannya udah 
+> tau dan tetap, kita bisa nyimpen _pointer_-nya di _stack_, tapi pas kita mau 
+> datanya benar-benar, kita harus ngikutin _pointer_-nya. Bayangin kayak duduk di 
+> restoran. Pas masuk, kita bilang jumlah orang di grup kita, terus pelayannya 
+> nemuin meja kosong yang pas buat semuanya terus nganterin kita ke sana. Kalau 
+> ada temen kita yang telat dateng, mereka bisa nanya kita duduk di mana buat 
+> nemuin kita.
 >
-> Pushing to the stack is faster than allocating on the heap because the
-> allocator never has to search for a place to store new data; that location is
-> always at the top of the stack. Comparatively, allocating space on the heap
-> requires more work because the allocator must first find a big enough space
-> to hold the data and then perform bookkeeping to prepare for the next
-> allocation.
+> _Pushing to the stack_ itu lebih cepet daripada _allocating on the heap_ 
+> karena _allocator_ nggak perlu cari-cari tempat buat nyimpen data baru; 
+> lokasinya selalu di paling atas _stack_. Sebagai perbandingan, ngalokasiin 
+> tempat di _heap_ butuh kerja ekstra karena _allocator_ harus nemuin dulu 
+> tempat yang cukup gede buat nampung datanya terus ngelakuin pembukuan buat 
+> persiapan alokasi selanjutnya.
 >
-> Accessing data in the heap is slower than accessing data on the stack because
-> you have to follow a pointer to get there. Contemporary processors are faster
-> if they jump around less in memory. Continuing the analogy, consider a server
-> at a restaurant taking orders from many tables. It’s most efficient to get
-> all the orders at one table before moving on to the next table. Taking an
-> order from table A, then an order from table B, then one from A again, and
-> then one from B again would be a much slower process. By the same token, a
-> processor can do its job better if it works on data that’s close to other
-> data (as it is on the stack) rather than farther away (as it can be on the
-> heap).
+> Akses data di _heap_ umumnya lebih lambat daripada akses data di _stack_ 
+> karena kita harus ngikutin _pointer_ buat nyampe ke sana. Prosesor zaman 
+> sekarang bakal lebih cepet kalau mereka nggak terlalu banyak lompat-lompat di 
+> memori. Lanjutin analoginya, bayangin seorang pelayan di restoran yang ngambil 
+> orderan dari banyak meja. Bakal paling efisien kalau dia ngambil semua 
+> orderan di satu meja sebelum lanjut ke meja berikutnya. Ngambil orderan dari 
+> meja A, terus meja B, terus meja A lagi, terus meja B lagi bakal jadi proses 
+> yang jauh lebih lambat. Dengan cara yang sama, prosesor biasanya bisa 
+> ngerjain tugasnya lebih baik kalau dia kerja sama data yang deket sama data 
+> lainnya (kayak di _stack_) bukannya yang jauh (kayak yang mungkin terjadi di 
+> _heap_).
 >
-> When your code calls a function, the values passed into the function
-> (including, potentially, pointers to data on the heap) and the function’s
-> local variables get pushed onto the stack. When the function is over, those
-> values get popped off the stack.
+> Pas kode kita manggil sebuah fungsi, nilai-nilai yang dimasukin ke fungsinya 
+> (termasuk, mungkin, _pointer_ ke data di _heap_) sama variabel lokal fungsinya 
+> bakal di-_push_ ke _stack_. Pas fungsinya kelar, nilai-nilai itu bakal di-_pop_ 
+> keluar dari _stack_.
 >
-> Keeping track of what parts of code are using what data on the heap,
-> minimizing the amount of duplicate data on the heap, and cleaning up unused
-> data on the heap so you don’t run out of space are all problems that ownership
-> addresses. Once you understand ownership, you won’t need to think about the
-> stack and the heap very often, but knowing that the main purpose of ownership
-> is to manage heap data can help explain why it works the way it does.
+> Mantau bagian kode mana yang lagi pake data apa di _heap_, minimalisir jumlah 
+> data duplikat di _heap_, dan ngebersihin data yang udah nggak kepake di _heap_ 
+> biar nggak keabisan tempat adalah masalah-masalah yang diselesein sama 
+> _ownership_. Sekali kita paham _ownership_, kita nggak bakal butuh sering-
+> sering mikirin soal _stack_ sama _heap_, tapi tau kalau tujuan utama 
+> _ownership_ adalah buat ngelola data _heap_ bisa bantu jelasin kenapa dia 
+> cara kerjanya kayak gitu.
 
-### Ownership Rules
+### Aturan Ownership
 
-First, let’s take a look at the ownership rules. Keep these rules in mind as we
-work through the examples that illustrate them:
+Pertama, yuk kita liat aturan-aturan _ownership_. Inget terus aturan ini pas 
+kita ngerjain contoh-contoh yang bakal ngejelasin aturan ini:
 
-* Each value in Rust has an *owner*.
-* There can only be one owner at a time.
-* When the owner goes out of scope, the value will be dropped.
+- Tiap nilai di Rust punya seorang _owner_ (pemilik).
+- Cuma boleh ada satu _owner_ dalam satu waktu.
+- Pas _owner_-nya keluar dari scope, nilainya bakal di-_drop_ (dihapus).
 
-### Variable Scope
+### Scope Variabel
 
-Now that we’re past basic Rust syntax, we won’t include all the `fn main() {`
-code in examples, so if you’re following along, make sure to put the following
-examples inside a `main` function manually. As a result, our examples will be a
-bit more concise, letting us focus on the actual details rather than
-boilerplate code.
+Sekarang setelah kita ngelewatin sintaks dasar Rust, kita nggak bakal masukin 
+semua kode `fn main() {` di contoh-contohnya, jadi kalau kita lagi ngikutin, 
+pastiin buat masukin contoh-contoh berikut ke dalem fungsi `main` secara manual. 
+Hasilnya, contoh-contoh kita bakal lebih singkat, biar kita bisa fokus ke 
+detail aslinya bukannya kode _boilerplate_.
 
-As a first example of ownership, we’ll look at the *scope* of some variables. A
-scope is the range within a program for which an item is valid. Take the
-following variable:
+Sebagai contoh pertama dari _ownership_, kita bakal liat _scope_ dari beberapa 
+variabel. Sebuah scope adalah range di dalem program di mana sebuah item itu 
+valid. Coba liat variabel ini:
 
 ```rust
 let s = "hello";
 ```
 
-The variable `s` refers to a string literal, where the value of the string is
-hardcoded into the text of our program. The variable is valid from the point at
-which it’s declared until the end of the current *scope*. Listing 4-1 shows a
-program with comments annotating where the variable `s` would be valid.
+Variabel `s` ngerujuk ke sebuah literal string, di mana nilai string-nya di-_hardcoded_ 
+ke teks program kita. Variabelnya valid dari titik di mana dia dideklarasikan 
+sampe akhir dari _scope_ saat ini. Listing 4-1 nunjukin program dengan komentar 
+yang dianotasi di mana variabel `s` bakal valid.
+
+<Listing number="4-1" caption="Sebuah variabel dan scope di mana dia valid">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-01/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 4-1: A variable and the scope in which it is
-valid</span>
+</Listing>
 
-In other words, there are two important points in time here:
+Dengan kata lain, ada dua titik waktu penting di sini:
 
-* When `s` comes *into* scope, it is valid.
-* It remains valid until it goes *out of* scope.
+- Pas `s` masuk _ke dalam_ scope, dia jadi valid.
+- Dia tetep valid sampe dia keluar _dari_ scope.
 
-At this point, the relationship between scopes and when variables are valid is
-similar to that in other programming languages. Now we’ll build on top of this
-understanding by introducing the `String` type.
+Sampai titik ini, hubungan antara scope sama kapan variabel itu valid mirip 
+sama bahasa pemrograman lainnya. Sekarang kita bakal kembangin pemahaman ini 
+dengan ngenalin tipe `String`.
 
-### The `String` Type
+### Tipe `String`
 
-To illustrate the rules of ownership, we need a data type that is more complex
-than those we covered in the [“Data Types”][data-types]<!-- ignore --> section
-of Chapter 3. The types covered previously are of a known size, can be stored
-on the stack and popped off the stack when their scope is over, and can be
-quickly and trivially copied to make a new, independent instance if another
-part of code needs to use the same value in a different scope. But we want to
-look at data that is stored on the heap and explore how Rust knows when to
-clean up that data, and the `String` type is a great example.
+Buat gambarin aturan _ownership_, kita butuh tipe data yang lebih kompleks dari 
+yang udah kita bahas di bagian [“Tipe Data”][data-types] di Bab 3. Tipe-tipe 
+yang udah dibahas sebelumnya ukurannya udah tau, bisa disimpan di _stack_ dan 
+di-_pop_ keluar dari _stack_ pas scope-nya abis, dan bisa di-copy secara cepet 
+dan gampang buat bikin instance baru yang independen kalau bagian kode lain 
+perlu pake nilai yang sama di scope yang beda. Tapi kita mau liat data yang 
+disimpan di _heap_ dan eksplor gimana Rust tau kapan harus ngebersihin data itu, 
+dan tipe `String` adalah contoh yang oke sekali.
 
-We’ll concentrate on the parts of `String` that relate to ownership. These
-aspects also apply to other complex data types, whether they are provided by
-the standard library or created by you. We’ll discuss `String` in more depth in
-[Chapter 8][ch8]<!-- ignore -->.
+Kita bakal fokus ke bagian-bagian `String` yang terkait sama _ownership_. 
+Aspek-aspek ini juga berlaku buat tipe data kompleks lainnya, baik yang 
+disediain standard library maupun yang kita bikin sendiri. Kita bakal bahas 
+`String` lebih dalem di [Bab 8][ch8].
 
-We’ve already seen string literals, where a string value is hardcoded into our
-program. String literals are convenient, but they aren’t suitable for every
-situation in which we may want to use text. One reason is that they’re
-immutable. Another is that not every string value can be known when we write
-our code: for example, what if we want to take user input and store it? For
-these situations, Rust has a second string type, `String`. This type manages
-data allocated on the heap and as such is able to store an amount of text that
-is unknown to us at compile time. You can create a `String` from a string
-literal using the `from` function, like so:
+Kita udah liat literal string, di mana nilai string-nya di-_hardcoded_ ke program 
+kita. Literal string emang nyaman, tapi mereka nggak cocok buat semua situasi 
+di mana kita mungkin mau pake teks. Salah satu alasannya karena mereka itu 
+_immutable_. Alasan lainnya karena nggak semua nilai string bisa diketahuin pas 
+kita nulis kode: misalnya, gimana kalau kita mau ngambil input user terus nyimpannya? 
+Buat situasi kayak gini, Rust punya tipe string kedua, yaitu `String`. Tipe ini 
+ngelola data yang dialokasikan di _heap_ dan makanya dia bisa nyimpen sejumlah 
+teks yang ukurannya nggak kita ketahuin pas _compile time_. Kita bisa bikin 
+sebuah `String` dari literal string pake fungsi `from`, kayak gini:
 
 ```rust
 let s = String::from("hello");
 ```
 
-The double colon `::` operator allows us to namespace this particular `from`
-function under the `String` type rather than using some sort of name like
-`string_from`. We’ll discuss this syntax more in the [“Method
-Syntax”][method-syntax]<!-- ignore --> section of Chapter 5, and when we talk
-about namespacing with modules in [“Paths for Referring to an Item in the
-Module Tree”][paths-module-tree]<!-- ignore --> in Chapter 7.
+Operator titik dua ganda `::` ngebolehin kita buat ngelempokin fungsi `from` 
+ini di bawah tipe `String` bukannya pake nama kayak `string_from`. Kita bakal 
+bahas sintaks ini lebih lanjut di bagian [“Sintaks Method”][method-syntax] di 
+Bab 5, dan pas kita bahas soal _namespacing_ pake modul di [“Path buat Ngerujuk Item di Pohon Modul”][paths-module-tree] 
+di Bab 7.
 
-This kind of string *can* be mutated:
+Jenis string ini _bisa_ diubah (mutated):
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-01-can-mutate-string/src/main.rs:here}}
 ```
 
-So, what’s the difference here? Why can `String` be mutated but literals
-cannot? The difference is in how these two types deal with memory.
+Jadi, apa bedanya di sini? Kenapa `String` bisa diubah tapi literal nggak bisa? 
+Bedanya ada di gimana kedua tipe ini nanganin memori.
 
-### Memory and Allocation
+### Memori dan Alokasi
 
-In the case of a string literal, we know the contents at compile time, so the
-text is hardcoded directly into the final executable. This is why string
-literals are fast and efficient. But these properties only come from the string
-literal’s immutability. Unfortunately, we can’t put a blob of memory into the
-binary for each piece of text whose size is unknown at compile time and whose
-size might change while running the program.
+Di kasus literal string, kita tau isinya pas _compile time_, jadi teksnya di-_hardcoded_ 
+langsung ke file executable final-nya. Ini kenapa literal string itu cepet dan 
+efisien. Tapi sifat-sifat ini cuma dateng dari sifat _immutability_ literal 
+string-nya. Sayangnya, kita nggak bisa naruh sepotong memori ke dalem biner 
+buat tiap teks yang ukurannya nggak tau pas _compile time_ dan ukurannya mungkin 
+berubah pas lagi jalanin programnya.
 
-With the `String` type, in order to support a mutable, growable piece of text,
-we need to allocate an amount of memory on the heap, unknown at compile time,
-to hold the contents. This means:
+Dengan tipe `String`, buat support sepotong teks yang _mutable_ dan bisa nambah 
+ukurannya, kita perlu ngalokasiin sejumlah memori di _heap_, yang nggak tau pas 
+_compile time_, buat nampung isinya. Ini artinya:
 
-* The memory must be requested from the memory allocator at runtime.
-* We need a way of returning this memory to the allocator when we’re done with
-  our `String`.
+- Memorinya harus diminta dari _memory allocator_ pas _runtime_.
+- Kita butuh cara buat balikin memori ini ke _allocator_ pas kita udah selese 
+  pake `String` kita.
 
-That first part is done by us: when we call `String::from`, its implementation
-requests the memory it needs. This is pretty much universal in programming
-languages.
+Bagian pertama itu kita yang ngerjain: pas kita manggil `String::from`, 
+implementasinya minta memori yang dia butuhin. Ini hal yang cukup universal di 
+bahasa pemrograman.
 
-However, the second part is different. In languages with a *garbage collector
-(GC)*, the GC keeps track of and cleans up memory that isn’t being used
-anymore, and we don’t need to think about it. In most languages without a GC,
-it’s our responsibility to identify when memory is no longer being used and to
-call code to explicitly free it, just as we did to request it. Doing this
-correctly has historically been a difficult programming problem. If we forget,
-we’ll waste memory. If we do it too early, we’ll have an invalid variable. If
-we do it twice, that’s a bug too. We need to pair exactly one `allocate` with
-exactly one `free`.
+Tapi, bagian kedua itu beda. Di bahasa yang punya _garbage collector (GC)_, GC 
+bakal terus mantau dan ngebersihin memori yang udah nggak dipake lagi, dan kita 
+nggak perlu mikirin itu. Di kebanyakan bahasa tanpa GC, itu tanggung jawab kita 
+buat ngenalin kapan memori udah nggak dipake lagi terus manggil kode buat secara 
+eksplisit ngebebasinnya, sama kayak pas kita memintanya. Ngelakuin ini dengan 
+bener secara historis udah jadi masalah pemrograman yang susah. Kalau kita lupa, 
+kita bakal buang-buang memori. Kalau kita lakuin terlalu cepet, kita bakal punya 
+variabel yang nggak valid. Kalau kita lakuin dua kali, itu juga sebuah _bug_. 
+Kita perlu masangin tepat satu `allocate` sama tepat satu `free`.
 
-Rust takes a different path: the memory is automatically returned once the
-variable that owns it goes out of scope. Here’s a version of our scope example
-from Listing 4-1 using a `String` instead of a string literal:
+Rust ngambil jalur yang beda: memorinya otomatis dibalikin begitu variabel yang 
+punya (_owns_) memori itu keluar dari scope. Ini versi contoh scope kita dari 
+Listing 4-1 pake `String` bukannya literal string:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-02-string-scope/src/main.rs:here}}
 ```
 
-There is a natural point at which we can return the memory our `String` needs
-to the allocator: when `s` goes out of scope. When a variable goes out of
-scope, Rust calls a special function for us. This function is called
-[`drop`][drop]<!-- ignore -->, and it’s where the author of `String` can put
-the code to return the memory. Rust calls `drop` automatically at the closing
-curly bracket.
+Ada titik waktu alami di mana kita bisa balikin memori yang dibutuhin `String` 
+kita ke _allocator_: pas `s` keluar dari scope. Pas sebuah variabel keluar dari 
+scope, Rust manggil fungsi khusus buat kita. Fungsi ini namanya [`drop`][drop], 
+dan di situlah pembuat `String` bisa naruh kode buat balikin memorinya. Rust 
+manggil `drop` secara otomatis di kurung kurawal tutup.
 
-> Note: In C++, this pattern of deallocating resources at the end of an item’s
-> lifetime is sometimes called *Resource Acquisition Is Initialization (RAII)*.
-> The `drop` function in Rust will be familiar to you if you’ve used RAII
-> patterns.
+> Catatan: Di C++, pola nge-dealokasi resource di akhir masa hidup sebuah item 
+> ini kadang disebut _Resource Acquisition Is Initialization (RAII)_. Fungsi 
+> `drop` di Rust bakal terasa familiar kalau kita pernah pake pola-pola RAII.
 
-This pattern has a profound impact on the way Rust code is written. It may seem
-simple right now, but the behavior of code can be unexpected in more
-complicated situations when we want to have multiple variables use the data
-we’ve allocated on the heap. Let’s explore some of those situations now.
+Pola ini punya pengaruh yang sangat dalem ke gimana kode Rust ditulis. Mungkin 
+keliatan simpel sekarang, tapi perilaku kodenya bisa jadi nggak terduga di 
+situasi yang lebih ribet pas kita mau punya banyak variabel pake data yang 
+udah kita alokasiin di _heap_. Yuk kita eksplor beberapa situasi itu sekarang.
 
 <!-- Old heading. Do not remove or links may break. -->
+
 <a id="ways-variables-and-data-interact-move"></a>
 
-#### Variables and Data Interacting with Move
+#### Interaksi Variabel dan Data dengan Move
 
-Multiple variables can interact with the same data in different ways in Rust.
-Let’s look at an example using an integer in Listing 4-2.
+Beberapa variabel bisa berinteraksi sama data yang sama dengan berbagai cara di 
+Rust. Yuk kita liat contoh pake integer di Listing 4-2.
+
+<Listing number="4-2" caption="Assign nilai integer variabel `x` ke `y`">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-02/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 4-2: Assigning the integer value of variable `x`
-to `y`</span>
+</Listing>
 
-We can probably guess what this is doing: “bind the value `5` to `x`; then make
-a copy of the value in `x` and bind it to `y`.” We now have two variables, `x`
-and `y`, and both equal `5`. This is indeed what is happening, because integers
-are simple values with a known, fixed size, and these two `5` values are pushed
-onto the stack.
+Kita mungkin bisa nebak apa yang dilakuin kode ini: “bind nilai `5` ke `x`; terus 
+bikin copy dari nilai di `x` terus bind ke `y`.” Kita sekarang punya dua 
+variabel, `x` sama `y`, dan keduanya sama dengan `5`. Ini emang bener yang 
+terjadi, karena integer adalah nilai simpel dengan ukuran yang udah tau dan 
+tetap, dan dua nilai `5` ini di-_push_ ke _stack_.
 
-Now let’s look at the `String` version:
+Sekarang yuk liat versi `String`-nya:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-03-string-move/src/main.rs:here}}
 ```
 
-This looks very similar, so we might assume that the way it works would be the
-same: that is, the second line would make a copy of the value in `s1` and bind
-it to `s2`. But this isn’t quite what happens.
+Ini keliatannya mirip sekali, jadi kita mungkin asumsikan kalau cara kerjanya 
+bakal sama: yaitu, baris kedua bakal bikin copy dari nilai di `s1` terus bind 
+ke `s2`. Tapi nggak gitu yang sebenernya terjadi.
 
-Take a look at Figure 4-1 to see what is happening to `String` under the
-covers. A `String` is made up of three parts, shown on the left: a pointer to
-the memory that holds the contents of the string, a length, and a capacity.
-This group of data is stored on the stack. On the right is the memory on the
-heap that holds the contents.
+Coba liat Gambar 4-1 buat liat apa yang terjadi di `String` di balik layar. 
+Sebuah `String` disusun dari tiga bagian, yang ditunjukin di sebelah kiri: 
+sebuah _pointer_ ke memori yang nampung isi string-nya, sebuah _length_ (panjang), 
+dan sebuah _capacity_ (kapasitas). Grup data ini disimpan di _stack_. Di sebelah 
+kanan adalah memori di _heap_ yang nampung isinya.
 
-<img alt="Two tables: the first table contains the representation of s1 on the
-stack, consisting of its length (5), capacity (5), and a pointer to the first
-value in the second table. The second table contains the representation of the
-string data on the heap, byte by byte." src="img/trpl04-01.svg" class="center"
-style="width: 50%;" />
+<img alt="Dua tabel: tabel pertama isinya representasi s1 di stack, terdiri 
+dari length (5), capacity (5), dan sebuah pointer ke nilai pertama di tabel 
+kedua. Tabel kedua isinya representasi data string di heap, byte demi byte." 
+src="img/trpl04-01.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-1: Representation in memory of a `String`
-holding the value `"hello"` bound to `s1`</span>
+<span class="caption">Gambar 4-1: Representasi di memori dari sebuah `String` 
+yang nampung nilai `"hello"` yang di-bind ke `s1`</span>
 
-The length is how much memory, in bytes, the contents of the `String` are
-currently using. The capacity is the total amount of memory, in bytes, that the
-`String` has received from the allocator. The difference between length and
-capacity matters, but not in this context, so for now, it’s fine to ignore the
-capacity.
+_Length_ itu seberapa banyak memori, dalam byte, yang lagi dipake isinya 
+`String` saat ini. _Capacity_ itu total jumlah memori, dalam byte, yang diterima 
+`String` dari _allocator_. Perbedaan antara _length_ sama _capacity_ itu penting, 
+tapi nggak di konteks ini, jadi buat sekarang, cuekin aja _capacity_-nya.
 
-When we assign `s1` to `s2`, the `String` data is copied, meaning we copy the
-pointer, the length, and the capacity that are on the stack. We do not copy the
-data on the heap that the pointer refers to. In other words, the data
-representation in memory looks like Figure 4-2.
+Pas kita nge-assign `s1` ke `s2`, data `String`-nya di-copy, artinya kita copy 
+_pointer_, _length_, dan _capacity_ yang ada di _stack_. Kita nggak copy data 
+yang ada di _heap_ yang dirujuk sama _pointer_-nya. Dengan kata lain, 
+representasi data di memori keliatannya kayak Gambar 4-2.
 
-<img alt="Three tables: tables s1 and s2 representing those strings on the
-stack, respectively, and both pointing to the same string data on the heap."
+<img alt="Tiga tabel: tabel s1 dan s2 merepresentasikan string itu di stack, 
+masing-masing, dan keduanya nunjuk ke data string yang sama di heap." 
 src="img/trpl04-02.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-2: Representation in memory of the variable `s2`
-that has a copy of the pointer, length, and capacity of `s1`</span>
+<span class="caption">Gambar 4-2: Representasi di memori dari variabel `s2` 
+yang punya copy dari pointer, length, dan capacity dari `s1`</span>
 
-The representation does *not* look like Figure 4-3, which is what memory would
-look like if Rust instead copied the heap data as well. If Rust did this, the
-operation `s2 = s1` could be very expensive in terms of runtime performance if
-the data on the heap were large.
+Representasinya _nggak_ keliatan kayak Gambar 4-3, yang merupakan penampakan 
+memori kalau misalnya Rust malah ikut copy data _heap_-nya juga. Kalau Rust 
+lakuin ini, operasi `s2 = s1` bisa jadi sangat mahal dalam hal performa 
+Pas _runtime_ kalau datanya di _heap_ itu sangat besar.
 
-<img alt="Four tables: two tables representing the stack data for s1 and s2,
-and each points to its own copy of string data on the heap."
+<img alt="Empat tabel: dua tabel merepresentasikan data stack buat s1 dan s2, 
+dan masing-masing nunjuk ke copy data string-nya sendiri di heap." 
 src="img/trpl04-03.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-3: Another possibility for what `s2 = s1` might
-do if Rust copied the heap data as well</span>
+<span class="caption">Gambar 4-3: Kemungkinan lain soal apa yang mungkin 
+dilakuin `s2 = s1` kalau Rust ikut copy data heap-nya juga</span>
 
-Earlier, we said that when a variable goes out of scope, Rust automatically
-calls the `drop` function and cleans up the heap memory for that variable. But
-Figure 4-2 shows both data pointers pointing to the same location. This is a
-problem: when `s2` and `s1` go out of scope, they will both try to free the
-same memory. This is known as a *double free* error and is one of the memory
-safety bugs we mentioned previously. Freeing memory twice can lead to memory
-corruption, which can potentially lead to security vulnerabilities.
+Tadi kita bilang kalau pas sebuah variabel keluar dari scope, Rust otomatis 
+manggil fungsi `drop` dan ngebersihin memori _heap_ buat variabel itu. Tapi 
+Gambar 4-2 nunjukin kedua _pointer_ data nunjuk ke lokasi yang sama. Ini masalah: 
+pas `s2` sama `s1` keluar dari scope, mereka berdua bakal nyoba buat ngebebasin 
+memori yang sama. Ini dikenal sebagai _double free_ error dan merupakan salah 
+satu _bug memory safety_ yang kita sebutin sebelumnya. Ngebebasin memori dua 
+kali bisa bikin kerusakan memori (memory corruption), yang berpotensi memicu 
+kerentanan keamanan.
 
-To ensure memory safety, after the line `let s2 = s1;`, Rust considers `s1` as
-no longer valid. Therefore, Rust doesn’t need to free anything when `s1` goes
-out of scope. Check out what happens when you try to use `s1` after `s2` is
-created; it won’t work:
+Buat mastiin keamanan memori, setelah baris `let s2 = s1;`, Rust nganggep `s1` 
+udah nggak valid lagi. Makanya, Rust nggak perlu ngebebasin apa pun pas `s1` 
+keluar dari scope. Coba liat apa yang terjadi pas kita nyoba pake `s1` setelah 
+`s2` dibuat; nggak bakal bisa:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/src/main.rs:here}}
 ```
 
-You’ll get an error like this because Rust prevents you from using the
-invalidated reference:
+Kita bakal dapet error kayak gini karena Rust ngelarang kita pake referensi yang 
+udah nggak valid:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-04-cant-use-after-move/output.txt}}
 ```
 
-If you’ve heard the terms *shallow copy* and *deep copy* while working with
-other languages, the concept of copying the pointer, length, and capacity
-without copying the data probably sounds like making a shallow copy. But
-because Rust also invalidates the first variable, instead of being called a
-shallow copy, it’s known as a *move*. In this example, we would say that `s1`
-was *moved* into `s2`. So, what actually happens is shown in Figure 4-4.
+Kalau kita pernah denger istilah _shallow copy_ (copy dangkal) sama _deep copy_ 
+(copy dalem) pas lagi belajar bahasa lain, konsep nyalin _pointer_, _length_, 
+dan _capacity_ tanpa nyalin datanya mungkin kedengeran kayak lagi bikin _shallow 
+copy_. Tapi karena Rust juga ngebatalin variabel pertamanya, bukannya disebut 
+_shallow copy_, ini dikenal sebagai _move_ (pindah). Di contoh ini, kita bakal 
+bilang kalau `s1` udah di-_move_ ke dalem `s2`. Jadi, apa yang benar-benar terjadi 
+ditunjukin di Gambar 4-4.
 
-<img alt="Three tables: tables s1 and s2 representing those strings on the
-stack, respectively, and both pointing to the same string data on the heap.
-Table s1 is grayed out be-cause s1 is no longer valid; only s2 can be used to
-access the heap data." src="img/trpl04-04.svg" class="center" style="width:
-50%;" />
+<img alt="Tiga tabel: tabel s1 dan s2 merepresentasikan string itu di stack, 
+masing-masing, dan keduanya nunjuk ke data string yang sama di heap. Tabel s1 
+di-grayed out karena s1 udah nggak valid; cuma s2 yang bisa dipake buat akses 
+data heap-nya." src="img/trpl04-04.svg" class="center" style="width: 50%;" />
 
-<span class="caption">Figure 4-4: Representation in memory after `s1` has been
-invalidated</span>
+<span class="caption">Gambar 4-4: Representasi di memori setelah `s1` udah 
+dibatalkan</span>
 
-That solves our problem! With only `s2` valid, when it goes out of scope it
-alone will free the memory, and we’re done.
+Itu nyelesein masalah kita! Dengan cuma `s2` yang valid, pas dia keluar dari 
+scope cuma dia sendiri yang bakal ngebebasin memorinya, dan beres deh.
 
-In addition, there’s a design choice that’s implied by this: Rust will never
-automatically create “deep” copies of your data. Therefore, any *automatic*
-copying can be assumed to be inexpensive in terms of runtime performance.
+Sebagai tambahan, ada pilihan desain yang tersirat dari sini: Rust nggak bakal 
+pernah otomatis bikin "deep" copy dari data kita. Makanya, penyalinan _otomatis_ 
+apa pun bisa diasumsikan nggak mahal dalam hal performa pas _runtime_.
+
+#### Scope dan Assignment
+
+Kebalikan dari ini juga bener buat hubungan antara _scoping_, _ownership_, dan 
+memori yang dibebasin lewat fungsi `drop` juga. Pas kita ngasih nilai yang 
+bener-bener baru ke variabel yang udah ada, Rust bakal manggil `drop` dan 
+ngebebasin memori nilai aslinya langsung. Coba liat kode ini, contohnya:
+
+```rust
+{{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-04b-replacement-drop/src/main.rs:here}}
+```
+
+Kita awalnya mendeklarasikan variabel `s` terus di-bind ke sebuah `String` 
+dengan nilai `"hello"`. Terus kita langsung bikin `String` baru dengan nilai 
+`"ahoy"` terus di-assign ke `s`. Di titik ini, nggak ada apa pun yang ngerujuk 
+ke nilai asli di _heap_ sama sekali.
+
+<img alt="Satu tabel s merepresentasikan nilai string di stack, nunjuk ke 
+potongan data string kedua (ahoy) di heap, dengan data string asli (hello) 
+di-grayed out karena udah nggak bisa diakses lagi." 
+src="img/trpl04-05.svg" 
+class="center" 
+style="width: 50%;" 
+/>
+
+<span class="caption">Gambar 4-5: Representasi di memori setelah nilai awal 
+udah diganti seluruhnya.</span>
+
+String aslinya makanya langsung keluar dari scope. Rust bakal jalanin fungsi 
+`drop` padanya dan memorinya bakal langsung dibebasin. Pas kita nyetak nilainya 
+di akhir, hasilnya bakal `"ahoy, world!"`.
 
 <!-- Old heading. Do not remove or links may break. -->
+
 <a id="ways-variables-and-data-interact-clone"></a>
 
-#### Variables and Data Interacting with Clone
+#### Interaksi Variabel dan Data dengan Clone
 
-If we *do* want to deeply copy the heap data of the `String`, not just the
-stack data, we can use a common method called `clone`. We’ll discuss method
-syntax in Chapter 5, but because methods are a common feature in many
-programming languages, you’ve probably seen them before.
+Kalau kita _emang_ mau copy data _heap_ dari `String` secara dalem (deeply copy), 
+nggak cuma data _stack_-nya aja, kita bisa pake method umum namanya `clone`. 
+Kita bakal bahas sintaks method di Bab 5, tapi karena method adalah fitur umum 
+di banyak bahasa pemrograman, kita mungkin udah pernah liat sebelumnya.
 
-Here’s an example of the `clone` method in action:
+Ini contoh method `clone` beraksi:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-05-clone/src/main.rs:here}}
 ```
 
-This works just fine and explicitly produces the behavior shown in Figure 4-3,
-where the heap data *does* get copied.
+Ini jalan dengan lancar dan secara eksplisit ngasilin perilaku yang ditunjukin 
+di Gambar 4-3, di mana data _heap_-nya _emang_ ikut di-copy.
 
-When you see a call to `clone`, you know that some arbitrary code is being
-executed and that code may be expensive. It’s a visual indicator that something
-different is going on.
+Pas kita liat pemanggilan ke `clone`, kita tau kalau ada sejumlah kode sembarang 
+yang lagi dijalankan dan kode itu mungkin mahal harganya. Ini adalah indikator 
+visual kalau ada sesuatu yang beda yang lagi terjadi.
 
-#### Stack-Only Data: Copy
+#### Data Khusus Stack: Copy
 
-There’s another wrinkle we haven’t talked about yet. This code using
-integers—part of which was shown in Listing 4-2—works and is valid:
+Ada hal unik lain yang belum kita bahas. Kode yang pake integer ini—yang 
+sebagiannya ditunjukin di Listing 4-2—jalan dan valid:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-06-copy/src/main.rs:here}}
 ```
 
-But this code seems to contradict what we just learned: we don’t have a call to
-`clone`, but `x` is still valid and wasn’t moved into `y`.
+Tapi kode ini kayaknya bertentangan sama apa yang baru aja kita pelajari: kita 
+nggak manggil `clone`, tapi `x` tetep valid dan nggak di-_move_ ke dalem `y`.
 
-The reason is that types such as integers that have a known size at compile
-time are stored entirely on the stack, so copies of the actual values are quick
-to make. That means there’s no reason we would want to prevent `x` from being
-valid after we create the variable `y`. In other words, there’s no difference
-between deep and shallow copying here, so calling `clone` wouldn’t do anything
-different from the usual shallow copying, and we can leave it out.
+Alasannya karena tipe-tipe kayak integer yang ukurannya udah tau pas _compile 
+time_ disimpan seluruhnya di _stack_, jadi nyalin nilai aslinya itu cepet buat 
+dilakuin. Itu artinya nggak ada alasan kenapa kita mau ngelarang `x` buat tetep 
+valid setelah kita bikin variabel `y`. Dengan kata lain, nggak ada bedanya 
+antara _deep copy_ sama _shallow copy_ di sini, jadi manggil `clone` nggak bakal 
+ngelakuin hal yang beda dari _shallow copy_ biasa, makanya kita bisa 
+ngelewatinnya.
 
-Rust has a special annotation called the `Copy` trait that we can place on
-types that are stored on the stack, as integers are (we’ll talk more about
-traits in [Chapter 10][traits]<!-- ignore -->). If a type implements the `Copy`
-trait, variables that use it do not move, but rather are trivially copied,
-making them still valid after assignment to another variable.
+Rust punya anotasi khusus namanya trait `Copy` yang bisa kita taruh di tipe-tipe 
+yang disimpan di _stack_, kayak integer (kita bakal bahas traits lebih banyak 
+di [Bab 10][traits]). Kalau sebuah tipe mengimplementasikan trait `Copy`, 
+variabel yang pakenya nggak bakal di-_move_, tapi lebih ke disalin secara 
+sepele, bikin mereka tetep valid setelah di-assign ke variabel lain.
 
-Rust won’t let us annotate a type with `Copy` if the type, or any of its parts,
-has implemented the `Drop` trait. If the type needs something special to happen
-when the value goes out of scope and we add the `Copy` annotation to that type,
-we’ll get a compile-time error. To learn about how to add the `Copy` annotation
-to your type to implement the trait, see [“Derivable
-Traits”][derivable-traits]<!-- ignore --> in Appendix C.
+Rust nggak bakal ngebolehin kita ngasih anotasi `Copy` ke sebuah tipe kalau 
+tipe itu, atau bagian apa pun darinya, udah mengimplementasikan trait `Drop`. 
+Kalau tipenya butuh sesuatu yang khusus terjadi pas nilainya keluar dari scope 
+terus kita nambahin anotasi `Copy` ke tipe itu, kita bakal dapet _compile-time 
+error_. Buat belajar gimana cara nambahin anotasi `Copy` ke tipe kita buat 
+mengimplementasikan trait-nya, liat [“Derivable Traits”][derivable-traits] di 
+Lampiran C.
 
-So, what types implement the `Copy` trait? You can check the documentation for
-the given type to be sure, but as a general rule, any group of simple scalar
-values can implement `Copy`, and nothing that requires allocation or is some
-form of resource can implement `Copy`. Here are some of the types that
-implement `Copy`:
+Jadi, tipe apa aja yang mengimplementasikan trait `Copy`? Kita bisa cek 
+dokumentasi buat tipe tertentu buat mastiin, tapi sebagai aturan umum, 
+kumpulan nilai scalar simpel apa pun bisa mengimplementasikan `Copy`, dan nggak 
+ada satu pun yang butuh alokasi atau bentuk resource apa pun yang bisa 
+mengimplementasikan `Copy`. Ini beberapa tipe yang mengimplementasikan `Copy`:
 
-* All the integer types, such as `u32`.
-* The Boolean type, `bool`, with values `true` and `false`.
-* All the floating-point types, such as `f64`.
-* The character type, `char`.
-* Tuples, if they only contain types that also implement `Copy`. For example,
-  `(i32, i32)` implements `Copy`, but `(i32, String)` does not.
+- Semua tipe integer, kayak `u32`.
+- Tipe Boolean, `bool`, dengan nilai `true` sama `false`.
+- Semua tipe _floating-point_, kayak `f64`.
+- Tipe karakter, `char`.
+- Tuple, kalau isinya cuma tipe-tipe yang juga mengimplementasikan `Copy`. 
+  Contohnya, `(i32, i32)` mengimplementasikan `Copy`, tapi `(i32, String)` nggak.
 
-### Ownership and Functions
+### Ownership dan Fungsi
 
-The mechanics of passing a value to a function are similar to those when
-assigning a value to a variable. Passing a variable to a function will move or
-copy, just as assignment does. Listing 4-3 has an example with some annotations
-showing where variables go into and out of scope.
+Mekanisme masukin nilai ke sebuah fungsi mirip sama pas kita ngasih nilai ke 
+sebuah variabel. Masukin variabel ke fungsi bakal nge-_move_ atau copy, sama 
+kayak assignment. Listing 4-3 punya contoh dengan beberapa anotasi yang nunjukin 
+di mana variabel masuk dan keluar dari scope.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="4-3" file-name="src/main.rs" caption="Fungsi dengan ownership dan scope yang dianotasi">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-03/src/main.rs}}
 ```
 
-<span class="caption">Listing 4-3: Functions with ownership and scope
-annotated</span>
+</Listing>
 
-If we tried to use `s` after the call to `takes_ownership`, Rust would throw a
-compile-time error. These static checks protect us from mistakes. Try adding
-code to `main` that uses `s` and `x` to see where you can use them and where
-the ownership rules prevent you from doing so.
+Kalau kita nyoba pake `s` setelah manggil `takes_ownership`, Rust bakal ngelepar 
+_compile-time error_. Pengecekan statis ini ngelindungin kita dari kesalahan. 
+Coba tambahin kode ke `main` yang pake `s` sama `x` buat liat di mana kita bisa 
+pake mereka dan di mana aturan _ownership_ ngelarang kita buat ngelakuin itu.
 
-### Return Values and Scope
+### Nilai Return dan Scope
 
-Returning values can also transfer ownership. Listing 4-4 shows an example of a
-function that returns some value, with similar annotations as those in Listing
-4-3.
+Balikin nilai (returning values) juga bisa mentransfer _ownership_. Listing 4-4 
+nunjukin contoh fungsi yang balikin sebuah nilai, dengan anotasi yang mirip 
+kayak di Listing 4-3.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="4-4" file-name="src/main.rs" caption="Transfer ownership dari nilai return">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-04/src/main.rs}}
 ```
 
-<span class="caption">Listing 4-4: Transferring ownership of return
-values</span>
+</Listing>
 
-The ownership of a variable follows the same pattern every time: assigning a
-value to another variable moves it. When a variable that includes data on the
-heap goes out of scope, the value will be cleaned up by `drop` unless ownership
-of the data has been moved to another variable.
+_Ownership_ sebuah variabel ngikutin pola yang sama tiap kalinya: ngasih nilai 
+ke variabel lain bakal nge-_move_ nilainya. Pas sebuah variabel yang isinya 
+data di _heap_ keluar dari scope, nilainya bakal dibersihin sama `drop` kecuali 
+kalau _ownership_ datanya udah di-_move_ ke variabel lain.
 
-While this works, taking ownership and then returning ownership with every
-function is a bit tedious. What if we want to let a function use a value but
-not take ownership? It’s quite annoying that anything we pass in also needs to
-be passed back if we want to use it again, in addition to any data resulting
-from the body of the function that we might want to return as well.
+Walaupun ini jalan, ngambil _ownership_ terus balikin lagi di tiap fungsi itu 
+agak ribet. Gimana kalau kita mau ngebolehin sebuah fungsi pake sebuah nilai 
+tapi nggak usah ngambil _ownership_-nya? Agak nyebelin kan kalau apa pun yang 
+kita masukin juga harus dibalikin lagi kalau kita mau pake lagi, ditambah 
+data apa pun hasil dari body fungsinya yang mungkin juga mau kita balikin.
 
-Rust does let us return multiple values using a tuple, as shown in Listing 4-5.
+Rust ngebolehin kita buat balikin banyak nilai pake tuple, kayak yang ditunjukin 
+di Listing 4-5.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="4-5" file-name="src/main.rs" caption="Balikin ownership dari parameter">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-05/src/main.rs}}
 ```
 
-<span class="caption">Listing 4-5: Returning ownership of parameters</span>
+</Listing>
 
-But this is too much ceremony and a lot of work for a concept that should be
-common. Luckily for us, Rust has a feature for using a value without
-transferring ownership, called *references*.
+Tapi ini terlalu banyak upacaranya (ceremony) dan kerjaan sekali buat konsep 
+yang harusnya umum. Untungnya buat kita, Rust punya fitur buat pake sebuah nilai 
+tanpa mentransfer _ownership_, namanya _references_ (referensi).
 
 [data-types]: ch03-02-data-types.html#data-types
 [ch8]: ch08-02-strings.html

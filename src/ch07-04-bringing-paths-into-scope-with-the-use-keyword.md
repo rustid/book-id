@@ -1,183 +1,178 @@
-## Bringing Paths into Scope with the `use` Keyword
+## Bawa Paths ke Dalem Scope pake Keyword `use`
 
-Having to write out the paths to call functions can feel inconvenient and
-repetitive. In Listing 7-7, whether we chose the absolute or relative path to
-the `add_to_waitlist` function, every time we wanted to call `add_to_waitlist`
-we had to specify `front_of_house` and `hosting` too. Fortunately, there’s a
-way to simplify this process: we can create a shortcut to a path with the `use`
-keyword once, and then use the shorter name everywhere else in the scope.
+Harus nulis paths lengkap-lengkap buat manggil fungsi tuh rasanya kurang nyaman 
+dan ngulang-ngulang terus. Di Listing 7-7, entah kita milih absolute atau 
+relative path buat manggil fungsi `add_to_waitlist`, tiap kali kita mau manggil 
+`add_to_waitlist` kita harus nulis `front_of_house` sama `hosting` juga. 
+Untungnya, ada cara buat nyederhanain proses ini: kita bisa bikin *shortcut* 
+(jalan pintas) ke sebuah path pake keyword `use` sekali aja, dan terus pake 
+nama yang lebih pendek itu di mana-mana di dalem scope-nya.
 
-In Listing 7-11, we bring the `crate::front_of_house::hosting` module into the
-scope of the `eat_at_restaurant` function so we only have to specify
-`hosting::add_to_waitlist` to call the `add_to_waitlist` function in
+Di Listing 7-11, kita bawa modul `crate::front_of_house::hosting` ke dalem scope 
+dari fungsi `eat_at_restaurant` biar kita cuma perlu nentuin 
+`hosting::add_to_waitlist` buat manggil fungsi `add_to_waitlist` di 
 `eat_at_restaurant`.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-11" file-name="src/lib.rs" caption="Bawa sebuah modul ke dalem scope pake `use`">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-11/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-11: Bringing a module into scope with
-`use`</span>
+</Listing>
 
-Adding `use` and a path in a scope is similar to creating a symbolic link in
-the filesystem. By adding `use crate::front_of_house::hosting` in the crate
-root, `hosting` is now a valid name in that scope, just as though the `hosting`
-module had been defined in the crate root. Paths brought into scope with `use`
-also check privacy, like any other paths.
+Nambahin `use` sama sebuah path di dalem sebuah scope itu mirip kayak bikin 
+_symbolic link_ di sistem file. Dengan nambahin 
+`use crate::front_of_house::hosting` di _crate root_, `hosting` sekarang jadi 
+nama yang valid di scope itu, seolah-olah modul `hosting` itu didefinisikan di 
+_crate root_. Path yang dibawa ke scope pake `use` juga bakal nge-cek privasi, 
+sama kayak path lainnya.
 
-Note that `use` only creates the shortcut for the particular scope in which the
-`use` occurs. Listing 7-12 moves the `eat_at_restaurant` function into a new
-child module named `customer`, which is then a different scope than the `use`
-statement, so the function body won’t compile:
+Perhatiin ya kalau `use` cuma bikin *shortcut* buat scope tertentu di mana `use` 
+itu dipanggil. Listing 7-12 mindahin fungsi `eat_at_restaurant` ke dalem anak 
+modul baru namanya `customer`, yang mana itu beda scope dari statement `use`-nya, 
+jadi body fungsinya nggak bakal bisa di-compile.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-12" file-name="src/lib.rs" caption="Statement `use` cuma berlaku di scope tempat dia ditaruh.">
 
 ```rust,noplayground,test_harness,does_not_compile,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-12/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-12: A `use` statement only applies in the scope
-it’s in</span>
+</Listing>
 
-The compiler error shows that the shortcut no longer applies within the
-`customer` module:
+Error _compiler_ nunjukin kalau *shortcut*-nya udah nggak berlaku lagi di dalem 
+modul `customer`:
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-12/output.txt}}
 ```
 
-Notice there’s also a warning that the `use` is no longer used in its scope! To
-fix this problem, move the `use` within the `customer` module too, or reference
-the shortcut in the parent module with `super::hosting` within the child
-`customer` module.
+Perhatiin ada warning juga yang bilang kalau `use`-nya nggak dipake di scope-nya! 
+Buat benerin masalah ini, pindahin `use`-nya ke dalem modul `customer` juga, 
+atau rujuk *shortcut* yang ada di modul induk pake `super::hosting` dari dalem 
+anak modul `customer`.
 
-### Creating Idiomatic `use` Paths
+### Bikin Paths `use` yang Idiomatik
 
-In Listing 7-11, you might have wondered why we specified `use
-crate::front_of_house::hosting` and then called `hosting::add_to_waitlist` in
-`eat_at_restaurant` rather than specifying the `use` path all the way out to
-the `add_to_waitlist` function to achieve the same result, as in Listing 7-13.
+Di Listing 7-11, kita mungkin mikir kenapa kita nulis 
+`use crate::front_of_house::hosting` terus manggil `hosting::add_to_waitlist` di 
+`eat_at_restaurant`, bukannya nulis path `use` sampe ke fungsi `add_to_waitlist` 
+buat dapet hasil yang sama, kayak di Listing 7-13.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-13" file-name="src/lib.rs" caption="Bawa fungsi `add_to_waitlist` ke dalem scope pake `use`, yang nggak idiomatik">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-13/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-13: Bringing the `add_to_waitlist` function
-into scope with `use`, which is unidiomatic</span>
+</Listing>
 
-Although both Listing 7-11 and 7-13 accomplish the same task, Listing 7-11 is
-the idiomatic way to bring a function into scope with `use`. Bringing the
-function’s parent module into scope with `use` means we have to specify the
-parent module when calling the function. Specifying the parent module when
-calling the function makes it clear that the function isn’t locally defined
-while still minimizing repetition of the full path. The code in Listing 7-13 is
-unclear as to where `add_to_waitlist` is defined.
+Walaupun Listing 7-11 sama Listing 7-13 ngelakuin tugas yang sama, Listing 7-11 
+adalah cara yang idiomatik buat bawa sebuah fungsi ke dalem scope pake `use`. 
+Bawa modul induk dari sebuah fungsi ke dalem scope pake `use` artinya kita 
+harus nyebutin modul induknya pas manggil fungsi itu. Nyebutin modul induk pas 
+manggil fungsi bikin jelas kalau fungsi itu nggak didefinisikan secara lokal, 
+tapi tetep minimalisir pengulangan nulis absolute path-nya. Kode di Listing 7-13 
+bikin nggak jelas di mana `add_to_waitlist` itu sebenernya didefinisikan.
 
-On the other hand, when bringing in structs, enums, and other items with `use`,
-it’s idiomatic to specify the full path. Listing 7-14 shows the idiomatic way
-to bring the standard library’s `HashMap` struct into the scope of a binary
-crate.
+Sebaliknya, pas kita bawa structs, enums, dan item lain pake `use`, itu 
+idiomatik buat nyebutin full path-nya. Listing 7-14 nunjukin cara idiomatik 
+buat bawa struct `HashMap` dari standard library ke dalem scope dari sebuah 
+_binary crate_.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="7-14" file-name="src/main.rs" caption="Bawa `HashMap` ke dalem scope pake cara yang idiomatik">
 
 ```rust
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-14/src/main.rs}}
 ```
 
-<span class="caption">Listing 7-14: Bringing `HashMap` into scope in an
-idiomatic way</span>
+</Listing>
 
-There’s no strong reason behind this idiom: it’s just the convention that has
-emerged, and folks have gotten used to reading and writing Rust code this way.
+Nggak ada alesan kuat sih di balik idiom ini: ini cuma konvensi yang udah muncul, 
+dan orang-orang udah kebiasa baca sama nulis kode Rust dengan cara kayak gini.
 
-The exception to this idiom is if we’re bringing two items with the same name
-into scope with `use` statements, because Rust doesn’t allow that. Listing 7-15
-shows how to bring two `Result` types into scope that have the same name but
-different parent modules and how to refer to them.
+Pengecualian buat idiom ini adalah kalau kita bawa dua item yang namanya sama ke 
+dalem scope pake statement `use`, karena Rust nggak ngebolehin itu. Listing 7-15 
+nunjukin gimana cara bawa dua tipe `Result` yang namanya sama tapi modul induknya 
+beda ke dalem scope, dan gimana cara merujuk ke mereka.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-15" file-name="src/lib.rs" caption="Bawa dua tipe dengan nama yang sama ke dalem scope yang sama nuntut kita buat pake modul induk mereka.">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-15/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 7-15: Bringing two types with the same name into
-the same scope requires using their parent modules.</span>
+</Listing>
 
-As you can see, using the parent modules distinguishes the two `Result` types.
-If instead we specified `use std::fmt::Result` and `use std::io::Result`, we’d
-have two `Result` types in the same scope and Rust wouldn’t know which one we
-meant when we used `Result`.
+Kayak yang bisa kita liat, pake modul induk bisa ngebedain kedua tipe `Result` 
+ini. Kalau kita malah nulis `use std::fmt::Result` sama `use std::io::Result`, 
+kita bakal punya dua tipe `Result` di scope yang sama, dan Rust nggak bakal tau 
+mana yang kita maksud pas kita pake nama `Result`.
 
-### Providing New Names with the `as` Keyword
+### Ngasih Nama Baru pake Keyword `as`
 
-There’s another solution to the problem of bringing two types of the same name
-into the same scope with `use`: after the path, we can specify `as` and a new
-local name, or *alias*, for the type. Listing 7-16 shows another way to write
-the code in Listing 7-15 by renaming one of the two `Result` types using `as`.
+Ada solusi lain buat masalah bawa dua tipe dengan nama yang sama ke dalem scope 
+yang sama pake `use`: setelah path, kita bisa nambahin `as` sama nama lokal baru, 
+atau _alias_, buat tipe itu. Listing 7-16 nunjukin cara lain buat nulis kode 
+di Listing 7-15 dengan nge-rename salah satu dari tipe `Result` itu pake `as`.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-16" file-name="src/lib.rs" caption="Nge-rename sebuah tipe pas dibawa ke dalem scope pake keyword `as`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-16/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 7-16: Renaming a type when it’s brought into
-scope with the `as` keyword</span>
+</Listing>
 
-In the second `use` statement, we chose the new name `IoResult` for the
-`std::io::Result` type, which won’t conflict with the `Result` from `std::fmt`
-that we’ve also brought into scope. Listing 7-15 and Listing 7-16 are
-considered idiomatic, so the choice is up to you!
+Di statement `use` yang kedua, kita milih nama baru `IoResult` buat tipe 
+`std::io::Result`, yang nggak bakal bentrok sama `Result` dari `std::fmt` yang 
+juga udah kita bawa ke dalem scope. Listing 7-15 sama Listing 7-16 sama-sama 
+dianggap idiomatik, jadi milih yang mana itu terserah kita!
 
-### Re-exporting Names with `pub use`
+### Re-exporting Nama pake `pub use`
 
-When we bring a name into scope with the `use` keyword, the name available in
-the new scope is private. To enable the code that calls our code to refer to
-that name as if it had been defined in that code’s scope, we can combine `pub`
-and `use`. This technique is called *re-exporting* because we’re bringing
-an item into scope but also making that item available for others to bring into
-their scope.
+Pas kita bawa sebuah nama ke dalem scope pake keyword `use`, nama itu _private_ 
+buat scope tempat kita nge-import dia. Buat ngebolehin kode di luar scope itu 
+buat ngerujuk ke nama itu seolah-olah nama itu didefinisikan di scope tersebut, 
+kita bisa gabungin `pub` sama `use`. Teknik ini namanya _re-exporting_ karena 
+kita bawa item ke dalem scope tapi juga nge-ekspos item itu biar orang lain 
+bisa bawa item itu ke scope mereka.
 
-Listing 7-17 shows the code in Listing 7-11 with `use` in the root module
-changed to `pub use`.
+Listing 7-17 nunjukin kode di Listing 7-11 dengan `use` di modul _root_ diganti 
+jadi `pub use`.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-17" file-name="src/lib.rs" caption="Bikin sebuah nama bisa dipake dari scope baru oleh kode lain pake `pub use`">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-17/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-17: Making a name available for any code to use
-from a new scope with `pub use`</span>
+</Listing>
 
-Before this change, external code would have to call the `add_to_waitlist`
-function by using the path
-`restaurant::front_of_house::hosting::add_to_waitlist()`. Now that this `pub
-use` has re-exported the `hosting` module from the root module, external code
-can now use the path `restaurant::hosting::add_to_waitlist()` instead.
+Sebelum perubahan ini, kode eksternal harus manggil fungsi `add_to_waitlist` 
+pake path `restaurant::front_of_house::hosting::add_to_waitlist()`, yang juga 
+bakal mewajibkan modul `front_of_house` buat ditandain sebagai `pub`. Sekarang, 
+karena `pub use` ini udah nge-_re-export_ modul `hosting` dari modul _root_, 
+kode eksternal bisa pake path `restaurant::hosting::add_to_waitlist()` sebagai 
+gantinya.
 
-Re-exporting is useful when the internal structure of your code is different
-from how programmers calling your code would think about the domain. For
-example, in this restaurant metaphor, the people running the restaurant think
-about “front of house” and “back of house.” But customers visiting a restaurant
-probably won’t think about the parts of the restaurant in those terms. With
-`pub use`, we can write our code with one structure but expose a different
-structure. Doing so makes our library well organized for programmers working on
-the library and programmers calling the library. We’ll look at another example
-of `pub use` and how it affects your crate’s documentation in the [“Exporting a
-Convenient Public API with `pub use`”][ch14-pub-use]<!-- ignore --> section of
-Chapter 14.
+_Re-exporting_ berguna pas struktur internal kode kita itu beda dari gimana 
+programmer yang manggil kode kita bakal mikirin soal domain-nya. Misalnya, di 
+analogi restoran ini, orang yang jalanin restorannya mikirnya “front of house” 
+sama “back of house.” Tapi pelanggan yang dateng ke restoran mungkin nggak bakal 
+mikirin bagian-bagian restoran pake istilah-istilah itu. Pake `pub use`, kita 
+bisa nulis kode kita pake satu struktur tapi nge-ekspos struktur yang beda. 
+Ngelakuin ini bikin library kita terorganisir dengan baik buat programmer yang 
+ngerjain library-nya dan juga buat programmer yang manggil library-nya. Kita 
+bakal liat contoh lain dari `pub use` dan gimana pengaruhnya ke dokumentasi crate 
+kita di [“Ngekspor API Public yang Nyaman pake `pub use`”][ch14-pub-use] di Bab 14.
 
-### Using External Packages
+### Pake Package Eksternal
 
-In Chapter 2, we programmed a guessing game project that used an external
-package called `rand` to get random numbers. To use `rand` in our project, we
-added this line to *Cargo.toml*:
+Di Bab 2, kita bikin project game tebak angka yang pake package eksternal 
+namanya `rand` buat dapet angka random. Buat pake `rand` di project kita, kita 
+nambahin baris ini ke _Cargo.toml_:
 
 <!-- When updating the version of `rand` used, also update the version of
 `rand` used in these files so they all match:
@@ -185,124 +180,130 @@ added this line to *Cargo.toml*:
 * ch14-03-cargo-workspaces.md
 -->
 
-<span class="filename">Filename: Cargo.toml</span>
+<Listing file-name="Cargo.toml">
 
 ```toml
 {{#include ../listings/ch02-guessing-game-tutorial/listing-02-02/Cargo.toml:9:}}
 ```
 
-Adding `rand` as a dependency in *Cargo.toml* tells Cargo to download the
-`rand` package and any dependencies from [crates.io](https://crates.io/) and
-make `rand` available to our project.
+</Listing>
 
-Then, to bring `rand` definitions into the scope of our package, we added a
-`use` line starting with the name of the crate, `rand`, and listed the items
-we wanted to bring into scope. Recall that in the [“Generating a Random
-Number”][rand]<!-- ignore --> section in Chapter 2, we brought the `Rng` trait
-into scope and called the `rand::thread_rng` function:
+Nambahin `rand` sebagai _dependency_ (dependensi) di _Cargo.toml_ ngasih tau 
+Cargo buat download package `rand` sama dependensinya dari [crates.io](https://crates.io/) 
+terus nyediain `rand` buat project kita.
+
+Terus, buat bawa definisi `rand` ke dalem scope package kita, kita nambahin 
+baris `use` yang dimulai dari nama crate-nya, `rand`, dan nge-list item-item 
+yang mau kita bawa ke dalem scope. Inget kan di [“Menghasilkan Angka Random”][rand] 
+di Bab 2, kita bawa trait `Rng` ke dalem scope terus manggil fungsi 
+`rand::thread_rng`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch02-guessing-game-tutorial/listing-02-03/src/main.rs:ch07-04}}
 ```
 
-Members of the Rust community have made many packages available at
-[crates.io](https://crates.io/), and pulling any of them into your package
-involves these same steps: listing them in your package’s *Cargo.toml* file and
-using `use` to bring items from their crates into scope.
+Anggota komunitas Rust udah bikin sangat banyak package yang tersedia di 
+[crates.io](https://crates.io/), dan masukin salah satu dari mereka ke package 
+kita itu ngelibatin langkah-langkah yang sama: daftarin mereka di file 
+_Cargo.toml_ package kita terus pake `use` buat bawa item dari crate mereka ke 
+dalem scope.
 
-Note that the standard `std` library is also a crate that’s external to our
-package. Because the standard library is shipped with the Rust language, we
-don’t need to change *Cargo.toml* to include `std`. But we do need to refer to
-it with `use` to bring items from there into our package’s scope. For example,
-with `HashMap` we would use this line:
+Perhatiin ya kalau _standard library_ `std` itu juga sebuah crate yang eksternal 
+buat package kita. Karena standard library udah dipaket bareng bahasa Rust, kita 
+nggak perlu ngubah _Cargo.toml_ buat masukin `std`. Tapi kita tetep perlu 
+ngerujuk ke dia pake `use` buat bawa item-item dari sana ke dalem scope package 
+kita. Misalnya, buat `HashMap` kita bakal pake baris ini:
 
 ```rust
 use std::collections::HashMap;
 ```
 
-This is an absolute path starting with `std`, the name of the standard library
-crate.
+Ini adalah absolute path yang dimulai dari `std`, nama dari crate standard 
+library.
 
-### Using Nested Paths to Clean Up Large `use` Lists
+### Pake Nested Paths Buat Ngerapihin Daftar `use` yang Panjang
 
-If we’re using multiple items defined in the same crate or same module,
-listing each item on its own line can take up a lot of vertical space in our
-files. For example, these two `use` statements we had in the Guessing Game in
-Listing 2-4 bring items from `std` into scope:
+Kalau kita pake banyak item yang didefinisikan di crate yang sama atau modul 
+yang sama, nulisin tiap item di barisnya sendiri-sendiri bakal menuhin tempat 
+secara vertikal di file kita. Misalnya, dua statement `use` ini yang kita pake 
+di game tebak angka di Listing 2-4 bawa item-item dari `std` ke dalem scope:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/no-listing-01-use-std-unnested/src/main.rs:here}}
 ```
 
-Instead, we can use nested paths to bring the same items into scope in one
-line. We do this by specifying the common part of the path, followed by two
-colons, and then curly brackets around a list of the parts of the paths that
-differ, as shown in Listing 7-18.
+</Listing>
 
-<span class="filename">Filename: src/main.rs</span>
+Sebagai gantinya, kita bisa pake _nested paths_ (path bersarang) buat bawa item-
+item yang sama ke dalem scope dalam satu baris. Kita lakuin ini dengan nulisin 
+bagian yang sama dari path-nya, diikuti sama dua titik dua (`::`), terus kurung 
+kurawal di sekitar list dari bagian-bagian path yang beda, kayak yang ditunjukin 
+di Listing 7-18.
+
+<Listing number="7-18" file-name="src/main.rs" caption="Nentuin nested path buat bawa beberapa item dengan awalan yang sama ke dalem scope">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-18/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 7-18: Specifying a nested path to bring multiple
-items with the same prefix into scope</span>
+</Listing>
 
-In bigger programs, bringing many items into scope from the same crate or
-module using nested paths can reduce the number of separate `use` statements
-needed by a lot!
+Di program yang lebih gede, bawa banyak item ke dalem scope dari crate atau modul 
+yang sama pake nested paths bisa ngurangin sekali jumlah statement `use` 
+terpisah yang dibutuhin!
 
-We can use a nested path at any level in a path, which is useful when combining
-two `use` statements that share a subpath. For example, Listing 7-19 shows two
-`use` statements: one that brings `std::io` into scope and one that brings
-`std::io::Write` into scope.
+Kita bisa pake nested path di level mana pun di dalem sebuah path, yang berguna 
+sekali pas ngegabungin dua statement `use` yang nge-share _subpath_. Misalnya, 
+Listing 7-19 nunjukin dua statement `use`: satu yang bawa `std::io` ke dalem 
+scope dan satu lagi yang bawa `std::io::Write` ke dalem scope.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-19" file-name="src/lib.rs" caption="Dua statement `use` di mana salah satunya adalah subpath dari yang lain">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-19/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-19: Two `use` statements where one is a subpath
-of the other</span>
+</Listing>
 
-The common part of these two paths is `std::io`, and that’s the complete first
-path. To merge these two paths into one `use` statement, we can use `self` in
-the nested path, as shown in Listing 7-20.
+Bagian yang sama dari kedua path ini adalah `std::io`, dan itu adalah path 
+lengkap pertama. Buat ngegabungin dua path ini jadi satu statement `use`, kita 
+bisa pake `self` di dalem nested path, kayak yang ditunjukin di Listing 7-20.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-20" file-name="src/lib.rs" caption="Ngegabungin path di Listing 7-19 jadi satu statement `use`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-20/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-20: Combining the paths in Listing 7-19 into
-one `use` statement</span>
+</Listing>
 
-This line brings `std::io` and `std::io::Write` into scope.
+Baris ini bawa `std::io` sama `std::io::Write` ke dalem scope.
 
-### The Glob Operator
+### Operator Glob
 
-If we want to bring *all* public items defined in a path into scope, we can
-specify that path followed by the `*` glob operator:
+Kalau kita mau bawa _semua_ item public yang didefinisikan di sebuah path ke 
+dalem scope, kita bisa nulis path itu diikuti sama operator _glob_ `*`:
 
 ```rust
 use std::collections::*;
 ```
 
-This `use` statement brings all public items defined in `std::collections` into
-the current scope. Be careful when using the glob operator! Glob can make it
-harder to tell what names are in scope and where a name used in your program
-was defined.
+Statement `use` ini bawa semua item public yang didefinisikan di 
+`std::collections` ke dalem scope saat ini. Hati-hati ya pas pake operator 
+glob! Glob bisa bikin kita lebih susah buat tau nama apa aja yang ada di dalem 
+scope dan di mana nama yang dipake di program kita itu didefinisikan. Selain itu, 
+kalau dependensinya ngerubah definisi mereka, apa yang kita import juga ikut 
+berubah, yang bisa memicu error _compiler_ pas kita upgrade dependensi kalau 
+dependensinya nambahin definisi dengan nama yang sama kayak definisi punya kita 
+di scope yang sama, misalnya.
 
-The glob operator is often used when testing to bring everything under test
-into the `tests` module; we’ll talk about that in the [“How to Write
-Tests”][writing-tests]<!-- ignore --> section in Chapter 11. The glob operator
-is also sometimes used as part of the prelude pattern: see [the standard
-library documentation](../std/prelude/index.html#other-preludes)<!-- ignore -->
-for more information on that pattern.
+Operator glob sering sekali dipake pas lagi _testing_ buat bawa semua hal yang 
+mau di-test ke dalem modul `tests`; kita bakal bahas itu di [“Gimana Cara Nulis 
+Test”][writing-tests] di Bab 11. Operator glob juga kadang dipake sebagai bagian 
+dari pola _prelude_: liat [dokumentasi standard library](../std/prelude/index.html#other-preludes) 
+buat info lebih lanjut soal pola itu.
 
 [ch14-pub-use]: ch14-02-publishing-to-crates-io.html#exporting-a-convenient-public-api-with-pub-use
 [rand]: ch02-00-guessing-game-tutorial.html#generating-a-random-number

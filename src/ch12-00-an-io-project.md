@@ -1,45 +1,46 @@
-# An I/O Project: Building a Command Line Program
+# Project I/O: Bikin Program Command Line
 
-This chapter is a recap of the many skills you’ve learned so far and an
-exploration of a few more standard library features. We’ll build a command line
-tool that interacts with file and command line input/output to practice some of
-the Rust concepts you now have under your belt.
+Bab ini adalah rangkuman dari banyak *skill* yang udah kita pelajari sejauh ini 
+dan sebuah eksplorasi ke beberapa fitur *standard library* lainnya. Kita bakal 
+bikin alat (tool) *command line* yang berinteraksi sama file dan input/output 
+dari *command line* buat melatih beberapa konsep Rust yang sekarang udah kita 
+kuasai.
 
-Rust’s speed, safety, single binary output, and cross-platform support make it
-an ideal language for creating command line tools, so for our project, we’ll
-make our own version of the classic command line search tool `grep`
-(**g**lobally search a **r**egular **e**xpression and **p**rint). In the
-simplest use case, `grep` searches a specified file for a specified string. To
-do so, `grep` takes as its arguments a file path and a string. Then it reads
-the file, finds lines in that file that contain the string argument, and prints
-those lines.
+Kecepatan, keamanan, output *binary* tunggal, dan dukungan lintas platform 
+bikin Rust jadi bahasa yang ideal buat bikin alat *command line*, jadi buat 
+project kita ini, kita bakal bikin versi kita sendiri dari alat pencarian 
+*command line* klasik `grep` (**g**lobally search a **r**egular **e**xpression 
+and **p**rint). Di skenario penggunaan paling sederhana, `grep` mencari _string_ 
+tertentu di dalam file yang ditentukan. Buat ngelakuin itu, `grep` menerima 
+_path_ (jalur) file dan sebuah _string_ sebagai argumennya. Lalu dia ngebaca 
+file tersebut, nyari baris-baris di file itu yang mengandung argumen _string_ 
+tadi, terus mencetak baris-baris itu.
 
-Along the way, we’ll show how to make our command line tool use the terminal
-features that many other command line tools use. We’ll read the value of an
-environment variable to allow the user to configure the behavior of our tool.
-We’ll also print error messages to the standard error console stream (`stderr`)
-instead of standard output (`stdout`), so, for example, the user can redirect
-successful output to a file while still seeing error messages onscreen.
+Di sepanjang jalan, kita bakal nunjukin gimana cara bikin alat *command line* 
+kita memakai fitur terminal yang dipakai sama banyak alat *command line* 
+lainnya. Kita bakal ngebaca nilai dari _environment variable_ buat ngebolehin 
+_user_ mengonfigurasi perilaku alat kita. Kita juga bakal mencetak pesan error 
+ke *stream* konsol *standard error* (`stderr`) bukannya *standard output* 
+(`stdout`) sehingga, misalnya, _user_ bisa me-*redirect* (mengalihkan) output 
+yang sukses ke sebuah file tapi tetap bisa melihat pesan error di layar.
 
-One Rust community member, Andrew Gallant, has already created a fully
-featured, very fast version of `grep`, called `ripgrep`. By comparison, our
-version will be fairly simple, but this chapter will give you some of the
-background knowledge you need to understand a real-world project such as
+Salah satu anggota komunitas Rust, Andrew Gallant, udah bikin versi `grep` yang 
+berfitur lengkap dan kenceng sekali, namanya `ripgrep`. Sebagai perbandingan, 
+versi kita bakal lumayan sederhana, tapi bab ini bakal ngasih kita beberapa 
+pengetahuan dasar yang kita butuhin buat paham project dunia nyata kayak 
 `ripgrep`.
 
-Our `grep` project will combine a number of concepts you’ve learned so far:
+Project `grep` kita bakal nggabungin sejumlah konsep yang udah kita pelajari 
+sejauh ini:
 
-* Organizing code (using what you learned about modules in [Chapter 7][ch7]<!--
-  ignore -->)
-* Using vectors and strings (collections, [Chapter 8][ch8]<!-- ignore -->)
-* Handling errors ([Chapter 9][ch9]<!-- ignore -->)
-* Using traits and lifetimes where appropriate ([Chapter 10][ch10]<!-- ignore
-  -->)
-* Writing tests ([Chapter 11][ch11]<!-- ignore -->)
+- Mengorganisasi kode ([Bab 7][ch7])
+- Memakai vectors dan strings ([Bab 8][ch8])
+- Menangani errors ([Bab 9][ch9])
+- Memakai traits dan lifetimes di tempat yang tepat ([Bab 10][ch10])
+- Nulis pengujian (tests) ([Bab 11][ch11])
 
-We’ll also briefly introduce closures, iterators, and trait objects, which
-Chapters [13][ch13]<!-- ignore --> and [17][ch17]<!-- ignore --> will cover in
-detail.
+Kita juga bakal ngenalin secara singkat _closures_, _iterators_, dan _trait 
+objects_, yang bakal dibahas lebih detail di [Bab 13][ch13] dan [Bab 18][ch18].
 
 [ch7]: ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
 [ch8]: ch08-00-common-collections.html
@@ -47,4 +48,4 @@ detail.
 [ch10]: ch10-00-generics.html
 [ch11]: ch11-00-testing.html
 [ch13]: ch13-00-functional-features.html
-[ch17]: ch17-00-oop.html
+[ch18]: ch18-00-oop.html

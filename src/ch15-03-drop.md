@@ -1,149 +1,160 @@
-## Running Code on Cleanup with the `Drop` Trait
+## Menjalankan Kode saat Proses Pembersihan (Cleanup) dengan Trait `Drop`
 
-The second trait important to the smart pointer pattern is `Drop`, which lets
-you customize what happens when a value is about to go out of scope. You can
-provide an implementation for the `Drop` trait on any type, and that code can
-be used to release resources like files or network connections.
+Trait kedua yang penting buat pola _smart pointer_ adalah `Drop`, yang 
+membiarkan kita mengkustomisasi apa yang terjadi saat sebuah nilai bakal 
+keluar dari _scope_. Kita bisa menyediakan sebuah implementasi buat trait 
+`Drop` di tipe apa pun, dan kode tersebut bisa dipakai buat melepaskan 
+(release) _resources_ kayak file atau koneksi jaringan.
 
-We’re introducing `Drop` in the context of smart pointers because the
-functionality of the `Drop` trait is almost always used when implementing a
-smart pointer. For example, when a `Box<T>` is dropped it will deallocate the
-space on the heap that the box points to.
+Kita ngenalin `Drop` di konteks _smart pointers_ karena fungsionalitas dari 
+trait `Drop` hampir selalu dipakai pas kita mengimplementasikan sebuah _smart 
+pointer_. Misalnya, saat sebuah `Box<T>` di-_drop_, dia bakal men-_deallocate_ 
+(melepaskan) ruang di _heap_ yang ditunjuk sama _box_ tersebut.
 
-In some languages, for some types, the programmer must call code to free memory
-or resources every time they finish using an instance of those types. Examples
-include file handles, sockets, or locks. If they forget, the system might
-become overloaded and crash. In Rust, you can specify that a particular bit of
-code be run whenever a value goes out of scope, and the compiler will insert
-this code automatically. As a result, you don’t need to be careful about
-placing cleanup code everywhere in a program that an instance of a particular
-type is finished with—you still won’t leak resources!
+Di beberapa bahasa, buat tipe-tipe tertentu, si programmer harus memanggil kode 
+buat membebaskan memori atau _resources_ setiap kali mereka kelar memakai 
+sebuah instance dari tipe-tipe tersebut. Contohnya termasuk _file handles_ 
+(pegangan file), *sockets*, sama *locks*. Kalau mereka lupa, sistem bisa jadi 
+_overloaded_ dan _crash_. Di Rust, kita bisa menentukan bahwa sekumpulan 
+kode tertentu bakal dijalankan setiap kali sebuah nilai keluar dari _scope_, 
+dan _compiler_ bakal menyisipkan (insert) kode ini secara otomatis. Hasilnya, 
+kita tidak perlu repot-repot menaruh kode _cleanup_ (pembersihan) di mana-mana 
+di dalam program setiap kali sebuah instance dari suatu tipe sudah selesai 
+dipakai—dan kita tetap tidak bakal membocorkan (leak) _resources_!
 
-You specify the code to run when a value goes out of scope by implementing the
-`Drop` trait. The `Drop` trait requires you to implement one method named
-`drop` that takes a mutable reference to `self`. To see when Rust calls `drop`,
-let’s implement `drop` with `println!` statements for now.
+Kita menentukan kode yang bakal jalan saat sebuah nilai keluar dari _scope_ 
+dengan mengimplementasikan trait `Drop`. Trait `Drop` mewajibkan kita buat 
+mengimplementasikan satu method bernama `drop` yang menerima referensi 
+_mutable_ ke `self`. Buat melihat kapan Rust memanggil `drop`, mari kita 
+mengimplementasikan `drop` dengan *statements* `println!` dulu buat sekarang.
 
-Listing 15-14 shows a `CustomSmartPointer` struct whose only custom
-functionality is that it will print `Dropping CustomSmartPointer!` when the
-instance goes out of scope, to show when Rust runs the `drop` function.
+Listing 15-14 menunjukkan sebuah struct `CustomSmartPointer` yang satu-satunya 
+fungsionalitas kustom yang dia punya adalah dia bakal mencetak `Dropping 
+CustomSmartPointer!` saat instance-nya keluar dari _scope_, buat menunjukkan 
+kapan Rust menjalankan method `drop`.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="15-14" file-name="src/main.rs" caption="Sebuah struct `CustomSmartPointer` yang mengimplementasikan trait `Drop` di mana kita bakal menaruh kode _cleanup_ kita">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-14/src/main.rs}}
 ```
 
-<span class="caption">Listing 15-14: A `CustomSmartPointer` struct that
-implements the `Drop` trait where we would put our cleanup code</span>
+</Listing>
 
-The `Drop` trait is included in the prelude, so we don’t need to bring it into
-scope. We implement the `Drop` trait on `CustomSmartPointer` and provide an
-implementation for the `drop` method that calls `println!`. The body of the
-`drop` function is where you would place any logic that you wanted to run when
-an instance of your type goes out of scope. We’re printing some text here to
-demonstrate visually when Rust will call `drop`.
+Trait `Drop` sudah dimasukkan ke dalam _prelude_, jadi kita tidak perlu membawa 
+trait itu ke dalam _scope_. Kita mengimplementasikan trait `Drop` pada 
+`CustomSmartPointer` dan menyediakan sebuah implementasi buat method `drop` yang 
+memanggil `println!`. _Body_ dari method `drop` adalah tempat di mana kita 
+bakal menaruh logika apa pun yang mau kita jalankan pas sebuah instance dari 
+tipe kita keluar dari _scope_. Kita mencetak sedikit teks di sini buat 
+mendemonstrasikan secara visual kapan Rust bakal memanggil `drop`.
 
-In `main`, we create two instances of `CustomSmartPointer` and then print
-`CustomSmartPointers created`. At the end of `main`, our instances of
-`CustomSmartPointer` will go out of scope, and Rust will call the code we put
-in the `drop` method, printing our final message. Note that we didn’t need to
-call the `drop` method explicitly.
+Di `main`, kita bikin dua instance dari `CustomSmartPointer` lalu mencetak 
+`CustomSmartPointers created`. Di akhir `main`, instance-instance dari 
+`CustomSmartPointer` kita bakal keluar dari _scope_, dan Rust bakal memanggil 
+kode yang kita taruh di method `drop`, yang mana mencetak pesan terakhir kita. 
+Perhatikan bahwa kita tidak perlu memanggil method `drop` secara eksplisit.
 
-When we run this program, we’ll see the following output:
+Pas kita menjalankan program ini, kita bakal melihat output berikut:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-14/output.txt}}
 ```
 
-Rust automatically called `drop` for us when our instances went out of scope,
-calling the code we specified. Variables are dropped in the reverse order of
-their creation, so `d` was dropped before `c`. This example’s purpose is to
-give you a visual guide to how the `drop` method works; usually you would
-specify the cleanup code that your type needs to run rather than a print
-message.
+Rust secara otomatis memanggil `drop` buat kita pas instance-instance kita keluar 
+dari _scope_, dan menjalankan kode yang sudah kita tentukan. Variabel-variabel 
+di-_drop_ dalam urutan yang berlawanan dari pembuatannya, jadi `d` di-_drop_ 
+sebelum `c`. Contoh ini tujuannya adalah buat ngasih kita panduan visual soal 
+gimana method `drop` itu bekerja; biasanya kita bakal menentukan kode _cleanup_ 
+yang dibutuhkan sama tipe kita, ketimbang cuma pesan *print* biasa.
 
-### Dropping a Value Early with `std::mem::drop`
+<!-- Old link, do not remove -->
 
-Unfortunately, it’s not straightforward to disable the automatic `drop`
-functionality. Disabling `drop` isn’t usually necessary; the whole point of the
-`Drop` trait is that it’s taken care of automatically. Occasionally, however,
-you might want to clean up a value early. One example is when using smart
-pointers that manage locks: you might want to force the `drop` method that
-releases the lock so that other code in the same scope can acquire the lock.
-Rust doesn’t let you call the `Drop` trait’s `drop` method manually; instead
-you have to call the `std::mem::drop` function provided by the standard library
-if you want to force a value to be dropped before the end of its scope.
+<a id="dropping-a-value-early-with-std-mem-drop"></a>
 
-If we try to call the `Drop` trait’s `drop` method manually by modifying the
-`main` function from Listing 15-14, as shown in Listing 15-15, we’ll get a
-compiler error:
+Sayangnya, menonaktifkan fungsionalitas `drop` otomatis ini tidak 
+gampang. Menonaktifkan `drop` biasanya juga tidak diperlukan; keseluruhan 
+poin dari trait `Drop` adalah supaya hal itu diurus secara otomatis. Tapi, 
+terkadang, kita mungkin pengen membersihkan (clean up) sebuah nilai lebih 
+awal. Salah satu contohnya adalah pas lagi memakai _smart pointers_ yang 
+mengelola *locks*: kita mungkin pengen memaksa method `drop` yang bakal 
+melepaskan *lock* itu agar kode lain di _scope_ yang sama bisa mendapatkan 
+*lock* tersebut. Rust tidak membiarkan kita buat memanggil method `drop` 
+dari trait `Drop` secara manual; sebaliknya, kita harus memanggil fungsi 
+`std::mem::drop` yang disediakan sama _standard library_ kalau kita mau 
+memaksa sebuah nilai buat di-_drop_ sebelum akhir dari _scope_-nya.
 
-<span class="filename">Filename: src/main.rs</span>
+Kalau kita mencoba memanggil method `drop` dari trait `Drop` secara manual 
+dengan memodifikasi fungsi `main` dari Listing 15-14, seperti yang ditunjukkan 
+di Listing 15-15, kita bakal dapat error _compiler_.
+
+<Listing number="15-15" file-name="src/main.rs" caption="Mencoba memanggil method `drop` dari trait `Drop` secara manual untuk _cleanup_ lebih awal">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-15/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 15-15: Attempting to call the `drop` method from
-the `Drop` trait manually to clean up early</span>
+</Listing>
 
-When we try to compile this code, we’ll get this error:
+Pas kita nyoba men-compile kode ini, kita bakal dapat error ini:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-15/output.txt}}
 ```
 
-This error message states that we’re not allowed to explicitly call `drop`. The
-error message uses the term *destructor*, which is the general programming term
-for a function that cleans up an instance. A *destructor* is analogous to a
-*constructor*, which creates an instance. The `drop` function in Rust is one
-particular destructor.
+Pesan error ini menyatakan kalau kita tidak diizinkan buat memanggil `drop` 
+secara eksplisit. Pesan error ini memakai istilah *destructor* (destruktor), 
+yang mana adalah istilah pemrograman umum buat sebuah fungsi yang membersihkan 
+sebuah instance. Sebuah *destructor* analog (mirip) dengan sebuah *constructor* 
+(konstruktor), yang membikin sebuah instance. Fungsi `drop` di Rust adalah 
+salah satu destruktor tertentu.
 
-Rust doesn’t let us call `drop` explicitly because Rust would still
-automatically call `drop` on the value at the end of `main`. This would cause a
-*double free* error because Rust would be trying to clean up the same value
-twice.
+Rust tidak membiarkan kita memanggil `drop` secara eksplisit karena Rust tetap 
+bakal secara otomatis memanggil `drop` pada nilainya di akhir dari `main`. Hal 
+ini bakal menyebabkan error *double free* karena Rust bakal mencoba membersihkan 
+nilai yang sama dua kali.
 
-We can’t disable the automatic insertion of `drop` when a value goes out of
-scope, and we can’t call the `drop` method explicitly. So, if we need to force
-a value to be cleaned up early, we use the `std::mem::drop` function.
+Kita tidak bisa menonaktifkan penyisipan `drop` secara otomatis pas sebuah nilai 
+keluar dari _scope_, dan kita tidak bisa memanggil method `drop` secara eksplisit. 
+Jadi, kalau kita butuh memaksa sebuah nilai buat dibersihkan lebih awal, kita 
+memakai fungsi `std::mem::drop`.
 
-The `std::mem::drop` function is different from the `drop` method in the `Drop`
-trait. We call it by passing as an argument the value we want to force drop.
-The function is in the prelude, so we can modify `main` in Listing 15-15 to
-call the `drop` function, as shown in Listing 15-16:
+Fungsi `std::mem::drop` berbeda dari method `drop` yang ada di trait `Drop`. 
+Kita memanggilnya dengan meneruskan nilai yang mau kita paksa untuk di-_drop_ 
+sebagai argumennya. Fungsi ini ada di dalam _prelude_, jadi kita bisa memodifikasi 
+`main` di Listing 15-15 buat memanggil fungsi `drop` tersebut, seperti yang 
+ditunjukkan di Listing 15-16.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="15-16" file-name="src/main.rs" caption="Memanggil `std::mem::drop` buat me-_drop_ secara eksplisit sebuah nilai sebelum dia keluar dari _scope_">
 
 ```rust
 {{#rustdoc_include ../listings/ch15-smart-pointers/listing-15-16/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 15-16: Calling `std::mem::drop` to explicitly
-drop a value before it goes out of scope</span>
+</Listing>
 
-Running this code will print the following:
+Menjalankan kode ini bakal mencetak yang berikut ini:
 
 ```console
 {{#include ../listings/ch15-smart-pointers/listing-15-16/output.txt}}
 ```
 
-The text ```Dropping CustomSmartPointer with data `some data`!``` is printed
-between the `CustomSmartPointer created.` and `CustomSmartPointer dropped
-before the end of main.` text, showing that the `drop` method code is called to
-drop `c` at that point.
+Teks ``Dropping CustomSmartPointer with data `some data`!`` dicetak di antara 
+teks `CustomSmartPointer created.` dan `CustomSmartPointer dropped
+before the end of main.`, menunjukkan kalau kode method `drop` dipanggil 
+buat me-_drop_ `c` pada titik tersebut.
 
-You can use code specified in a `Drop` trait implementation in many ways to
-make cleanup convenient and safe: for instance, you could use it to create your
-own memory allocator! With the `Drop` trait and Rust’s ownership system, you
-don’t have to remember to clean up because Rust does it automatically.
+Kita bisa memakai kode yang ditentukan di dalam implementasi trait `Drop` 
+pakai berbagai cara buat membikin _cleanup_ jadi nyaman dan aman: misalnya, 
+kita bisa memakainya buat membikin *memory allocator* kita sendiri! Dengan trait 
+`Drop` dan sistem _ownership_ di Rust, kita tidak perlu repot nginget-nginget 
+buat _cleanup_ karena Rust ngelakuin itu secara otomatis.
 
-You also don’t have to worry about problems resulting from accidentally
-cleaning up values still in use: the ownership system that makes sure
-references are always valid also ensures that `drop` gets called only once when
-the value is no longer being used.
+Kita juga tidak perlu khawatir soal masalah-masalah yang timbul dari secara 
+tidak sengaja membersihkan nilai yang masih dipakai: sistem _ownership_ yang 
+memastikan kalau referensi bakal selalu valid juga memastikan kalau `drop` 
+cuma bakal dipanggil satu kali pas nilainya memang sudah tidak dipakai lagi.
 
-Now that we’ve examined `Box<T>` and some of the characteristics of smart
-pointers, let’s look at a few other smart pointers defined in the standard
-library.
+Sekarang setelah kita meneliti `Box<T>` dan beberapa karakteristik dari 
+_smart pointers_, mari kita lihat beberapa _smart pointers_ lain yang didefinisikan 
+di _standard library_.

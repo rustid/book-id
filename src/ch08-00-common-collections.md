@@ -1,25 +1,28 @@
-# Common Collections
+# Koleksi Umum (Common Collections)
 
-Rust’s standard library includes a number of very useful data structures called
-*collections*. Most other data types represent one specific value, but
-collections can contain multiple values. Unlike the built-in array and tuple
-types, the data these collections point to is stored on the heap, which means
-the amount of data does not need to be known at compile time and can grow or
-shrink as the program runs. Each kind of collection has different capabilities
-and costs, and choosing an appropriate one for your current situation is a
-skill you’ll develop over time. In this chapter, we’ll discuss three
-collections that are used very often in Rust programs:
+Standard library Rust nyediain sejumlah struktur data yang sangat berguna yang 
+disebut _collections_ (koleksi). Kebanyakan tipe data lain merepresentasikan 
+satu nilai spesifik, tapi koleksi bisa nampung banyak nilai. Beda sama tipe 
+array sama tuple bawaan, data yang ditunjuk sama koleksi ini disimpan di _heap_, 
+yang artinya jumlah datanya nggak perlu diketahuin pas _compile time_ dan bisa 
+nambah atau berkurang seiring programnya jalan. Tiap jenis koleksi punya 
+kemampuan dan biaya (cost) yang beda-beda, dan milih yang paling pas buat 
+situasi kita saat itu adalah _skill_ yang bakal kita kembangin seiring berjalannya 
+waktu. Di bab ini, kita bakal ngebahas tiga koleksi yang sering sekali dipake di 
+program Rust:
 
-* A *vector* allows you to store a variable number of values next to each other.
-* A *string* is a collection of characters. We’ve mentioned the `String` type
-  previously, but in this chapter we’ll talk about it in depth.
-* A *hash map* allows you to associate a value with a particular key. It’s a
-  particular implementation of the more general data structure called a *map*.
+- Sebuah _vector_ ngebolehin kita nyimpen sejumlah nilai yang jumlahnya bisa 
+  berubah-ubah dan posisinya bersebelahan satu sama lain.
+- Sebuah _string_ adalah koleksi dari karakter-karakter. Kita udah sempet nyebut 
+  tipe `String` sebelumnya, tapi di bab ini kita bakal bahas lebih mendalam.
+- Sebuah _hash map_ ngebolehin kita buat ngaitin (associate) sebuah nilai sama 
+  sebuah _key_ tertentu. Ini adalah implementasi spesifik dari struktur data 
+  yang lebih umum yang disebut _map_.
 
-To learn about the other kinds of collections provided by the standard library,
-see [the documentation][collections].
+Buat belajar soal jenis koleksi lain yang disediain sama standard library, cek 
+[dokumentasinya][collections].
 
-We’ll discuss how to create and update vectors, strings, and hash maps, as well
-as what makes each special.
+Kita bakal bahas gimana cara bikin dan ngubah vectors, strings, dan hash maps, 
+serta apa yang bikin masing-masing dari mereka itu spesial.
 
 [collections]: ../std/collections/index.html

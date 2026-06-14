@@ -1,94 +1,62 @@
-## Comparing Performance: Loops vs. Iterators
+## Membandingkan Performa: Loops vs. Iterators
 
-To determine whether to use loops or iterators, you need to know which
-implementation is faster: the version of the `search` function with an explicit
-`for` loop or the version with iterators.
+Buat menentukan apakah kita sebaiknya memakai _loops_ atau _iterators_, kita 
+perlu tahu implementasi mana yang lebih cepat: versi fungsi `search` yang 
+memakai _for loop_ eksplisit atau versi yang memakai iterators.
 
-We ran a benchmark by loading the entire contents of *The Adventures of
-Sherlock Holmes* by Sir Arthur Conan Doyle into a `String` and looking for the
-word *the* in the contents. Here are the results of the benchmark on the
-version of `search` using the `for` loop and the version using iterators:
+Kita menjalankan sebuah _benchmark_ (pengujian performa) dengan memuat seluruh isi 
+buku _The Adventures of Sherlock Holmes_ karya Sir Arthur Conan Doyle ke dalam 
+sebuah `String` dan mencari kata _the_ di dalam isinya. Berikut adalah hasil dari 
+_benchmark_ pada fungsi `search` versi _for loop_ dan versi iterators:
 
 ```text
 test bench_search_for  ... bench:  19,620,300 ns/iter (+/- 915,700)
 test bench_search_iter ... bench:  19,234,900 ns/iter (+/- 657,200)
 ```
 
-The iterator version was slightly faster! We won’t explain the benchmark code
-here, because the point is not to prove that the two versions are equivalent
-but to get a general sense of how these two implementations compare
-performance-wise.
+Kedua implementasi ini punya performa yang mirip! Kita tidak bakal menjelaskan 
+kode _benchmark_-nya di sini karena tujuannya bukanlah buat membuktikan kalau 
+kedua versi itu persis ekuivalen, tapi buat ngasih gambaran umum soal gimana 
+perbandingan performa kedua implementasi ini.
 
-For a more comprehensive benchmark, you should check using various texts of
-various sizes as the `contents`, different words and words of different lengths
-as the `query`, and all kinds of other variations. The point is this:
-iterators, although a high-level abstraction, get compiled down to roughly the
-same code as if you’d written the lower-level code yourself. Iterators are one
-of Rust’s *zero-cost abstractions*, by which we mean using the abstraction
-imposes no additional runtime overhead. This is analogous to how Bjarne
-Stroustrup, the original designer and implementor of C++, defines
-*zero-overhead* in “Foundations of C++” (2012):
+Untuk _benchmark_ yang lebih komprehensif, kita sebaiknya menguji dengan memakai 
+berbagai teks dari berbagai ukuran sebagai `contents`, kata yang berbeda-beda dan 
+kata dengan panjang yang beda-beda sebagai `query`, dan berbagai jenis variasi 
+lainnya. Poin utamanya adalah ini: iterators, meskipun merupakan sebuah 
+abstraksi tingkat tinggi (high-level abstraction), bakal di-compile menjadi kode 
+yang kurang lebih sama seperti kalau kita menulis sendiri kode tingkat rendah 
+(lower-level code)-nya secara manual. Iterators adalah salah satu dari 
+_zero-cost abstractions_ (abstraksi tanpa biaya) di Rust, yang maksudnya adalah 
+penggunaan abstraksi tersebut tidak menambahkan beban (overhead) apa pun pas 
+_runtime_. Ini analog dengan gimana Bjarne Stroustrup, perancang dan 
+pengimplementasi asli dari C++, mendefinisikan _zero-overhead_ di 
+“Foundations of C++” (2012):
 
-> In general, C++ implementations obey the zero-overhead principle: What you
-> don’t use, you don’t pay for. And further: What you do use, you couldn’t hand
-> code any better.
+> Secara umum, implementasi C++ mematuhi prinsip _zero-overhead_: Apa yang tidak 
+> kita pakai, kita tidak perlu membayarnya. Dan lebih jauh lagi: Apa yang kita 
+> pakai, kita tidak bakal bisa nulis kodenya secara manual dengan lebih baik 
+> lagi.
 
-As another example, the following code is taken from an audio decoder. The
-decoding algorithm uses the linear prediction mathematical operation to
-estimate future values based on a linear function of the previous samples. This
-code uses an iterator chain to do some math on three variables in scope: a
-`buffer` slice of data, an array of 12 `coefficients`, and an amount by which
-to shift data in `qlp_shift`. We’ve declared the variables within this example
-but not given them any values; although this code doesn’t have much meaning
-outside of its context, it’s still a concise, real-world example of how Rust
-translates high-level ideas to low-level code.
+Di banyak kasus, kode Rust yang memakai iterators di-compile menjadi kode 
+_assembly_ (bahasa rakitan) yang sama persis kayak yang bakal kita tulis pakai 
+tangan sendiri. Berbagai optimasi kayak _loop unrolling_ dan menghilangkan 
+pengecekan batas (_bounds checking_) pada akses array bakal diterapkan dan membikin 
+kode akhirnya jadi sangat efisien. Sekarang karena kita sudah tahu hal ini, 
+kita bisa memakai iterators dan _closures_ tanpa rasa takut! Mereka bikin kode 
+kelihatan seperti di tingkat yang lebih tinggi (higher level) tapi tidak 
+mengenakan hukuman performa (performance penalty) pas _runtime_ karena ngelakuin 
+hal tersebut.
 
-```rust,ignore
-let buffer: &mut [i32];
-let coefficients: [i64; 12];
-let qlp_shift: i16;
+## Ringkasan
 
-for i in 12..buffer.len() {
-    let prediction = coefficients.iter()
-                                 .zip(&buffer[i - 12..i])
-                                 .map(|(&c, &s)| c * s as i64)
-                                 .sum::<i64>() >> qlp_shift;
-    let delta = buffer[i];
-    buffer[i] = prediction as i32 + delta;
-}
-```
+_Closures_ dan _iterators_ adalah fitur-fitur Rust yang terinspirasi dari 
+ide-ide bahasa pemrograman fungsional. Mereka berkontribusi pada kemampuan Rust 
+buat mengekspresikan ide-ide tingkat tinggi (high-level ideas) dengan jelas 
+sembari mempertahankan performa tingkat rendah (low-level performance). Implementasi 
+dari _closures_ dan _iterators_ dirancang sedemikian rupa sehingga performa pas 
+_runtime_ tidak terpengaruh. Ini adalah bagian dari tujuan Rust buat berjuang 
+menyediakan _zero-cost abstractions_.
 
-To calculate the value of `prediction`, this code iterates through each of the
-12 values in `coefficients` and uses the `zip` method to pair the coefficient
-values with the previous 12 values in `buffer`. Then, for each pair, we
-multiply the values together, sum all the results, and shift the bits in the
-sum `qlp_shift` bits to the right.
-
-Calculations in applications like audio decoders often prioritize performance
-most highly. Here, we’re creating an iterator, using two adaptors, and then
-consuming the value. What assembly code would this Rust code compile to? Well,
-as of this writing, it compiles down to the same assembly you’d write by hand.
-There’s no loop at all corresponding to the iteration over the values in
-`coefficients`: Rust knows that there are 12 iterations, so it “unrolls” the
-loop. *Unrolling* is an optimization that removes the overhead of the loop
-controlling code and instead generates repetitive code for each iteration of
-the loop.
-
-All of the coefficients get stored in registers, which means accessing the
-values is very fast. There are no bounds checks on the array access at runtime.
-All these optimizations that Rust is able to apply make the resulting code
-extremely efficient. Now that you know this, you can use iterators and closures
-without fear! They make code seem like it’s higher level but don’t impose a
-runtime performance penalty for doing so.
-
-## Summary
-
-Closures and iterators are Rust features inspired by functional programming
-language ideas. They contribute to Rust’s capability to clearly express
-high-level ideas at low-level performance. The implementations of closures and
-iterators are such that runtime performance is not affected. This is part of
-Rust’s goal to strive to provide zero-cost abstractions.
-
-Now that we’ve improved the expressiveness of our I/O project, let’s look at
-some more features of `cargo` that will help us share the project with the
-world.
+Sekarang setelah kita meningkatkan kemampuan ekspresi dari project I/O kita, 
+mari kita lihat beberapa fitur `cargo` lainnya yang bakal membantu kita membagikan 
+project kita dengan dunia.

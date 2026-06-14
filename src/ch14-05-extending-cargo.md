@@ -1,17 +1,20 @@
-## Extending Cargo with Custom Commands
+## Memperluas Kemampuan Cargo dengan Custom Commands (Perintah Kustom)
 
-Cargo is designed so you can extend it with new subcommands without having to
-modify Cargo. If a binary in your `$PATH` is named `cargo-something`, you can
-run it as if it was a Cargo subcommand by running `cargo something`. Custom
-commands like this are also listed when you run `cargo --list`. Being able to
-use `cargo install` to install extensions and then run them just like the
-built-in Cargo tools is a super convenient benefit of Cargo’s design!
+Cargo didesain biar kita bisa memperluas kemampuannya dengan *subcommands* baru 
+tanpa harus memodifikasi Cargo itu sendiri. Kalau sebuah _binary_ di dalam 
+`$PATH` kita bernama `cargo-sesuatu`, kita bisa menjalankannya seolah-olah itu 
+adalah *subcommand* Cargo dengan menjalankan `cargo sesuatu`. *Custom commands* 
+kayak gini juga terdaftar saat kita menjalankan `cargo --list`. Kemampuan buat 
+memakai `cargo install` untuk menginstal ekstensi-ekstensi lalu menjalankannya 
+persis seperti *tools* bawaan Cargo adalah salah satu keuntungan super-nyaman 
+dari desain Cargo!
 
-## Summary
+## Ringkasan
 
-Sharing code with Cargo and [crates.io](https://crates.io/)<!-- ignore --> is
-part of what makes the Rust ecosystem useful for many different tasks. Rust’s
-standard library is small and stable, but crates are easy to share, use, and
-improve on a timeline different from that of the language. Don’t be shy about
-sharing code that’s useful to you on [crates.io](https://crates.io/)<!-- ignore
--->; it’s likely that it will be useful to someone else as well!
+Menge-share kode pakai Cargo dan [crates.io](https://crates.io/) adalah bagian 
+dari hal yang bikin ekosistem Rust jadi berguna buat berbagai macam tugas. 
+_Standard library_ Rust itu kecil dan stabil, tapi _crates_ itu gampang sekali 
+buat di-_share_, dipakai, dan ditingkatkan di _timeline_ (garis waktu) yang beda 
+dari _timeline_ bahasa Rust itu sendiri. Jangan malu-malu buat nge-share kode 
+yang berguna buat kita di [crates.io](https://crates.io/); kemungkinan besar 
+kode itu bakal berguna buat orang lain juga!

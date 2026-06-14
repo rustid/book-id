@@ -1,108 +1,116 @@
-## Writing Error Messages to Standard Error Instead of Standard Output
+## Menulis Pesan Error ke Standard Error Bukannya Standard Output
 
-At the moment, we’re writing all of our output to the terminal using the
-`println!` macro. In most terminals, there are two kinds of output: *standard
-output* (`stdout`) for general information and *standard error* (`stderr`) for
-error messages. This distinction enables users to choose to direct the
-successful output of a program to a file but still print error messages to the
-screen.
+Saat ini, kita menulis semua output ke terminal memakai macro `println!`. Di 
+sebagian besar terminal, ada dua jenis output: _standard output_ (`stdout`) 
+buat informasi umum dan _standard error_ (`stderr`) buat pesan-pesan error. 
+Pemisahan ini memungkinkan para *user* untuk memilih buat mengarahkan 
+(redirect) output yang sukses dari suatu program ke sebuah file, tapi tetap 
+bisa mencetak pesan-pesan error ke layar.
 
-The `println!` macro is only capable of printing to standard output, so we
-have to use something else to print to standard error.
+Macro `println!` cuma bisa mencetak ke *standard output*, jadi kita harus 
+pakai sesuatu yang lain buat bisa mencetak ke *standard error*.
 
-### Checking Where Errors Are Written
+### Mengecek Ke Mana Error Ditulis
 
-First, let’s observe how the content printed by `minigrep` is currently being
-written to standard output, including any error messages we want to write to
-standard error instead. We’ll do that by redirecting the standard output stream
-to a file while intentionally causing an error. We won’t redirect the standard
-error stream, so any content sent to standard error will continue to display on
-the screen.
+Pertama-tama mari kita amati gimana konten yang dicetak oleh `minigrep` saat 
+ini ditulis ke *standard output*, termasuk pesan-pesan error apa pun yang 
+sebenarnya mau kita tulis ke *standard error*. Kita bakal ngelakuin itu dengan 
+mengarahkan *stream standard output* ke sebuah file sementara kita sengaja 
+membikin sebuah error. Kita tidak akan mengarahkan *stream standard error*, 
+jadi konten apa pun yang dikirim ke *standard error* bakal tetap ditampilkan 
+di layar.
 
-Command line programs are expected to send error messages to the standard error
-stream so we can still see error messages on the screen even if we redirect the
-standard output stream to a file. Our program is not currently well-behaved:
-we’re about to see that it saves the error message output to a file instead!
+Program-program *command line* umumnya diharapkan bakal mengirim pesan error 
+ke *stream standard error* supaya kita masih bisa melihat pesan-pesan error 
+di layar bahkan kalau kita mengarahkan *stream standard output* ke sebuah file. 
+Program kita saat ini belum berperilaku dengan baik: kita bakal segera melihat 
+kalau dia malah menyimpan output pesan error-nya ke sebuah file!
 
-To demonstrate this behavior, we’ll run the program with `>` and the file path,
-*output.txt*, that we want to redirect the standard output stream to. We won’t
-pass any arguments, which should cause an error:
+Buat mendemonstrasikan perilaku ini, kita bakal menjalankan programnya dengan 
+`>` dan _path_ file, _output.txt_, ke mana kita mau mengarahkan *stream standard 
+output*. Kita tidak akan memasukkan argumen apa pun, yang mana seharusnya bakal 
+menyebabkan error:
 
 ```console
 $ cargo run > output.txt
 ```
 
-The `>` syntax tells the shell to write the contents of standard output to
-*output.txt* instead of the screen. We didn’t see the error message we were
-expecting printed to the screen, so that means it must have ended up in the
-file. This is what *output.txt* contains:
+Sintaks `>` memberi tahu *shell* (terminal) buat menulis konten dari *standard 
+output* ke _output.txt_ ketimbang menampilkannya ke layar. Kita ternyata tidak 
+melihat pesan error yang kita harapkan tercetak di layar, jadi itu artinya pesan 
+tersebut pasti berujung di dalam file itu. Inilah apa yang terkandung di dalam 
+_output.txt_:
 
 ```text
 Problem parsing arguments: not enough arguments
 ```
 
-Yup, our error message is being printed to standard output. It’s much more
-useful for error messages like this to be printed to standard error so only
-data from a successful run ends up in the file. We’ll change that.
+Yup, pesan error kita benar-benar dicetak ke *standard output*. Bakal jauh 
+lebih berguna kalau pesan-pesan error semacam ini dicetak ke *standard error* 
+sehingga hanya data dari proses yang berjalan dengan sukses saja yang bakal 
+berakhir di dalam file tersebut. Kita bakal mengubah hal itu.
 
-### Printing Errors to Standard Error
+### Mencetak Error ke Standard Error
 
-We’ll use the code in Listing 12-24 to change how error messages are printed.
-Because of the refactoring we did earlier in this chapter, all the code that
-prints error messages is in one function, `main`. The standard library provides
-the `eprintln!` macro that prints to the standard error stream, so let’s change
-the two places we were calling `println!` to print errors to use `eprintln!`
-instead.
+Kita bakal memakai kode di Listing 12-24 buat mengubah gimana pesan-pesan error 
+dicetak. Karena perombakan (refactoring) yang kita lakuin sebelumnya di bab ini, 
+semua kode yang mencetak pesan error ada di satu fungsi aja, yaitu `main`. 
+*Standard library* menyediakan macro `eprintln!` yang bisa mencetak ke *stream 
+standard error*, jadi mari ubah dua tempat di mana kita memakai `println!` buat 
+mencetak error agar memakai `eprintln!` sebagai gantinya.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="12-24" file-name="src/main.rs" caption="Menulis pesan error ke *standard error* bukannya *standard output* menggunakan `eprintln!`">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-24/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 12-24: Writing error messages to standard error
-instead of standard output using `eprintln!`</span>
+</Listing>
 
-Let’s now run the program again in the same way, without any arguments and
-redirecting standard output with `>`:
+Sekarang mari kita coba jalankan lagi programnya pakai cara yang sama, tanpa 
+argumen apa pun dan mengarahkan *standard output* pakai `>`:
 
 ```console
 $ cargo run > output.txt
 Problem parsing arguments: not enough arguments
 ```
 
-Now we see the error onscreen and *output.txt* contains nothing, which is the
-behavior we expect of command line programs.
+Sekarang kita bisa melihat pesan error-nya di layar dan _output.txt_ isinya 
+kosong, yang mana ini persis seperti perilaku yang kita harapkan dari 
+program-program *command line*.
 
-Let’s run the program again with arguments that don’t cause an error but still
-redirect standard output to a file, like so:
+Mari kita jalankan programnya sekali lagi, kali ini dengan argumen-argumen 
+yang tidak bakal menyebabkan error tapi kita tetap mengarahkan *standard 
+output* ke sebuah file, kayak gini:
 
 ```console
 $ cargo run -- to poem.txt > output.txt
 ```
 
-We won’t see any output to the terminal, and *output.txt* will contain our
-results:
+Kita tidak akan melihat output apa pun di terminal, dan _output.txt_ bakal 
+berisi hasil-hasil pencarian kita:
 
-<span class="filename">Filename: output.txt</span>
+<span class="filename">Nama file: output.txt</span>
 
 ```text
 Are you nobody, too?
 How dreary to be somebody!
 ```
 
-This demonstrates that we’re now using standard output for successful output
-and standard error for error output as appropriate.
+Ini mendemonstrasikan kalau sekarang kita sudah memakai *standard output* 
+buat output yang sukses dan memakai *standard error* buat output yang berupa 
+error sebagaimana mestinya.
 
-## Summary
+## Ringkasan
 
-This chapter recapped some of the major concepts you’ve learned so far and
-covered how to perform common I/O operations in Rust. By using command line
-arguments, files, environment variables, and the `eprintln!` macro for printing
-errors, you’re now prepared to write command line applications. Combined with
-the concepts in previous chapters, your code will be well organized, store data
-effectively in the appropriate data structures, handle errors nicely, and be
-well tested.
+Bab ini merangkum (recap) beberapa konsep besar yang udah kita pelajarin sejauh 
+ini dan membahas soal gimana caranya ngejalanin operasi I/O (Input/Output) 
+umum di Rust. Dengan memakai argumen *command line*, file, *environment variables*, 
+dan macro `eprintln!` buat mencetak error, kita sekarang sudah siap buat nulis 
+berbagai aplikasi *command line*. Digabungkan dengan konsep-konsep dari bab-bab 
+sebelumnya, kode kita bakal terorganisir dengan rapi, menyimpan data secara efektif 
+di struktur data yang tepat, menangani error dengan apik, dan telah teruji dengan 
+baik.
 
-Next, we’ll explore some Rust features that were influenced by functional
-languages: closures and iterators.
+Berikutnya, kita bakal mengeksplorasi beberapa fitur di Rust yang dipengaruhi 
+oleh bahasa pemrograman fungsional: _closures_ dan _iterators_.

@@ -1,109 +1,114 @@
-## Method Syntax
+## Sintaks Method
 
-*Methods* are similar to functions: we declare them with the `fn` keyword and a
-name, they can have parameters and a return value, and they contain some code
-that’s run when the method is called from somewhere else. Unlike functions,
-methods are defined within the context of a struct (or an enum or a trait
-object, which we cover in [Chapter 6][enums]<!-- ignore --> and [Chapter
-17][trait-objects]<!-- ignore -->, respectively), and their first parameter is
-always `self`, which represents the instance of the struct the method is being
-called on.
+_Methods_ itu mirip sama fungsi: kita mendeklarasikan mereka pake keyword `fn` 
+sama sebuah nama, mereka bisa punya parameter sama nilai return, dan mereka 
+isinya sejumlah kode yang dijalanin pas method-nya dipanggil dari tempat lain. 
+Beda sama fungsi, method didefinisikan di dalem konteks sebuah struct (atau enum 
+atau trait object, yang bakal kita bahas masing-masing di [Bab 6][enums] sama 
+[Bab 18][trait-objects]), dan parameter pertamanya selalu `self`, yang 
+merepresentasikan instance dari struct tempat method itu dipanggil.
 
-### Defining Methods
+### Mendefinisikan Methods
 
-Let’s change the `area` function that has a `Rectangle` instance as a parameter
-and instead make an `area` method defined on the `Rectangle` struct, as shown
-in Listing 5-13.
+Yuk kita ubah fungsi `area` yang punya instance `Rectangle` sebagai parameter 
+terus dijadiin sebuah method `area` yang didefinisikan pada struct `Rectangle`, 
+kayak yang ditunjukin di Listing 5-13.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-13" file-name="src/main.rs" caption="Mendefinisikan method `area` pada struct `Rectangle`">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-13/src/main.rs}}
 ```
 
-<span class="caption">Listing 5-13: Defining an `area` method on the
-`Rectangle` struct</span>
+</Listing>
 
-To define the function within the context of `Rectangle`, we start an `impl`
-(implementation) block for `Rectangle`. Everything within this `impl` block
-will be associated with the `Rectangle` type. Then we move the `area` function
-within the `impl` curly brackets and change the first (and in this case, only)
-parameter to be `self` in the signature and everywhere within the body. In
-`main`, where we called the `area` function and passed `rect1` as an argument,
-we can instead use *method syntax* to call the `area` method on our `Rectangle`
-instance. The method syntax goes after an instance: we add a dot followed by
-the method name, parentheses, and any arguments.
+Buat mendefinisikan fungsi di dalem konteks `Rectangle`, kita mulai blok 
+`impl` (implementasi) buat `Rectangle`. Segala hal di dalem blok `impl` ini 
+bakal terkait sama tipe `Rectangle`. Terus kita pindahin fungsi `area` ke dalem 
+kurung kurawal `impl` dan ngubah parameter pertama (dan di kasus ini, satu-
+satunya parameter) jadi `self` di signature sama di mana-mana di dalem body-nya. 
+Di `main`, tempat kita manggil fungsi `area` terus masukin `rect1` sebagai 
+argumen, kita sekarang bisa pake _sintaks method_ buat manggil method `area` 
+pada instance `Rectangle` kita. Sintaks method ditaruh setelah sebuah instance: 
+kita tambahin titik diikuti sama nama method, tanda kurung, sama argumen apa pun.
 
-In the signature for `area`, we use `&self` instead of `rectangle: &Rectangle`.
-The `&self` is actually short for `self: &Self`. Within an `impl` block, the
-type `Self` is an alias for the type that the `impl` block is for. Methods must
-have a parameter named `self` of type `Self` for their first parameter, so Rust
-lets you abbreviate this with only the name `self` in the first parameter spot.
-Note that we still need to use the `&` in front of the `self` shorthand to
-indicate that this method borrows the `Self` instance, just as we did in
-`rectangle: &Rectangle`. Methods can take ownership of `self`, borrow `self`
-immutably, as we’ve done here, or borrow `self` mutably, just as they can any
-other parameter.
+Di signature buat `area`, kita pake `&self` bukannya `rectangle: &Rectangle`. 
+`&self` sebenernya singkatan dari `self: &Self`. Di dalem blok `impl`, tipe 
+`Self` adalah alias buat tipe yang lagi diimplementasikan sama blok `impl` itu. 
+Methods harus punya parameter namanya `self` bertipe `Self` buat parameter 
+pertama mereka, jadi Rust ngebolehin kita nyingkat ini dengan cuma nama `self` 
+di tempat parameter pertama. Perhatiin ya kalau kita tetep perlu pake `&` di 
+depan singkatan `self` buat nunjukin kalau method ini minjem (_borrows_) instance 
+`Self`, sama kayak pas kita nulis `rectangle: &Rectangle`. Methods bisa ngambil 
+_ownership_ dari `self`, minjem `self` secara _immutable_, kayak yang kita 
+lakuin di sini, atau minjem `self` secara _mutable_, sama kayak parameter 
+lainnya.
 
-We chose `&self` here for the same reason we used `&Rectangle` in the function
-version: we don’t want to take ownership, and we just want to read the data in
-the struct, not write to it. If we wanted to change the instance that we’ve
-called the method on as part of what the method does, we’d use `&mut self` as
-the first parameter. Having a method that takes ownership of the instance by
-using just `self` as the first parameter is rare; this technique is usually
-used when the method transforms `self` into something else and you want to
-prevent the caller from using the original instance after the transformation.
+Kita milih `&self` di sini dengan alasan yang sama kayak kenapa kita pake 
+`&Rectangle` di versi fungsinya: kita nggak mau ngambil _ownership_, dan kita 
+cuma mau baca data di struct-nya, bukan nulis ke sana. Kalau kita mau ngerubah 
+instance yang kita panggil method-nya sebagai bagian dari apa yang dilakuin 
+method-nya, kita bakal pake `&mut self` sebagai parameter pertamanya. Punya 
+method yang ngambil _ownership_ dari instance dengan cuma pake `self` sebagai 
+parameter pertama itu jarang; teknik ini biasanya dipake pas method-nya ngerubah 
+(`transform`) `self` jadi sesuatu yang lain terus kita mau nyegah pemanggilnya 
+buat pake instance aslinya setelah transformasi itu.
 
-The main reason for using methods instead of functions, in addition to
-providing method syntax and not having to repeat the type of `self` in every
-method’s signature, is for organization. We’ve put all the things we can do
-with an instance of a type in one `impl` block rather than making future users
-of our code search for capabilities of `Rectangle` in various places in the
-library we provide.
+Alasan utama buat pake method bukannya fungsi, selain ngasih sintaks method 
+dan nggak perlu ngulang-ngulang nulis tipe `self` di tiap signature method, 
+adalah buat pengaturan kode (organization). Kita naruh semua hal yang bisa kita 
+lakuin sama sebuah instance dari suatu tipe di dalem satu blok `impl` bukannya 
+bikin orang yang nanti pake kode kita harus nyari-nyari kemampuan dari 
+`Rectangle` di berbagai tempat di library yang kita kasih.
 
-Note that we can choose to give a method the same name as one of the struct’s
-fields. For example, we can define a method on `Rectangle` that is also named
-`width`:
+Perhatiin ya kalau kita bisa milih buat ngasih nama method sama kayak salah 
+satu nama field struct-nya. Misalnya, kita bisa mendefinisikan method di 
+`Rectangle` yang juga namanya `width`:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/no-listing-06-method-field-interaction/src/main.rs:here}}
 ```
 
-Here, we’re choosing to make the `width` method return `true` if the value in
-the instance’s `width` field is greater than `0` and `false` if the value is
-`0`: we can use a field within a method of the same name for any purpose. In
-`main`, when we follow `rect1.width` with parentheses, Rust knows we mean the
-method `width`. When we don’t use parentheses, Rust knows we mean the field
-`width`.
+</Listing>
 
-Often, but not always, when we give a method the same name as a field we want
-it to only return the value in the field and do nothing else. Methods like this
-are called *getters*, and Rust does not implement them automatically for struct
-fields as some other languages do. Getters are useful because you can make the
-field private but the method public, and thus enable read-only access to that
-field as part of the type’s public API. We will discuss what public and private
-are and how to designate a field or method as public or private in [Chapter
-7][public]<!-- ignore -->.
+Di sini, kita milih buat bikin method `width` balikin `true` kalau nilai di 
+field `width` dari instance-nya lebih gede dari `0` dan `false` kalau nilainya 
+`0`: kita bisa pake field di dalem method dengan nama yang sama buat tujuan apa 
+pun. Di `main`, pas kita ngikutin `rect1.width` pake tanda kurung, Rust tau 
+kita maksudnya method `width`. Pas kita nggak pake tanda kurung, Rust tau 
+maksudnya field `width`.
 
-> ### Where’s the `->` Operator?
+Sering kali, tapi nggak selalu, pas kita ngasih method nama yang sama kayak 
+sebuah field, kita mau method itu cuma balikin nilai di field-nya dan nggak 
+ngelakuin hal lain. Method kayak gini namanya _getters_, dan Rust nggak 
+mengimplementasikan mereka secara otomatis buat field struct kayak yang 
+dilakuin beberapa bahasa lain. Getters itu berguna karena kita bisa bikin 
+field-nya jadi _private_ tapi method-nya _public_, dan dengan gitu ngasih akses 
+_read-only_ ke field itu sebagai bagian dari API _public_ tipe tersebut. Kita 
+bakal bahas apa itu _public_ dan _private_ dan gimana cara nandain field atau 
+method sebagai _public_ atau _private_ di [Bab 7][public].
+
+> ### Ke Mana Perginya Operator `->`?
 >
-> In C and C++, two different operators are used for calling methods: you use
-> `.` if you’re calling a method on the object directly and `->` if you’re
-> calling the method on a pointer to the object and need to dereference the
-> pointer first. In other words, if `object` is a pointer,
-> `object->something()` is similar to `(*object).something()`.
+> Di C sama C++, dua operator yang beda dipake buat manggil method: kita pake 
+> `.` kalau kita manggil method di objeknya secara langsung dan `->` kalau 
+> kita manggil method di sebuah _pointer_ ke objeknya dan perlu nge-_dereference_ 
+> _pointer_-nya dulu. Dengan kata lain, kalau `object` itu sebuah _pointer_, 
+> `object->something()` itu mirip sama `(*object).something()`.
 >
-> Rust doesn’t have an equivalent to the `->` operator; instead, Rust has a
-> feature called *automatic referencing and dereferencing*. Calling methods is
-> one of the few places in Rust that has this behavior.
+> Rust nggak punya padanan buat operator `->`; sebaliknya, Rust punya fitur 
+> namanya _automatic referencing and dereferencing_ (referencing dan 
+> dereferencing otomatis). Manggil method adalah salah satu dari sedikit tempat 
+> di Rust yang punya perilaku ini.
 >
-> Here’s how it works: when you call a method with `object.something()`, Rust
-> automatically adds in `&`, `&mut`, or `*` so `object` matches the signature of
-> the method. In other words, the following are the same:
+> Ini cara kerjanya: pas kita manggil sebuah method pake `object.something()`, 
+> Rust secara otomatis nambahin `&`, `&mut`, atau `*` biar `object` cocok sama 
+> signature dari method-nya. Dengan kata lain, dua baris berikut itu sama aja:
 >
 > <!-- CAN'T EXTRACT SEE BUG https://github.com/rust-lang/mdBook/issues/1127 -->
+>
 > ```rust
 > # #[derive(Debug,Copy,Clone)]
 > # struct Point {
@@ -125,131 +130,129 @@ are and how to designate a field or method as public or private in [Chapter
 > (&p1).distance(&p2);
 > ```
 >
-> The first one looks much cleaner. This automatic referencing behavior works
-> because methods have a clear receiver—the type of `self`. Given the receiver
-> and name of a method, Rust can figure out definitively whether the method is
-> reading (`&self`), mutating (`&mut self`), or consuming (`self`). The fact
-> that Rust makes borrowing implicit for method receivers is a big part of
-> making ownership ergonomic in practice.
+> Yang pertama keliatan jauh lebih bersih. Perilaku _automatic referencing_ ini 
+> bisa jalan karena method punya penerima (_receiver_) yang jelas—yaitu tipe dari 
+> `self`. Berdasarkan penerima dan nama method-nya, Rust bisa tau secara 
+> definitif apakah method itu lagi baca (`&self`), nge-mutasi (`&mut self`), 
+> atau ngonsumsi (`self`). Fakta kalau Rust bikin _borrowing_ jadi implisit buat 
+> penerima method adalah bagian gede dari kenapa _ownership_ terasa ergonomis 
+> di praktiknya.
 
-### Methods with More Parameters
+### Methods dengan Lebih Banyak Parameter
 
-Let’s practice using methods by implementing a second method on the `Rectangle`
-struct. This time we want an instance of `Rectangle` to take another instance
-of `Rectangle` and return `true` if the second `Rectangle` can fit completely
-within `self` (the first `Rectangle`); otherwise, it should return `false`.
-That is, once we’ve defined the `can_hold` method, we want to be able to write
-the program shown in Listing 5-14.
+Yuk kita latihan pake method dengan mengimplementasikan method kedua di struct 
+`Rectangle`. Kali ini kita mau sebuah instance `Rectangle` nerima instance 
+`Rectangle` lainnya dan balikin `true` kalau `Rectangle` yang kedua bisa muat 
+sepenuhnya di dalem `self` (`Rectangle` yang pertama); kalau nggak, dia harus 
+balikin `false`. Jadi, setelah kita mendefinisikan method `can_hold`, kita mau 
+bisa nulis program kayak yang ditunjukin di Listing 5-14.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-14" file-name="src/main.rs" caption="Pake method `can_hold` yang belum ditulis">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-14/src/main.rs}}
 ```
 
-<span class="caption">Listing 5-14: Using the as-yet-unwritten `can_hold`
-method</span>
+</Listing>
 
-The expected output would look like the following because both dimensions of
-`rect2` are smaller than the dimensions of `rect1`, but `rect3` is wider than
-`rect1`:
+Output yang diharepin bakal keliatan kayak gini karena kedua dimensi `rect2` 
+itu lebih kecil dari dimensi `rect1`, tapi `rect3` lebih lebar dari `rect1`:
 
 ```text
 Can rect1 hold rect2? true
 Can rect1 hold rect3? false
 ```
 
-We know we want to define a method, so it will be within the `impl Rectangle`
-block. The method name will be `can_hold`, and it will take an immutable borrow
-of another `Rectangle` as a parameter. We can tell what the type of the
-parameter will be by looking at the code that calls the method:
-`rect1.can_hold(&rect2)` passes in `&rect2`, which is an immutable borrow to
-`rect2`, an instance of `Rectangle`. This makes sense because we only need to
-read `rect2` (rather than write, which would mean we’d need a mutable borrow),
-and we want `main` to retain ownership of `rect2` so we can use it again after
-calling the `can_hold` method. The return value of `can_hold` will be a
-Boolean, and the implementation will check whether the width and height of
-`self` are greater than the width and height of the other `Rectangle`,
-respectively. Let’s add the new `can_hold` method to the `impl` block from
-Listing 5-13, shown in Listing 5-15.
+Kita tau kita mau mendefinisikan sebuah method, jadi dia bakal ada di dalem blok 
+`impl Rectangle`. Nama method-nya adalah `can_hold`, dan dia bakal nerima 
+_immutable borrow_ dari `Rectangle` lainnya sebagai parameter. Kita bisa tau apa 
+tipe parameternya dengan ngeliat kode yang manggil method-nya: 
+`rect1.can_hold(&rect2)` masukin `&rect2`, yang merupakan _immutable borrow_ ke 
+`rect2`, sebuah instance dari `Rectangle`. Ini masuk akal karena kita cuma 
+perlu baca `rect2` (bukannya nulis, yang bakal berarti kita butuh _mutable 
+borrow_), dan kita mau `main` tetep punya _ownership_ dari `rect2` biar kita 
+bisa pake lagi setelah manggil method `can_hold`. Nilai return dari `can_hold` 
+bakal berupa Boolean, dan implementasinya bakal nge-cek apakah lebar sama tinggi 
+dari `self` lebih gede dari lebar sama tinggi dari `Rectangle` yang satunya. 
+Yuk kita tambahin method `can_hold` baru ini ke blok `impl` dari Listing 5-13, 
+yang ditunjukin di Listing 5-15.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-15" file-name="src/main.rs" caption="Mengimplementasikan method `can_hold` di `Rectangle` yang nerima instance `Rectangle` lainnya sebagai parameter">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-15/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 5-15: Implementing the `can_hold` method on
-`Rectangle` that takes another `Rectangle` instance as a parameter</span>
+</Listing>
 
-When we run this code with the `main` function in Listing 5-14, we’ll get our
-desired output. Methods can take multiple parameters that we add to the
-signature after the `self` parameter, and those parameters work just like
-parameters in functions.
+Pas kita jalanin kode ini sama fungsi `main` di Listing 5-14, kita bakal dapet 
+output yang kita mau. Method bisa nerima banyak parameter yang kita tambahin di 
+signature setelah parameter `self`, dan parameter-parameter itu cara kerjanya 
+persis sama kayak parameter di fungsi biasa.
 
 ### Associated Functions
 
-All functions defined within an `impl` block are called *associated functions*
-because they’re associated with the type named after the `impl`. We can define
-associated functions that don’t have `self` as their first parameter (and thus
-are not methods) because they don’t need an instance of the type to work with.
-We’ve already used one function like this: the `String::from` function that’s
-defined on the `String` type.
+Semua fungsi yang didefinisikan di dalem blok `impl` disebut _associated functions_ 
+(fungsi terkait) karena mereka terkait sama tipe yang dinamain setelah kata 
+`impl`. Kita bisa mendefinisikan _associated functions_ yang nggak punya `self` 
+sebagai parameter pertamanya (dan makanya bukan methods) karena mereka nggak 
+butuh instance dari tipe itu buat jalan. Kita udah pake salah satu fungsi kayak 
+gini: fungsi `String::from` yang didefinisikan pada tipe `String`.
 
-Associated functions that aren’t methods are often used for constructors that
-will return a new instance of the struct. These are often called `new`, but
-`new` isn’t a special name and isn’t built into the language. For example, we
-could choose to provide an associated function named `square` that would have
-one dimension parameter and use that as both width and height, thus making it
-easier to create a square `Rectangle` rather than having to specify the same
-value twice:
+_Associated functions_ yang bukan methods sering dipake buat _constructors_ yang 
+bakal balikin instance baru dari struct-nya. Ini sering dikasih nama `new`, tapi 
+`new` bukan nama khusus dan nggak bawaan dari bahasanya. Misalnya, kita bisa 
+milih buat nyediain _associated function_ namanya `square` yang punya satu 
+parameter dimensi dan pakenya buat lebar sama tingginya, jadi lebih gampang 
+buat bikin `Rectangle` bentuk persegi bukannya harus nentuin nilai yang sama dua 
+kali:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/no-listing-03-associated-functions/src/main.rs:here}}
 ```
 
-The `Self` keywords in the return type and in the body of the function are
-aliases for the type that appears after the `impl` keyword, which in this case
-is `Rectangle`.
+Keyword `Self` di tipe return sama di dalem body fungsinya itu alias buat tipe 
+yang muncul setelah keyword `impl`, yang di kasus ini adalah `Rectangle`.
 
-To call this associated function, we use the `::` syntax with the struct name;
-`let sq = Rectangle::square(3);` is an example. This function is namespaced by
-the struct: the `::` syntax is used for both associated functions and
-namespaces created by modules. We’ll discuss modules in [Chapter
-7][modules]<!-- ignore -->.
+Buat manggil _associated function_ ini, kita pake sintaks `::` bareng nama 
+struct-nya; `let sq = Rectangle::square(3);` adalah contohnya. Fungsi ini punya 
+_namespace_ oleh struct-nya: sintaks `::` dipake buat baik _associated functions_ 
+maupun _namespaces_ yang dibuat sama modul. Kita bakal bahas modul di [Bab 7][modules].
 
-### Multiple `impl` Blocks
+### Banyak Blok `impl`
 
-Each struct is allowed to have multiple `impl` blocks. For example, Listing
-5-15 is equivalent to the code shown in Listing 5-16, which has each method in
-its own `impl` block.
+Tiap struct dibolehin buat punya banyak blok `impl`. Contohnya, Listing 5-15 
+itu ekuivalen sama kode yang ditunjukin di Listing 5-16, yang punya tiap 
+method di blok `impl`-nya masing-masing.
+
+<Listing number="5-16" caption="Nulis ulang Listing 5-15 pake banyak blok `impl`">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-16/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 5-16: Rewriting Listing 5-15 using multiple `impl`
-blocks</span>
+</Listing>
 
-There’s no reason to separate these methods into multiple `impl` blocks here,
-but this is valid syntax. We’ll see a case in which multiple `impl` blocks are
-useful in Chapter 10, where we discuss generic types and traits.
+Nggak ada alesan khusus buat misahin method-method ini ke dalem banyak blok 
+`impl` di sini, tapi ini sintaks yang valid. Kita bakal liat kasus di mana 
+banyak blok `impl` berguna di Bab 10, pas kita bahas soal _generic types_ dan 
+_traits_.
 
-## Summary
+## Ringkasan
 
-Structs let you create custom types that are meaningful for your domain. By
-using structs, you can keep associated pieces of data connected to each other
-and name each piece to make your code clear. In `impl` blocks, you can define
-functions that are associated with your type, and methods are a kind of
-associated function that let you specify the behavior that instances of your
-structs have.
+Structs ngebolehin kita bikin tipe kustom yang bermakna buat domain kita. Dengan 
+pake struct, kita bisa nyimpen potongan data yang terkait tetep nyambung satu 
+sama lain dan ngasih nama ke tiap potongannya buat bikin kode kita jelas. Di 
+dalem blok `impl`, kita bisa mendefinisikan fungsi-fungsi yang terkait sama 
+tipe kita, dan methods adalah jenis _associated function_ yang ngebolehin kita 
+nentuin perilaku yang dimiliki sama instance dari struct kita.
 
-But structs aren’t the only way you can create custom types: let’s turn to
-Rust’s enum feature to add another tool to your toolbox.
+Tapi struct bukan satu-satunya cara kita bisa bikin tipe kustom: yuk kita 
+beralih ke fitur enum di Rust buat nambahin _tool_ lain ke _toolbox_ kita.
 
 [enums]: ch06-00-enums.html
-[trait-objects]: ch17-02-trait-objects.md
+[trait-objects]: ch18-02-trait-objects.md
 [public]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#exposing-paths-with-the-pub-keyword
 [modules]: ch07-02-defining-modules-to-control-scope-and-privacy.html

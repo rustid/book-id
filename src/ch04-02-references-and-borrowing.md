@@ -1,253 +1,270 @@
-## References and Borrowing
+## Referensi dan Borrowing
 
-The issue with the tuple code in Listing 4-5 is that we have to return the
-`String` to the calling function so we can still use the `String` after the
-call to `calculate_length`, because the `String` was moved into
-`calculate_length`. Instead, we can provide a reference to the `String` value.
-A *reference* is like a pointer in that it’s an address we can follow to access
-the data stored at that address; that data is owned by some other variable.
-Unlike a pointer, a reference is guaranteed to point to a valid value of a
-particular type for the life of that reference.
+Masalah dari kode tuple di Listing 4-5 adalah kita harus balikin `String`-nya ke 
+fungsi pemanggil biar kita tetep bisa pake `String`-nya setelah manggil 
+`calculate_length`, soalnya `String`-nya udah di-_move_ ke dalem 
+`calculate_length`. Sebagai gantinya, kita bisa ngasih sebuah referensi ke nilai 
+`String` itu. Sebuah _reference_ (referensi) itu kayak _pointer_ karena dia 
+adalah alamat yang bisa kita ikutin buat akses data yang disimpan di alamat itu; 
+data itu dimiliki sama variabel lain. Beda sama _pointer_, sebuah referensi 
+dijamin bakal nunjuk ke sebuah nilai yang valid dari tipe tertentu selama masa 
+hidup referensi itu.
 
-Here is how you would define and use a `calculate_length` function that has a
-reference to an object as a parameter instead of taking ownership of the value:
+Ini cara kita mendefinisikan dan pake fungsi `calculate_length` yang punya 
+referensi ke sebuah objek sebagai parameter bukannya ngambil _ownership_ dari 
+nilainya:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-07-reference/src/main.rs:all}}
 ```
 
-First, notice that all the tuple code in the variable declaration and the
-function return value is gone. Second, note that we pass `&s1` into
-`calculate_length` and, in its definition, we take `&String` rather than
-`String`. These ampersands represent *references*, and they allow you to refer
-to some value without taking ownership of it. Figure 4-5 depicts this concept.
+</Listing>
 
-<img alt="Three tables: the table for s contains only a pointer to the table
-for s1. The table for s1 contains the stack data for s1 and points to the
-string data on the heap." src="img/trpl04-05.svg" class="center" />
+Pertama, perhatiin kalau semua kode tuple di deklarasi variabel sama nilai 
+return fungsi udah nggak ada. Kedua, perhatiin kalau kita masukin `&s1` ke 
+`calculate_length` dan, di definisinya, kita nerima `&String` bukannya `String`. 
+Tanda ampersand ini merepresentasikan _references_, dan mereka ngebolehin kita 
+buat ngerujuk ke suatu nilai tanpa ngambil _ownership_-nya. Gambar 4-6 
+ngeliatin konsep ini.
 
-<span class="caption">Figure 4-5: A diagram of `&String s` pointing at `String
-s1`</span>
+<img alt="Tiga tabel: tabel buat s isinya cuma pointer ke tabel buat s1. Tabel 
+buat s1 isinya data stack buat s1 dan nunjuk ke data string di heap." 
+src="img/trpl04-06.svg" class="center" />
 
-> Note: The opposite of referencing by using `&` is *dereferencing*, which is
-> accomplished with the dereference operator, `*`. We’ll see some uses of the
-> dereference operator in Chapter 8 and discuss details of dereferencing in
-> Chapter 15.
+<span class="caption">Gambar 4-6: Diagram `&String s` yang nunjuk ke `String s1`</span>
 
-Let’s take a closer look at the function call here:
+> Catatan: Kebalikan dari bikin referensi pake `&` adalah _dereferencing_, yang 
+> dilakuin pake operator dereference, `*`. Kita bakal liat beberapa penggunaan 
+> operator dereference di Bab 8 dan bahas detail soal dereferencing di Bab 15.
+
+Yuk kita liat lebih deket pemanggilan fungsinya di sini:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-07-reference/src/main.rs:here}}
 ```
 
-The `&s1` syntax lets us create a reference that *refers* to the value of `s1`
-but does not own it. Because it does not own it, the value it points to will
-not be dropped when the reference stops being used.
+Sintaks `&s1` ngebolehin kita bikin sebuah referensi yang _ngerujuk_ ke nilai 
+dari `s1` tapi nggak memilikinya. Karena referensinya nggak memiliki nilainya, 
+nilai yang dia tunjuk nggak bakal di-_drop_ pas referensinya udah nggak dipake 
+lagi.
 
-Likewise, the signature of the function uses `&` to indicate that the type of
-the parameter `s` is a reference. Let’s add some explanatory annotations:
+Begitu juga sama signature fungsinya yang pake `&` buat nunjukin kalau tipe 
+parameternya `s` itu adalah sebuah referensi. Yuk kita tambahin beberapa 
+anotasi penjelasan:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-08-reference-with-annotations/src/main.rs:here}}
 ```
 
-The scope in which the variable `s` is valid is the same as any function
-parameter’s scope, but the value pointed to by the reference is not dropped
-when `s` stops being used, because `s` doesn’t have ownership. When functions
-have references as parameters instead of the actual values, we won’t need to
-return the values in order to give back ownership, because we never had
-ownership.
+Scope di mana variabel `s` itu valid sama kayak scope parameter fungsi mana pun, 
+tapi nilai yang ditunjuk sama referensinya nggak bakal di-_drop_ pas `s` udah 
+nggak dipake lagi, karena `s` nggak punya _ownership_. Pas fungsi punya 
+referensi sebagai parameter bukannya nilai aslinya, kita nggak perlu balikin 
+nilai-nilainya buat ngasih balik _ownership_, karena emang kita nggak pernah 
+punya _ownership_-nya dari awal.
 
-We call the action of creating a reference *borrowing*. As in real life, if a
-person owns something, you can borrow it from them. When you’re done, you have
-to give it back. You don’t own it.
+Kita sebut aksi bikin referensi ini sebagai _borrowing_ (meminjam). Kayak di 
+dunia nyata, kalau seseorang punya sesuatu, kita bisa pinjem dari mereka. Pas 
+udah selese, kita harus balikin. Kita nggak memilikinya.
 
-So, what happens if we try to modify something we’re borrowing? Try the code in
-Listing 4-6. Spoiler alert: it doesn’t work!
+Jadi, apa yang terjadi kalau kita nyoba ngerubah sesuatu yang kita pinjem? Coba 
+kode di Listing 4-6. Spoiler: kodenya nggak bakal jalan!
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="4-6" file-name="src/main.rs" caption="Nyoba ngerubah nilai yang dipinjem">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-06/src/main.rs}}
 ```
 
-<span class="caption">Listing 4-6: Attempting to modify a borrowed value</span>
+</Listing>
 
-Here’s the error:
+Ini error-nya:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/listing-04-06/output.txt}}
 ```
 
-Just as variables are immutable by default, so are references. We’re not
-allowed to modify something we have a reference to.
+Sama kayak variabel yang _immutable_ secara default, referensi juga gitu. Kita 
+nggak dibolehin ngerubah sesuatu yang kita punya referensinya.
 
 ### Mutable References
 
-We can fix the code from Listing 4-6 to allow us to modify a borrowed value
-with just a few small tweaks that use, instead, a *mutable reference*:
+Kita bisa benerin kode dari Listing 4-6 biar kita dibolehin ngerubah nilai yang 
+dipinjem dengan cuma beberapa perubahan kecil yang pake _mutable reference_ 
+sebagai gantinya:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-09-fixes-listing-04-06/src/main.rs}}
 ```
 
-First we change `s` to be `mut`. Then we create a mutable reference with `&mut
-s` where we call the `change` function, and update the function signature to
-accept a mutable reference with `some_string: &mut String`. This makes it very
-clear that the `change` function will mutate the value it borrows.
+</Listing>
 
-Mutable references have one big restriction: if you have a mutable reference to
-a value, you can have no other references to that value. This code that
-attempts to create two mutable references to `s` will fail:
+Pertama kita ubah `s` jadi `mut`. Terus kita bikin sebuah mutable reference 
+pake `&mut s` pas kita manggil fungsi `change`, terus update signature fungsinya 
+biar nerima sebuah mutable reference pake `some_string: &mut String`. Ini 
+bikin keliatan jelas sekali kalau fungsi `change` bakal ngerubah (_mutate_) 
+nilai yang dia pinjem.
 
-<span class="filename">Filename: src/main.rs</span>
+Mutable references punya satu larangan gede: kalau kita punya sebuah mutable 
+reference ke sebuah nilai, kita nggak boleh punya referensi lain ke nilai itu. 
+Kode ini yang nyoba bikin dua mutable reference ke `s` bakal gagal:
+
+<Listing file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-10-multiple-mut-not-allowed/src/main.rs:here}}
 ```
 
-Here’s the error:
+</Listing>
+
+Ini error-nya:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-10-multiple-mut-not-allowed/output.txt}}
 ```
 
-This error says that this code is invalid because we cannot borrow `s` as
-mutable more than once at a time. The first mutable borrow is in `r1` and must
-last until it’s used in the `println!`, but between the creation of that
-mutable reference and its usage, we tried to create another mutable reference
-in `r2` that borrows the same data as `r1`.
+Error ini bilang kalau kodenya nggak valid karena kita nggak bisa minjem `s` 
+sebagai mutable lebih dari sekali dalam satu waktu. _Mutable borrow_ yang 
+pertama ada di `r1` dan harus bertahan sampe dia dipake di `println!`, tapi di 
+antara pembuatan mutable reference itu sampe penggunaannya, kita nyoba bikin 
+mutable reference lain di `r2` yang minjem data yang sama kayak `r1`.
 
-The restriction preventing multiple mutable references to the same data at the
-same time allows for mutation but in a very controlled fashion. It’s something
-that new Rustaceans struggle with because most languages let you mutate
-whenever you’d like. The benefit of having this restriction is that Rust can
-prevent data races at compile time. A *data race* is similar to a race
-condition and happens when these three behaviors occur:
+Larangan yang nyegah banyak mutable reference ke data yang sama di waktu yang 
+bersamaan ini ngebolehin adanya mutasi tapi dengan cara yang sangat terkontrol. 
+Ini hal yang biasanya bikin Rustacean baru rada pusing karena kebanyakan bahasa 
+ngebolehin kita ngerubah nilai kapan pun kita mau. Keuntungan punya larangan 
+ini adalah Rust bisa nyegah _data races_ pas _compile time_. Sebuah _data race_ 
+itu mirip kayak _race condition_ dan terjadi pas tiga perilaku ini muncul:
 
-* Two or more pointers access the same data at the same time.
-* At least one of the pointers is being used to write to the data.
-* There’s no mechanism being used to synchronize access to the data.
+- Dua atau lebih _pointer_ akses data yang sama di waktu yang sama.
+- Minimal salah satu dari _pointer_-nya dipake buat nulis ke datanya.
+- Nggak ada mekanisme yang dipake buat sinkronisasi akses ke datanya.
 
-Data races cause undefined behavior and can be difficult to diagnose and fix
-when you’re trying to track them down at runtime; Rust prevents this problem by
-refusing to compile code with data races!
+_Data races_ bikin perilaku yang nggak terdefinisi (undefined behavior) dan bisa 
+susah buat didiagnosa dan diperbaiki pas kita nyoba nyari tau pas _runtime_; 
+Rust nyegah masalah ini dengan nolak buat nge-compile kode yang punya _data 
+races_!
 
-As always, we can use curly brackets to create a new scope, allowing for
-multiple mutable references, just not *simultaneous* ones:
+Kayak biasa, kita bisa pake kurung kurawal buat bikin scope baru, yang 
+ngebolehin adanya banyak mutable reference, cuma bukan yang _bersamaan_:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-11-muts-in-separate-scopes/src/main.rs:here}}
 ```
 
-Rust enforces a similar rule for combining mutable and immutable references.
-This code results in an error:
+Rust juga nerapin aturan yang mirip buat ngelempokin mutable sama immutable 
+references. Kode ini ngasilin error:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-12-immutable-and-mutable-not-allowed/src/main.rs:here}}
 ```
 
-Here’s the error:
+Ini error-nya:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-12-immutable-and-mutable-not-allowed/output.txt}}
 ```
 
-Whew! We *also* cannot have a mutable reference while we have an immutable one
-to the same value.
+Fiuh! Kita _juga_ nggak bisa punya sebuah mutable reference pas kita lagi punya 
+sebuah immutable reference ke nilai yang sama.
 
-Users of an immutable reference don’t expect the value to suddenly change out
-from under them! However, multiple immutable references are allowed because no
-one who is just reading the data has the ability to affect anyone else’s
-reading of the data.
+User dari sebuah immutable reference nggak bakal nyangka kalau nilainya tiba-
+tiba berubah gitu aja! Tapi, banyak immutable references diperbolehkan karena 
+nggak ada orang yang cuma baca datanya punya kemampuan buat ngaruhin bacaan 
+data orang lain.
 
-Note that a reference’s scope starts from where it is introduced and continues
-through the last time that reference is used. For instance, this code will
-compile because the last usage of the immutable references, the `println!`,
-occurs before the mutable reference is introduced:
+Perhatiin ya kalau scope sebuah referensi dimulai dari tempat dia dikenalin 
+sampe terakhir kali referensi itu dipake. Misalnya, kode ini bakal ke-compile 
+karena penggunaan terakhir dari immutable references ada di `println!`, sebelum 
+mutable reference-nya dikenalin:
 
-```rust,edition2021
+```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-13-reference-scope-ends/src/main.rs:here}}
 ```
 
-The scopes of the immutable references `r1` and `r2` end after the `println!`
-where they are last used, which is before the mutable reference `r3` is
-created. These scopes don’t overlap, so this code is allowed: the compiler can
-tell that the reference is no longer being used at a point before the end of
-the scope.
+Scope dari immutable references `r1` sama `r2` abis setelah `println!` di mana 
+mereka terakhir dipake, yang mana itu sebelum mutable reference `r3` dibuat. 
+Scope-scope ini nggak tumpang tindih, jadi kode ini diperbolehkan: _compiler_ 
+bisa tau kalau referensinya udah nggak dipake lagi di titik sebelum akhir dari 
+scope-nya.
 
-Even though borrowing errors may be frustrating at times, remember that it’s
-the Rust compiler pointing out a potential bug early (at compile time rather
-than at runtime) and showing you exactly where the problem is. Then you don’t
-have to track down why your data isn’t what you thought it was.
+Walaupun error _borrowing_ kadang bikin kesel, inget ya kalau itu adalah 
+_compiler_ Rust yang lagi nunjukin potensi _bug_ dari awal (pas _compile time_ 
+bukannya pas _runtime_) dan nunjukin tepat di mana letak masalahnya. Jadi kita 
+nggak perlu repot-repot nyari tau kenapa data kita nggak sesuai sama apa yang 
+kita pikirkan.
 
 ### Dangling References
 
-In languages with pointers, it’s easy to erroneously create a *dangling
-pointer*—a pointer that references a location in memory that may have been
-given to someone else—by freeing some memory while preserving a pointer to that
-memory. In Rust, by contrast, the compiler guarantees that references will
-never be dangling references: if you have a reference to some data, the
-compiler will ensure that the data will not go out of scope before the
-reference to the data does.
+Di bahasa yang punya _pointer_, gampang sekali buat nggak sengaja bikin sebuah 
+_dangling pointer_—sebuah _pointer_ yang ngerujuk ke sebuah lokasi di memori 
+yang mungkin udah dikasih ke orang lain—dengan cara ngebebasin sejumlah memori 
+tapi tetep nyimpen _pointer_ ke memori itu. Di Rust, sebaliknya, _compiler_ 
+ngejamin kalau referensi nggak bakal pernah jadi _dangling references_: kalau 
+kita punya sebuah referensi ke suatu data, _compiler_ bakal mastiin kalau 
+datanya nggak bakal keluar dari scope sebelum referensi ke datanya keluar duluan.
 
-Let’s try to create a dangling reference to see how Rust prevents them with a
-compile-time error:
+Yuk kita coba bikin sebuah _dangling reference_ buat liat gimana Rust nyegah 
+mereka pake _compile-time error_:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-14-dangling-reference/src/main.rs}}
 ```
 
-Here’s the error:
+</Listing>
+
+Ini error-nya:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-14-dangling-reference/output.txt}}
 ```
 
-This error message refers to a feature we haven’t covered yet: lifetimes. We’ll
-discuss lifetimes in detail in Chapter 10. But, if you disregard the parts
-about lifetimes, the message does contain the key to why this code is a problem:
+Pesan error ini ngerujuk ke fitur yang belum kita bahas: _lifetimes_. Kita bakal 
+bahas _lifetimes_ secara detail di Bab 10. Tapi, kalau kita cuekin bagian soal 
+_lifetimes_-nya, pesannya emang isinya kunci kenapa kode ini bermasalah:
 
 ```text
 this function's return type contains a borrowed value, but there is no value
 for it to be borrowed from
 ```
 
-Let’s take a closer look at exactly what’s happening at each stage of our
-`dangle` code:
+Yuk kita liat lebih deket apa sebenernya yang terjadi di tiap tahap kode 
+`dangle` kita:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-15-dangling-reference-annotated/src/main.rs:here}}
 ```
 
-Because `s` is created inside `dangle`, when the code of `dangle` is finished,
-`s` will be deallocated. But we tried to return a reference to it. That means
-this reference would be pointing to an invalid `String`. That’s no good! Rust
-won’t let us do this.
+</Listing>
 
-The solution here is to return the `String` directly:
+Karena `s` dibuat di dalem `dangle`, pas kode `dangle` selesai, `s` bakal 
+di-dealokasi. Tapi kita nyoba buat balikin sebuah referensi kepadanya. Itu 
+artinya referensi ini bakal nunjuk ke sebuah `String` yang nggak valid. Itu 
+nggak oke sekali! Rust nggak bakal ngebolehin kita ngelakuin ini.
+
+Solusinya di sini adalah dengan balikin `String`-nya secara langsung:
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-16-no-dangle/src/main.rs:here}}
 ```
 
-This works without any problems. Ownership is moved out, and nothing is
-deallocated.
+Ini jalan tanpa masalah apa pun. _Ownership_ di-_move_ keluar, dan nggak ada 
+apa pun yang di-dealokasi.
 
-### The Rules of References
+### Aturan Referensi
 
-Let’s recap what we’ve discussed about references:
+Yuk kita ringkas apa yang udah kita bahas soal referensi:
 
-* At any given time, you can have *either* one mutable reference *or* any
-  number of immutable references.
-* References must always be valid.
+- Dalam satu waktu, kita bisa punya _antara_ satu mutable reference _atau_ 
+  sejumlah berapa pun immutable references.
+- Referensi harus selalu valid.
 
-Next, we’ll look at a different kind of reference: slices.
+Selanjutnya, kita bakal liat jenis referensi yang beda: _slices_.

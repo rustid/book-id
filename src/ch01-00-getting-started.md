@@ -1,8 +1,9 @@
-# Memulai
+# Persiapan
 
-Ayo mulai petualangan Rust Anda! Ada banyak hal yang perlu dipelajari, tetapi setiap
-perjalanan harus dimulai dari suatu tempat. Di bab ini, kita akan mempelajari beberapa hal berikut:
+Mari kita mulai perjalanan Rust kita! Ada banyak yg harus dipelajari, tetapi
+setiap perjalanan dimulai dari suatu permulaan. Pada bab ini, kita akan
+berbicara mengenai:
 
-- Menginstal Rust di Linux, macOS, dan Windows
-- Membuat program yang menampilkan `Hello, world!` ke terminal
-- Menggunakan `cargo`, manajer paket dan sistem pembangun (_build system_) Rust
+- Memasang Rust di Linux, macOS, dan Windows
+- Menulis program yang mencetak `Hello, world!`
+- Menggunakan `cargo`, manajer paket dan sistem build Rust

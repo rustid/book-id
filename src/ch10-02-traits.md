@@ -1,219 +1,235 @@
-## Traits: Defining Shared Behavior
+## Traits: Mendefinisikan Perilaku Bersama
 
-A *trait* defines functionality a particular type has and can share with other
-types. We can use traits to define shared behavior in an abstract way. We can
-use *trait bounds* to specify that a generic type can be any type that has
-certain behavior.
+Sebuah _trait_ mendefinisikan fungsionalitas yang dimiliki suatu tipe tertentu 
+dan bisa dibagikan (di-_share_) dengan tipe lainnya. Kita bisa memakai _traits_ 
+buat mendefinisikan perilaku bersama (_shared behavior_) secara abstrak. Kita 
+bisa memakai _trait bounds_ buat menentukan kalau sebuah tipe generik bisa 
+berupa tipe apa pun asalkan punya perilaku tertentu.
 
-> Note: Traits are similar to a feature often called *interfaces* in other
-> languages, although with some differences.
+> Catatan: _Traits_ itu mirip sama fitur yang sering disebut _interfaces_ di 
+> bahasa pemrograman lain, walaupun ada beberapa perbedaan.
 
-### Defining a Trait
+### Mendefinisikan sebuah Trait
 
-A type’s behavior consists of the methods we can call on that type. Different
-types share the same behavior if we can call the same methods on all of those
-types. Trait definitions are a way to group method signatures together to
-define a set of behaviors necessary to accomplish some purpose.
+Perilaku dari sebuah tipe terdiri dari _methods_ yang bisa kita panggil pada tipe 
+tersebut. Berbagai tipe bisa berbagi perilaku yang sama kalau kita bisa 
+memanggil _methods_ yang sama pada semua tipe itu. Definisi _trait_ adalah 
+cara buat mengelompokkan _method signatures_ (tanda tangan metode) bersama-sama 
+untuk mendefinisikan sekumpulan perilaku yang dibutuhkan untuk mencapai suatu 
+tujuan.
 
-For example, let’s say we have multiple structs that hold various kinds and
-amounts of text: a `NewsArticle` struct that holds a news story filed in a
-particular location and a `Tweet` that can have at most 280 characters along
-with metadata that indicates whether it was a new tweet, a retweet, or a reply
-to another tweet.
+Misalnya, katakanlah kita punya beberapa _struct_ yang menampung berbagai 
+macam dan jumlah teks: sebuah _struct_ `NewsArticle` yang menampung berita di 
+lokasi tertentu dan sebuah `SocialPost` yang maksimal isinya 280 karakter 
+beserta _metadata_ yang menunjukkan apakah itu postingan baru, di-_repost_, 
+atau balasan buat postingan lain.
 
-We want to make a media aggregator library crate named `aggregator` that can
-display summaries of data that might be stored in a `NewsArticle` or `Tweet`
-instance. To do this, we need a summary from each type, and we’ll request
-that summary by calling a `summarize` method on an instance. Listing 10-12
-shows the definition of a public `Summary` trait that expresses this behavior.
+Kita mau bikin _library crate_ agregator media bernama `aggregator` yang bisa 
+nampilin ringkasan data yang mungkin disimpan di dalam instance `NewsArticle` 
+atau `SocialPost`. Untuk melakukan ini, kita butuh ringkasan dari tiap tipe, 
+dan kita bakal minta ringkasan itu dengan memanggil _method_ `summarize` di 
+tiap instance-nya. Listing 10-12 menunjukkan definisi _trait_ publik `Summary` 
+yang mengekspresikan perilaku ini.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="10-12" file-name="src/lib.rs" caption="Sebuah _trait_ `Summary` yang terdiri dari perilaku yang disediakan oleh _method_ `summarize`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-12/src/lib.rs}}
 ```
 
-<span class="caption">Listing 10-12: A `Summary` trait that consists of the
-behavior provided by a `summarize` method</span>
+</Listing>
 
-Here, we declare a trait using the `trait` keyword and then the trait’s name,
-which is `Summary` in this case. We’ve also declared the trait as `pub` so that
-crates depending on this crate can make use of this trait too, as we’ll see in
-a few examples. Inside the curly brackets, we declare the method signatures
-that describe the behaviors of the types that implement this trait, which in
-this case is `fn summarize(&self) -> String`.
+Di sini, kita mendeklarasikan sebuah _trait_ memakai keyword `trait` lalu nama 
+_trait_-nya, yang mana adalah `Summary` di kasus ini. Kita juga mendeklarasikan 
+_trait_ ini sebagai `pub` supaya _crates_ yang bergantung pada _crate_ ini 
+bisa memanfaatkan _trait_ ini juga, seperti yang bakal kita lihat di beberapa 
+contoh nanti. Di dalam kurung kurawal, kita mendeklarasikan _method signatures_ 
+yang menggambarkan perilaku tipe-tipe yang mengimplementasikan _trait_ ini, 
+yang di kasus ini adalah `fn summarize(&self) -> String`.
 
-After the method signature, instead of providing an implementation within curly
-brackets, we use a semicolon. Each type implementing this trait must provide
-its own custom behavior for the body of the method. The compiler will enforce
-that any type that has the `Summary` trait will have the method `summarize`
-defined with this signature exactly.
+Setelah _method signature_, bukannya ngasih implementasi di dalam kurung kurawal, 
+kita memakai titik koma. Tiap tipe yang mengimplementasikan _trait_ ini harus 
+menyediakan perilaku khususnya sendiri buat _body_ (isi) dari _method_ ini. 
+_Compiler_ bakal memastikan kalau tipe apa pun yang punya _trait_ `Summary` 
+bakal punya _method_ `summarize` yang didefinisikan dengan _signature_ yang 
+persis sama kayak gini.
 
-A trait can have multiple methods in its body: the method signatures are listed
-one per line and each line ends in a semicolon.
+Sebuah _trait_ bisa punya banyak _method_ di dalamnya: _method signatures_ 
+didaftarkan satu baris satu, dan tiap baris diakhiri dengan titik koma.
 
-### Implementing a Trait on a Type
+### Mengimplementasikan sebuah Trait pada suatu Tipe
 
-Now that we’ve defined the desired signatures of the `Summary` trait’s methods,
-we can implement it on the types in our media aggregator. Listing 10-13 shows
-an implementation of the `Summary` trait on the `NewsArticle` struct that uses
-the headline, the author, and the location to create the return value of
-`summarize`. For the `Tweet` struct, we define `summarize` as the username
-followed by the entire text of the tweet, assuming that tweet content is
-already limited to 280 characters.
+Sekarang setelah kita mendefinisikan _signatures_ yang diinginkan dari _method_ 
+_trait_ `Summary`, kita bisa mengimplementasikannya pada tipe-tipe di agregator 
+media kita. Listing 10-13 menunjukkan implementasi _trait_ `Summary` pada 
+_struct_ `NewsArticle` yang memakai judul (headline), penulis, dan lokasi buat 
+bikin nilai kembalian dari `summarize`. Buat _struct_ `SocialPost`, kita 
+mendefinisikan `summarize` sebagai username diikuti sama seluruh teks postingannya, 
+dengan asumsi kalau konten postingan sudah dibatasi sampai 280 karakter.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="10-13" file-name="src/lib.rs" caption="Mengimplementasikan _trait_ `Summary` pada tipe `NewsArticle` dan `SocialPost`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-13/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 10-13: Implementing the `Summary` trait on the
-`NewsArticle` and `Tweet` types</span>
+</Listing>
 
-Implementing a trait on a type is similar to implementing regular methods. The
-difference is that after `impl`, we put the trait name we want to implement,
-then use the `for` keyword, and then specify the name of the type we want to
-implement the trait for. Within the `impl` block, we put the method signatures
-that the trait definition has defined. Instead of adding a semicolon after each
-signature, we use curly brackets and fill in the method body with the specific
-behavior that we want the methods of the trait to have for the particular type.
+Mengimplementasikan _trait_ pada suatu tipe itu mirip dengan mengimplementasikan 
+_method_ biasa. Bedanya adalah setelah `impl`, kita menaruh nama _trait_ yang 
+mau kita implementasikan, lalu memakai keyword `for`, dan kemudian menentukan 
+nama tipe di mana kita mau mengimplementasikan _trait_ tersebut. Di dalam blok 
+`impl`, kita menaruh _method signatures_ yang sudah didefinisikan sama definisi 
+_trait_-nya. Alih-alih menambahkan titik koma setelah setiap _signature_, kita 
+memakai kurung kurawal dan mengisi isi _method_ dengan perilaku spesifik yang 
+kita mau dari _method_ _trait_ tersebut untuk tipe khususnya.
 
-Now that the library has implemented the `Summary` trait on `NewsArticle` and
-`Tweet`, users of the crate can call the trait methods on instances of
-`NewsArticle` and `Tweet` in the same way we call regular methods. The only
-difference is that the user must bring the trait into scope as well as the
-types. Here’s an example of how a binary crate could use our `aggregator`
-library crate:
+Sekarang setelah _library_ ini mengimplementasikan _trait_ `Summary` pada 
+`NewsArticle` dan `SocialPost`, pengguna dari _crate_ ini bisa memanggil 
+_method_ dari _trait_ tersebut pada instance `NewsArticle` dan `SocialPost` 
+dengan cara yang sama seperti memanggil _method_ biasa. Bedanya cuma si pengguna 
+harus membawa _trait_ tersebut ke dalam _scope_ sekaligus membawa tipe-tipenya. 
+Ini contoh gimana sebuah _binary crate_ bisa memakai _library crate_ 
+`aggregator` kita:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-01-calling-trait-method/src/main.rs}}
 ```
 
-This code prints `1 new tweet: horse_ebooks: of course, as you probably already
+Kode ini bakal mencetak `1 new post: horse_ebooks: of course, as you probably already
 know, people`.
 
-Other crates that depend on the `aggregator` crate can also bring the `Summary`
-trait into scope to implement `Summary` on their own types. One restriction to
-note is that we can implement a trait on a type only if at least one of the
-trait or the type is local to our crate. For example, we can implement standard
-library traits like `Display` on a custom type like `Tweet` as part of our
-`aggregator` crate functionality, because the type `Tweet` is local to our
-`aggregator` crate. We can also implement `Summary` on `Vec<T>` in our
-`aggregator` crate, because the trait `Summary` is local to our `aggregator`
-crate.
+_Crates_ lain yang bergantung pada _crate_ `aggregator` juga bisa membawa _trait_ 
+`Summary` ke dalam _scope_ untuk mengimplementasikan `Summary` di tipe mereka 
+sendiri. Satu batasan yang perlu dicatat adalah kita cuma bisa mengimplementasikan 
+sebuah _trait_ pada suatu tipe kalau setidaknya _trait_-nya atau tipenya, atau 
+keduanya, berada di _crate_ kita sendiri (_local to our crate_). Misalnya, kita 
+bisa mengimplementasikan _trait_ dari _standard library_ seperti `Display` 
+pada tipe kustom seperti `SocialPost` sebagai bagian dari fungsionalitas 
+_crate_ `aggregator` kita karena tipe `SocialPost` itu ada di _crate_ 
+`aggregator` kita. Kita juga bisa mengimplementasikan `Summary` pada `Vec<T>` 
+di _crate_ `aggregator` kita karena _trait_ `Summary` itu ada di _crate_ 
+`aggregator` kita.
 
-But we can’t implement external traits on external types. For example, we can’t
-implement the `Display` trait on `Vec<T>` within our `aggregator` crate,
-because `Display` and `Vec<T>` are both defined in the standard library and
-aren’t local to our `aggregator` crate. This restriction is part of a property
-called *coherence*, and more specifically the *orphan rule*, so named because
-the parent type is not present. This rule ensures that other people’s code
-can’t break your code and vice versa. Without the rule, two crates could
-implement the same trait for the same type, and Rust wouldn’t know which
-implementation to use.
+Tapi kita tidak bisa mengimplementasikan _traits_ eksternal pada tipe eksternal. 
+Misalnya, kita tidak bisa mengimplementasikan _trait_ `Display` pada `Vec<T>` 
+di dalam _crate_ `aggregator` kita karena `Display` dan `Vec<T>` dua-duanya 
+didefinisikan di _standard library_ dan bukan bagian dari _crate_ `aggregator` 
+kita. Batasan ini adalah bagian dari properti yang disebut _coherence_ 
+(koherensi), dan lebih spesifik lagi disebut _orphan rule_ (aturan yatim piatu), 
+dinamai begitu karena tipe induknya tidak ada. Aturan ini memastikan kalau kode 
+milik orang lain tidak bisa merusak kode kita dan sebaliknya. Tanpa aturan ini, 
+dua _crates_ bisa saja mengimplementasikan _trait_ yang sama untuk tipe yang sama, 
+dan Rust tidak bakal tau implementasi mana yang harus dipakai.
 
-### Default Implementations
+### Implementasi Default
 
-Sometimes it’s useful to have default behavior for some or all of the methods
-in a trait instead of requiring implementations for all methods on every type.
-Then, as we implement the trait on a particular type, we can keep or override
-each method’s default behavior.
+Kadang-kadang akan berguna kalau kita punya perilaku _default_ untuk beberapa 
+atau semua _method_ di sebuah _trait_ daripada mewajibkan implementasi untuk 
+semua _method_ di setiap tipe. Dengan begitu, saat kita mengimplementasikan 
+_trait_ pada tipe tertentu, kita bisa tetap menyimpan atau menimpa (override) 
+perilaku _default_ dari tiap _method_.
 
-In Listing 10-14 we specify a default string for the `summarize` method of the
-`Summary` trait instead of only defining the method signature, as we did in
-Listing 10-12.
+Di Listing 10-14, kita menentukan _string default_ buat _method_ `summarize` 
+dari _trait_ `Summary` alih-alih cuma mendefinisikan _method signature_-nya, 
+seperti yang kita lakukan di Listing 10-12.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="10-14" file-name="src/lib.rs" caption="Mendefinisikan _trait_ `Summary` dengan implementasi _default_ buat _method_ `summarize`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-14/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 10-14: Defining a `Summary` trait with a default
-implementation of the `summarize` method</span>
+</Listing>
 
-To use a default implementation to summarize instances of `NewsArticle`, we
-specify an empty `impl` block with `impl Summary for NewsArticle {}`.
+Untuk memakai implementasi _default_ buat meringkas instance dari `NewsArticle`, 
+kita cukup menentukan blok `impl` yang kosong dengan 
+`impl Summary for NewsArticle {}`.
 
-Even though we’re no longer defining the `summarize` method on `NewsArticle`
-directly, we’ve provided a default implementation and specified that
-`NewsArticle` implements the `Summary` trait. As a result, we can still call
-the `summarize` method on an instance of `NewsArticle`, like this:
+Meskipun kita tidak lagi mendefinisikan _method_ `summarize` di `NewsArticle` 
+secara langsung, kita sudah menyediakan implementasi _default_ dan menentukan 
+kalau `NewsArticle` mengimplementasikan _trait_ `Summary`. Hasilnya, kita tetap 
+bisa memanggil _method_ `summarize` pada instance `NewsArticle`, seperti ini:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-02-calling-default-impl/src/main.rs:here}}
 ```
 
-This code prints `New article available! (Read more...)`.
+Kode ini mencetak `New article available! (Read more...)`.
 
-Creating a default implementation doesn’t require us to change anything about
-the implementation of `Summary` on `Tweet` in Listing 10-13. The reason is that
-the syntax for overriding a default implementation is the same as the syntax
-for implementing a trait method that doesn’t have a default implementation.
+Membuat implementasi _default_ tidak mengharuskan kita untuk mengubah apa pun 
+dari implementasi `Summary` pada `SocialPost` di Listing 10-13. Alasannya adalah 
+sintaks buat menimpa implementasi _default_ itu persis sama kayak sintaks buat 
+mengimplementasikan _method trait_ yang tidak punya implementasi _default_.
 
-Default implementations can call other methods in the same trait, even if those
-other methods don’t have a default implementation. In this way, a trait can
-provide a lot of useful functionality and only require implementors to specify
-a small part of it. For example, we could define the `Summary` trait to have a
-`summarize_author` method whose implementation is required, and then define a
-`summarize` method that has a default implementation that calls the
-`summarize_author` method:
+Implementasi _default_ bisa memanggil _method_ lain di _trait_ yang sama, 
+bahkan kalau _method_ lain itu tidak punya implementasi _default_. Dengan cara 
+ini, sebuah _trait_ bisa menyediakan banyak fungsionalitas berguna dan cuma 
+mewajibkan si peng-implementasi buat menentukan sebagian kecil saja. Misalnya, 
+kita bisa mendefinisikan _trait_ `Summary` agar punya _method_ `summarize_author` 
+yang implementasinya wajib, lalu mendefinisikan _method_ `summarize` yang 
+punya implementasi _default_ yang memanggil _method_ `summarize_author`:
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-03-default-impl-calls-other-methods/src/lib.rs:here}}
 ```
 
-To use this version of `Summary`, we only need to define `summarize_author`
-when we implement the trait on a type:
+Untuk memakai versi `Summary` ini, kita cuma perlu mendefinisikan 
+`summarize_author` pas kita mengimplementasikan _trait_-nya pada sebuah tipe:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-03-default-impl-calls-other-methods/src/lib.rs:impl}}
 ```
 
-After we define `summarize_author`, we can call `summarize` on instances of the
-`Tweet` struct, and the default implementation of `summarize` will call the
-definition of `summarize_author` that we’ve provided. Because we’ve implemented
-`summarize_author`, the `Summary` trait has given us the behavior of the
-`summarize` method without requiring us to write any more code.
+Setelah kita mendefinisikan `summarize_author`, kita bisa memanggil `summarize` 
+pada instance dari _struct_ `SocialPost`, dan implementasi _default_ dari 
+`summarize` bakal memanggil definisi `summarize_author` yang sudah kita sediakan. 
+Karena kita sudah mengimplementasikan `summarize_author`, _trait_ `Summary` 
+sudah ngasih kita perilaku dari _method_ `summarize` tanpa mengharuskan kita 
+menulis kode tambahan lagi. Berikut contoh pemakaiannya:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-03-default-impl-calls-other-methods/src/main.rs:here}}
 ```
 
-This code prints `1 new tweet: (Read more from @horse_ebooks...)`.
+Kode ini mencetak `1 new post: (Read more from @horse_ebooks...)`.
 
-Note that it isn’t possible to call the default implementation from an
-overriding implementation of that same method.
+Perhatikan kalau tidak mungkin untuk memanggil implementasi _default_ dari dalam 
+implementasi yang lagi menimpa (_overriding_) _method_ yang sama.
 
-### Traits as Parameters
+### Traits sebagai Parameter
 
-Now that you know how to define and implement traits, we can explore how to use
-traits to define functions that accept many different types. We'll use the
-`Summary` trait we implemented on the `NewsArticle` and `Tweet` types in
-Listing 10-13 to define a `notify` function that calls the `summarize` method
-on its `item` parameter, which is of some type that implements the `Summary`
-trait. To do this, we use the `impl Trait` syntax, like this:
+Sekarang setelah kita tahu cara mendefinisikan dan mengimplementasikan _traits_, 
+kita bisa eksplor gimana cara memakai _traits_ buat mendefinisikan fungsi yang 
+bisa menerima berbagai macam tipe. Kita bakal memakai _trait_ `Summary` yang 
+sudah kita implementasikan di tipe `NewsArticle` dan `SocialPost` di Listing 
+10-13 untuk mendefinisikan fungsi `notify` yang memanggil _method_ `summarize` 
+pada parameter `item`-nya, yang bertipe apa pun selama tipe itu 
+mengimplementasikan _trait_ `Summary`. Buat melakukannya, kita memakai sintaks 
+`impl Trait`, seperti ini:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-04-traits-as-parameters/src/lib.rs:here}}
 ```
 
-Instead of a concrete type for the `item` parameter, we specify the `impl`
-keyword and the trait name. This parameter accepts any type that implements the
-specified trait. In the body of `notify`, we can call any methods on `item`
-that come from the `Summary` trait, such as `summarize`. We can call `notify`
-and pass in any instance of `NewsArticle` or `Tweet`. Code that calls the
-function with any other type, such as a `String` or an `i32`, won’t compile
-because those types don’t implement `Summary`.
+Alih-alih tipe konkret buat parameter `item`, kita memakai keyword `impl` 
+bersama dengan nama _trait_-nya. Parameter ini bakal menerima tipe apa pun yang 
+mengimplementasikan _trait_ yang ditentukan. Di dalam _body_ dari `notify`, 
+kita bisa memanggil _method_ apa pun pada `item` yang asalnya dari _trait_ 
+`Summary`, contohnya `summarize`. Kita bisa memanggil `notify` dan memberikan 
+instance apa pun dari `NewsArticle` atau `SocialPost`. Kode yang memanggil 
+fungsi tersebut dengan tipe lain, misalnya `String` atau `i32`, tidak bakal bisa 
+di-compile karena tipe-tipe tersebut tidak mengimplementasikan `Summary`.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="fixing-the-largest-function-with-trait-bounds"></a>
 
-#### Trait Bound Syntax
+#### Sintaks Trait Bound
 
-The `impl Trait` syntax works for straightforward cases but is actually syntax
-sugar for a longer form known as a *trait bound*; it looks like this:
+Sintaks `impl Trait` memang praktis buat kasus-kasus sederhana tapi sebenarnya 
+itu cuma _syntax sugar_ (sintaks pemanis) dari bentuk yang lebih panjang yang 
+dikenal sebagai _trait bound_; bentuknya kayak gini:
 
 ```rust,ignore
 pub fn notify<T: Summary>(item: &T) {
@@ -221,138 +237,147 @@ pub fn notify<T: Summary>(item: &T) {
 }
 ```
 
-This longer form is equivalent to the example in the previous section but is
-more verbose. We place trait bounds with the declaration of the generic type
-parameter after a colon and inside angle brackets.
+Bentuk yang lebih panjang ini ekuivalen (sama) dengan contoh di bagian 
+sebelumnya, tapi lebih panjang (_verbose_). Kita menaruh _trait bounds_ 
+bersamaan dengan deklarasi parameter tipe generik setelah tanda titik dua (`:`) 
+dan di dalam kurung sudut.
 
-The `impl Trait` syntax is convenient and makes for more concise code in simple
-cases, while the fuller trait bound syntax can express more complexity in other
-cases. For example, we can have two parameters that implement `Summary`. Doing
-so with the `impl Trait` syntax looks like this:
+Sintaks `impl Trait` itu nyaman dan bikin kode lebih ringkas buat kasus-kasus 
+sederhana, sementara sintaks _trait bound_ yang lebih lengkap bisa 
+mengekspresikan lebih banyak kerumitan buat kasus lain. Misalnya, kita bisa punya 
+dua parameter yang dua-duanya mengimplementasikan `Summary`. Kalau pakai sintaks 
+`impl Trait`, bentuknya bakal seperti ini:
 
 ```rust,ignore
 pub fn notify(item1: &impl Summary, item2: &impl Summary) {
 ```
 
-Using `impl Trait` is appropriate if we want this function to allow `item1` and
-`item2` to have different types (as long as both types implement `Summary`). If
-we want to force both parameters to have the same type, however, we must use a
-trait bound, like this:
+Memakai `impl Trait` cocok kalau kita mau fungsi ini mengizinkan `item1` dan 
+`item2` untuk punya tipe yang berbeda (asalkan dua-duanya mengimplementasikan 
+`Summary`). Tapi, kalau kita mau memaksa kedua parameter tersebut buat punya 
+tipe yang sama persis, kita harus memakai _trait bound_, seperti ini:
 
 ```rust,ignore
 pub fn notify<T: Summary>(item1: &T, item2: &T) {
 ```
 
-The generic type `T` specified as the type of the `item1` and `item2`
-parameters constrains the function such that the concrete type of the value
-passed as an argument for `item1` and `item2` must be the same.
+Tipe generik `T` yang ditentukan sebagai tipe dari parameter `item1` dan `item2` 
+membatasi fungsi ini sehingga tipe konkret dari nilai yang diberikan buat argumen 
+`item1` dan `item2` itu harus sama.
 
-#### Specifying Multiple Trait Bounds with the `+` Syntax
+#### Menentukan Beberapa Trait Bounds dengan Sintaks `+`
 
-We can also specify more than one trait bound. Say we wanted `notify` to use
-display formatting as well as `summarize` on `item`: we specify in the `notify`
-definition that `item` must implement both `Display` and `Summary`. We can do
-so using the `+` syntax:
+Kita juga bisa menentukan lebih dari satu _trait bound_. Katakanlah kita mau 
+`notify` bisa memakai _display formatting_ di samping memanggil `summarize` 
+pada `item`: kita tentukan di definisi `notify` kalau `item` harus 
+mengimplementasikan `Display` sekaligus `Summary`. Kita bisa melakukannya 
+menggunakan sintaks `+`:
 
 ```rust,ignore
 pub fn notify(item: &(impl Summary + Display)) {
 ```
 
-The `+` syntax is also valid with trait bounds on generic types:
+Sintaks `+` ini juga valid buat dipakai sama _trait bounds_ pada tipe generik:
 
 ```rust,ignore
 pub fn notify<T: Summary + Display>(item: &T) {
 ```
 
-With the two trait bounds specified, the body of `notify` can call `summarize`
-and use `{}` to format `item`.
+Dengan dua _trait bounds_ yang ditentukan, body dari `notify` bisa memanggil 
+`summarize` dan juga memakai `{}` buat memformat `item`.
 
-#### Clearer Trait Bounds with `where` Clauses
+#### Trait Bounds yang Lebih Rapi pake Klausa `where`
 
-Using too many trait bounds has its downsides. Each generic has its own trait
-bounds, so functions with multiple generic type parameters can contain lots of
-trait bound information between the function’s name and its parameter list,
-making the function signature hard to read. For this reason, Rust has alternate
-syntax for specifying trait bounds inside a `where` clause after the function
-signature. So instead of writing this:
+Memakai terlalu banyak _trait bounds_ ada sisi negatifnya. Masing-masing generik 
+punya _trait bounds_-nya sendiri, jadi fungsi dengan banyak parameter tipe generik 
+bisa mengandung sangat banyak informasi _trait bound_ di antara nama fungsi dan 
+daftar parameternya, yang mana bisa bikin _signature_ fungsinya jadi susah 
+dibaca. Karena alasan ini, Rust punya sintaks alternatif buat menentukan 
+_trait bounds_ di dalam sebuah klausa `where` setelah _signature_ fungsinya. 
+Jadi, alih-alih nulis begini:
 
 ```rust,ignore
 fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {
 ```
 
-we can use a `where` clause, like this:
+kita bisa pakai klausa `where`, kayak gini:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-07-where-clause/src/lib.rs:here}}
 ```
 
-This function’s signature is less cluttered: the function name, parameter list,
-and return type are close together, similar to a function without lots of trait
-bounds.
+_Signature_ fungsinya jadi tidak terlalu penuh: nama fungsi, daftar parameter, 
+dan tipe kembalian semuanya berdekatan, mirip seperti fungsi yang tidak punya 
+banyak _trait bounds_.
 
-### Returning Types that Implement Traits
+### Mengembalikan Tipe yang Mengimplementasikan Traits
 
-We can also use the `impl Trait` syntax in the return position to return a
-value of some type that implements a trait, as shown here:
+Kita juga bisa memakai sintaks `impl Trait` di posisi kembalian (return position) 
+buat mengembalikan nilai dari suatu tipe yang mengimplementasikan sebuah _trait_, 
+kayak gini:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-05-returning-impl-trait/src/lib.rs:here}}
 ```
 
-By using `impl Summary` for the return type, we specify that the
-`returns_summarizable` function returns some type that implements the `Summary`
-trait without naming the concrete type. In this case, `returns_summarizable`
-returns a `Tweet`, but the code calling this function doesn’t need to know that.
+Dengan memakai `impl Summary` buat tipe kembaliannya, kita menentukan kalau 
+fungsi `returns_summarizable` bakal mengembalikan suatu tipe yang 
+mengimplementasikan _trait_ `Summary` tanpa harus menyebut nama tipe konkretnya. 
+Di kasus ini, `returns_summarizable` mengembalikan sebuah `SocialPost`, tapi 
+kode yang memanggil fungsi ini tidak perlu tau soal itu.
 
-The ability to specify a return type only by the trait it implements is
-especially useful in the context of closures and iterators, which we cover in
-Chapter 13. Closures and iterators create types that only the compiler knows or
-types that are very long to specify. The `impl Trait` syntax lets you concisely
-specify that a function returns some type that implements the `Iterator` trait
-without needing to write out a very long type.
+Kemampuan buat menentukan tipe kembalian hanya berdasarkan _trait_ yang 
+diimplementasikannya itu sangat berguna, apalagi di konteks _closures_ dan 
+_iterators_, yang bakal kita bahas di Bab 13. _Closures_ dan _iterators_ bikin 
+tipe-tipe yang cuma _compiler_ doang yang tau, atau tipe-tipe yang namanya 
+kepanjangan buat ditulis. Sintaks `impl Trait` memudahkan kita menentukan secara 
+ringkas kalau sebuah fungsi mengembalikan tipe tertentu yang mengimplementasikan 
+_trait_ `Iterator` tanpa perlu nulis tipe yang kepanjangan.
 
-However, you can only use `impl Trait` if you’re returning a single type. For
-example, this code that returns either a `NewsArticle` or a `Tweet` with the
-return type specified as `impl Summary` wouldn’t work:
+Tapi, kita cuma bisa memakai `impl Trait` kalau kita mengembalikan satu tipe 
+tunggal. Misalnya, kode ini, yang mengembalikan entah `NewsArticle` atau 
+`SocialPost` dengan tipe kembalian `impl Summary`, tidak bakal bisa jalan:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-06-impl-trait-returns-one-type/src/lib.rs:here}}
 ```
 
-Returning either a `NewsArticle` or a `Tweet` isn’t allowed due to restrictions
-around how the `impl Trait` syntax is implemented in the compiler. We’ll cover
-how to write a function with this behavior in the [“Using Trait Objects That
-Allow for Values of Different
-Types”][using-trait-objects-that-allow-for-values-of-different-types]<!--
-ignore --> section of Chapter 17.
+Mengembalikan entah `NewsArticle` atau `SocialPost` itu tidak diperbolehkan 
+karena adanya batasan dari gimana sintaks `impl Trait` diimplementasikan di 
+dalam _compiler_. Kita bakal bahas gimana cara nulis fungsi dengan perilaku 
+kayak gini di bagian [“Memakai Trait Objects yang Mengizinkan Nilai Dari 
+Tipe yang Berbeda-beda”][using-trait-objects-that-allow-for-values-of-different-types] 
+di Bab 18.
 
-### Using Trait Bounds to Conditionally Implement Methods
+### Memakai Trait Bounds Buat Mengimplementasikan Method secara Bersyarat
 
-By using a trait bound with an `impl` block that uses generic type parameters,
-we can implement methods conditionally for types that implement the specified
-traits. For example, the type `Pair<T>` in Listing 10-15 always implements the
-`new` function to return a new instance of `Pair<T>` (recall from the
-[“Defining Methods”][methods]<!-- ignore --> section of Chapter 5 that `Self`
-is a type alias for the type of the `impl` block, which in this case is
-`Pair<T>`). But in the next `impl` block, `Pair<T>` only implements the
-`cmp_display` method if its inner type `T` implements the `PartialOrd` trait
-that enables comparison *and* the `Display` trait that enables printing.
+Dengan memakai _trait bound_ bareng sebuah blok `impl` yang memakai parameter 
+tipe generik, kita bisa mengimplementasikan _methods_ secara bersyarat 
+(conditionally) buat tipe-tipe yang mengimplementasikan _traits_ yang ditentukan. 
+Misalnya, tipe `Pair<T>` di Listing 10-15 selalu mengimplementasikan fungsi `new` 
+buat mengembalikan instance baru dari `Pair<T>` (ingat dari bagian 
+[“Mendefinisikan Methods”][methods] di Bab 5 bahwa `Self` adalah alias tipe buat 
+tipe dari blok `impl`-nya, yang mana di kasus ini adalah `Pair<T>`). Tapi di 
+blok `impl` berikutnya, `Pair<T>` cuma mengimplementasikan _method_ 
+`cmp_display` kalau tipe di dalamnya `T` mengimplementasikan _trait_ 
+`PartialOrd` (yang memungkinkan perbandingan) _dan_ _trait_ `Display` (yang 
+memungkinkan untuk dicetak).
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="10-15" file-name="src/lib.rs" caption="Mengimplementasikan _method_ pada tipe generik secara bersyarat bergantung pada _trait bounds_">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-15/src/lib.rs}}
 ```
 
-<span class="caption">Listing 10-15: Conditionally implementing methods on a
-generic type depending on trait bounds</span>
+</Listing>
 
-We can also conditionally implement a trait for any type that implements
-another trait. Implementations of a trait on any type that satisfies the trait
-bounds are called *blanket implementations* and are extensively used in the
-Rust standard library. For example, the standard library implements the
-`ToString` trait on any type that implements the `Display` trait. The `impl`
-block in the standard library looks similar to this code:
+Kita juga bisa mengimplementasikan secara bersyarat sebuah _trait_ buat tipe apa 
+pun yang mengimplementasikan _trait_ lain. Implementasi sebuah _trait_ pada 
+tipe apa pun yang memenuhi _trait bounds_-nya disebut sebagai _blanket 
+implementations_ (implementasi selimut) dan ini sangat banyak dipakai di _standard 
+library_ Rust. Misalnya, _standard library_ mengimplementasikan _trait_ `ToString` 
+pada tipe apa pun yang mengimplementasikan _trait_ `Display`. Blok `impl` di 
+_standard library_ keliatan mirip kayak kode ini:
 
 ```rust,ignore
 impl<T: Display> ToString for T {
@@ -360,29 +385,32 @@ impl<T: Display> ToString for T {
 }
 ```
 
-Because the standard library has this blanket implementation, we can call the
-`to_string` method defined by the `ToString` trait on any type that implements
-the `Display` trait. For example, we can turn integers into their corresponding
-`String` values like this because integers implement `Display`:
+Karena _standard library_ punya _blanket implementation_ ini, kita bisa 
+memanggil _method_ `to_string` yang didefinisikan sama _trait_ `ToString` 
+pada tipe apa pun yang mengimplementasikan _trait_ `Display`. Misalnya, kita bisa 
+mengubah integer jadi nilai `String` miliknya seperti ini karena integer 
+mengimplementasikan `Display`:
 
 ```rust
 let s = 3.to_string();
 ```
 
-Blanket implementations appear in the documentation for the trait in the
-“Implementors” section.
+_Blanket implementations_ ini biasanya muncul di dokumentasi buat suatu _trait_ di 
+bagian “Implementors”.
 
-Traits and trait bounds let us write code that uses generic type parameters to
-reduce duplication but also specify to the compiler that we want the generic
-type to have particular behavior. The compiler can then use the trait bound
-information to check that all the concrete types used with our code provide the
-correct behavior. In dynamically typed languages, we would get an error at
-runtime if we called a method on a type which didn’t define the method. But Rust
-moves these errors to compile time so we’re forced to fix the problems before
-our code is even able to run. Additionally, we don’t have to write code that
-checks for behavior at runtime because we’ve already checked at compile time.
-Doing so improves performance without having to give up the flexibility of
-generics.
+_Traits_ dan _trait bounds_ memungkinkan kita nulis kode yang memakai parameter 
+tipe generik untuk mengurangi duplikasi, sekaligus ngasih tau _compiler_ kalau 
+kita maunya tipe generik itu punya perilaku tertentu. _Compiler_ kemudian bakal 
+memakai informasi _trait bound_ tersebut buat mengecek apakah semua tipe 
+konkret yang dipakai di kode kita sudah menyediakan perilaku yang benar. Di 
+bahasa pemrograman yang _dynamically typed_ (tipe dinamis), kita bakal dapat error 
+pas _runtime_ kalau kita memanggil _method_ di suatu tipe yang sebenarnya tidak 
+punya definisi _method_ tersebut. Tapi Rust mindahin error-error ini ke fase 
+_compile time_ jadi kita dipaksa buat membenarkan masalah ini sebelum kode kita 
+bahkan bisa dijalankan. Sebagai bonus, kita tidak perlu nulis kode buat ngecek 
+perilaku saat _runtime_ karena kita sudah mengeceknya pas _compile time_. Melakukan 
+ini bakal meningkatkan performa tanpa harus mengorbankan fleksibilitas dari 
+generik.
 
-[using-trait-objects-that-allow-for-values-of-different-types]: ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
+[using-trait-objects-that-allow-for-values-of-different-types]: ch18-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
 [methods]: ch05-03-method-syntax.html#defining-methods

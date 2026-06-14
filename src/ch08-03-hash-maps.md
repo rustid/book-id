@@ -1,242 +1,254 @@
-## Storing Keys with Associated Values in Hash Maps
+## Nyimpen Keys (Kunci) dengan Nilai Terkait di Hash Maps
 
-The last of our common collections is the *hash map*. The type `HashMap<K, V>`
-stores a mapping of keys of type `K` to values of type `V` using a
-*hashing function*, which determines how it places these keys and values into
-memory. Many programming languages support this kind of data structure, but
-they often use a different name, such as hash, map, object, hash table,
-dictionary, or associative array, just to name a few.
+Koleksi umum kita yang terakhir adalah _hash map_. Tipe `HashMap<K, V>` nyimpen 
+pemetaan dari keys (kunci) bertipe `K` ke nilai bertipe `V` pake sebuah fungsi 
+_hashing_, yang nentuin gimana cara naruh keys sama nilai-nilai ini ke dalem 
+memori. Banyak bahasa pemrograman support struktur data jenis ini, tapi mereka 
+sering pake nama yang beda-beda, kayak _hash_, _map_, _object_, _hash table_, 
+_dictionary_, atau _associative array_, buat nyebut beberapa di antaranya.
 
-Hash maps are useful when you want to look up data not by using an index, as
-you can with vectors, but by using a key that can be of any type. For example,
-in a game, you could keep track of each team’s score in a hash map in which
-each key is a team’s name and the values are each team’s score. Given a team
-name, you can retrieve its score.
+Hash maps sangat berguna pas kita mau nyari data bukan pake indeks, kayak yang 
+kita lakuin pake vectors, tapi pake _key_ yang tipenya bisa apa aja. Misalnya, 
+di dalem game, kita bisa nyatet skor tiap tim di dalem hash map di mana tiap 
+_key_-nya adalah nama timnya dan nilainya adalah skor tiap tim. Kalo kita punya 
+nama timnya, kita bisa ngambil skornya.
 
-We’ll go over the basic API of hash maps in this section, but many more goodies
-are hiding in the functions defined on `HashMap<K, V>` by the standard library.
-As always, check the standard library documentation for more information.
+Kita bakal ngebahas API dasar dari hash maps di bagian ini, tapi masih banyak 
+lagi fungsionalitas keren yang ngumpet di fungsi-fungsi yang didefinisikan pada 
+`HashMap<K, V>` sama _standard library_. Kayak biasa, cek dokumentasi _standard 
+library_ buat info lebih lanjut.
 
-### Creating a New Hash Map
+### Bikin Hash Map Baru
 
-One way to create an empty hash map is using `new` and adding elements with
-`insert`. In Listing 8-20, we’re keeping track of the scores of two teams whose
-names are *Blue* and *Yellow*. The Blue team starts with 10 points, and the
-Yellow team starts with 50.
+Salah satu cara buat bikin hash map kosong adalah pake `new` terus nambahin 
+elemennya pake `insert`. Di Listing 8-20, kita lagi nyatet skor dari dua tim 
+yang namanya _Blue_ sama _Yellow_. Tim Blue mulai dengan 10 poin, dan tim Yellow 
+mulai dengan 50 poin.
+
+<Listing number="8-20" caption="Bikin hash map baru dan nge-_insert_ beberapa key sama nilai">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-20/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 8-20: Creating a new hash map and inserting some
-keys and values</span>
+</Listing>
 
-Note that we need to first `use` the `HashMap` from the collections portion of
-the standard library. Of our three common collections, this one is the least
-often used, so it’s not included in the features brought into scope
-automatically in the prelude. Hash maps also have less support from the
-standard library; there’s no built-in macro to construct them, for example.
+Perhatiin ya kalau kita pertama-tama harus bawa `HashMap` dari porsi collections 
+di _standard library_ ke dalem scope pake `use`. Dari ketiga koleksi umum kita, 
+yang satu ini paling jarang dipake, jadi dia nggak dimasukin ke fitur-fitur yang 
+otomatis dibawa ke dalem scope lewat _prelude_. Hash maps juga dapet lebih 
+dikit _support_ dari _standard library_; nggak ada macro bawaan buat 
+ngonstruksi mereka, misalnya.
 
-Just like vectors, hash maps store their data on the heap. This `HashMap` has
-keys of type `String` and values of type `i32`. Like vectors, hash maps are
-homogeneous: all of the keys must have the same type as each other, and all of
-the values must have the same type.
+Sama kayak vectors, hash maps nyimpen datanya di _heap_. `HashMap` ini punya 
+_keys_ tipe `String` sama nilai tipe `i32`. Sama juga kayak vectors, hash maps 
+itu homogen: semua _keys_ harus punya tipe yang sama, dan semua nilai harus 
+punya tipe yang sama.
 
-### Accessing Values in a Hash Map
+### Akses Nilai di dalem Hash Map
 
-We can get a value out of the hash map by providing its key to the `get`
-method, as shown in Listing 8-21.
+Kita bisa ngambil nilai dari hash map dengan masukin _key_-nya ke method `get`, 
+kayak yang ditunjukin di Listing 8-21.
+
+<Listing number="8-21" caption="Akses skor buat tim Blue yang disimpan di hash map">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-21/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 8-21: Accessing the score for the Blue team
-stored in the hash map</span>
+</Listing>
 
-Here, `score` will have the value that’s associated with the Blue team, and the
-result will be `10`. The `get` method returns an `Option<&V>`; if there’s no
-value for that key in the hash map, `get` will return `None`. This program
-handles the `Option` by calling `copied` to get an `Option<i32>` rather than an
-`Option<&i32>`, then `unwrap_or` to set `score` to zero if `scores` doesn't
-have an entry for the key.
+Di sini, `score` bakal punya nilai yang terkait sama tim Blue, dan hasilnya 
+bakal `10`. Method `get` balikin sebuah `Option<&V>`; kalau nggak ada nilai 
+buat _key_ itu di hash map-nya, `get` bakal balikin `None`. Program ini nanganin 
+`Option`-nya pake manggil `copied` buat dapet `Option<i32>` bukannya 
+`Option<&i32>`, terus pake `unwrap_or` buat nge-set `score` jadi nol kalau 
+`scores` nggak punya entri buat _key_ tersebut.
 
-We can iterate over each key/value pair in a hash map in a similar manner as we
-do with vectors, using a `for` loop:
+Kita bisa iterasi lewat tiap pasangan key-value (kunci-nilai) di hash map pake 
+cara yang mirip kayak di vectors, pake `for` loop:
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/no-listing-03-iterate-over-hashmap/src/main.rs:here}}
 ```
 
-This code will print each pair in an arbitrary order:
+Kode ini bakal nyetak tiap pasangan dengan urutan yang sembarangan (arbitrary):
 
 ```text
 Yellow: 50
 Blue: 10
 ```
 
-### Hash Maps and Ownership
+### Hash Maps dan Ownership
 
-For types that implement the `Copy` trait, like `i32`, the values are copied
-into the hash map. For owned values like `String`, the values will be moved and
-the hash map will be the owner of those values, as demonstrated in Listing 8-22.
+Buat tipe-tipe yang mengimplementasikan trait `Copy`, kayak `i32`, nilainya 
+di-copy ke dalem hash map. Buat nilai yang dimiliki (_owned values_) kayak 
+`String`, nilainya bakal di-_move_ dan hash map bakal jadi pemilik (_owner_) 
+dari nilai-nilai itu, kayak yang didemonstrasiin di Listing 8-22.
+
+<Listing number="8-22" caption="Nunjukin kalau keys sama nilai itu jadi milik hash map begitu mereka di-_insert_">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-22/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 8-22: Showing that keys and values are owned by
-the hash map once they’re inserted</span>
+</Listing>
 
-We aren’t able to use the variables `field_name` and `field_value` after
-they’ve been moved into the hash map with the call to `insert`.
+Kita nggak bisa pake variabel `field_name` sama `field_value` setelah mereka di-
+_move_ ke dalem hash map pake pemanggilan `insert`.
 
-If we insert references to values into the hash map, the values won’t be moved
-into the hash map. The values that the references point to must be valid for at
-least as long as the hash map is valid. We’ll talk more about these issues in
-the [“Validating References with
-Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> section in
-Chapter 10.
+Kalau kita masukin referensi ke nilai ke dalem hash map, nilainya nggak bakal 
+di-_move_ ke dalem hash map-nya. Nilai yang ditunjuk sama referensi itu harus 
+tetep valid setidaknya selama hash map-nya valid. Kita bakal bahas masalah ini 
+lebih banyak di [“Mervalidasi Referensi pake Lifetimes”][validating-references-with-lifetimes] 
+di Bab 10.
 
-### Updating a Hash Map
+### Ngubah Hash Map
 
-Although the number of key and value pairs is growable, each unique key can
-only have one value associated with it at a time (but not vice versa: for
-example, both the Blue team and the Yellow team could have value 10 stored in
-the `scores` hash map).
+Walaupun jumlah pasangan key sama value bisa nambah, tiap _unique key_ cuma bisa 
+punya satu nilai yang terkait dengannya dalam satu waktu (tapi nggak berlaku 
+sebaliknya: misalnya, baik tim Blue maupun tim Yellow bisa punya nilai `10` 
+yang disimpan di hash map `scores`).
 
-When you want to change the data in a hash map, you have to decide how to
-handle the case when a key already has a value assigned. You could replace the
-old value with the new value, completely disregarding the old value. You could
-keep the old value and ignore the new value, only adding the new value if the
-key *doesn’t* already have a value. Or you could combine the old value and the
-new value. Let’s look at how to do each of these!
+Pas kita mau ngubah data di dalem hash map, kita harus mutusin gimana cara 
+nanganin kasus pas sebuah _key_ udah punya nilai yang di-assign ke dia. Kita bisa 
+nggantiin nilai lama pake nilai baru, sama sekali nyuekin nilai yang lama. Kita 
+bisa pertahanin nilai lama dan nyuekin nilai baru, dan cuma nambahin nilai baru 
+kalau _key_ itu _belum_ punya nilai. Atau kita bisa ngegabungin nilai lama sama 
+nilai baru. Yuk kita liat gimana cara ngelakuin semua hal ini!
 
-#### Overwriting a Value
+#### Nindih Nilai (Overwriting a Value)
 
-If we insert a key and a value into a hash map and then insert that same key
-with a different value, the value associated with that key will be replaced.
-Even though the code in Listing 8-23 calls `insert` twice, the hash map will
-only contain one key/value pair because we’re inserting the value for the Blue
-team’s key both times.
+Kalau kita nge-_insert_ sebuah key sama nilai ke hash map terus nge-_insert_ 
+key yang sama pake nilai yang beda, nilai yang terkait sama key itu bakal 
+diganti. Walaupun kode di Listing 8-23 manggil `insert` dua kali, hash map-nya 
+cuma bakal punya satu pasangan key-value karena kita nge-_insert_ nilai buat 
+key tim Blue dua kali.
+
+<Listing number="8-23" caption="Nggantiin nilai yang disimpan pake key tertentu">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-23/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 8-23: Replacing a value stored with a particular
-key</span>
+</Listing>
 
-This code will print `{"Blue": 25}`. The original value of `10` has been
-overwritten.
+Kode ini bakal nyetak `{"Blue": 25}`. Nilai asli `10` udah ditindih.
 
 <!-- Old headings. Do not remove or links may break. -->
+
 <a id="only-inserting-a-value-if-the-key-has-no-value"></a>
 
-#### Adding a Key and Value Only If a Key Isn’t Present
+#### Nambahin Key dan Nilai Cuma Kalau Key-nya Belum Ada
 
-It’s common to check whether a particular key already exists in the hash map
-with a value then take the following actions: if the key does exist in the hash
-map, the existing value should remain the way it is. If the key doesn’t exist,
-insert it and a value for it.
+Sering sekali kita mau nge-cek apakah sebuah key tertentu udah ada di hash map 
+dengan suatu nilai terus ngambil tindakan berikut: kalau key itu emang udah ada 
+di hash map, nilai yang udah ada biarin aja kayak gitu; kalau key-nya belum ada, 
+_insert_ key itu bareng nilainya.
 
-Hash maps have a special API for this called `entry` that takes the key you
-want to check as a parameter. The return value of the `entry` method is an enum
-called `Entry` that represents a value that might or might not exist. Let’s say
-we want to check whether the key for the Yellow team has a value associated
-with it. If it doesn’t, we want to insert the value 50, and the same for the
-Blue team. Using the `entry` API, the code looks like Listing 8-24.
+Hash maps punya API khusus buat ini namanya `entry` yang nerima key yang mau 
+kita cek sebagai parameternya. Nilai return dari method `entry` ini adalah enum 
+namanya `Entry` yang ngewakilin nilai yang mungkin udah ada atau mungkin belum. 
+Katakanlah kita mau nge-cek apakah key buat tim Yellow punya nilai yang terkait 
+dengannya. Kalau belum ada, kita mau nge-_insert_ nilai `50`, dan lakuin hal yang 
+sama buat tim Blue. Pake API `entry`, kodenya keliatan kayak Listing 8-24.
+
+<Listing number="8-24" caption="Pake method `entry` buat nge-_insert_ cuma kalau key-nya belum punya nilai">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-24/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 8-24: Using the `entry` method to only insert if
-the key does not already have a value</span>
+</Listing>
 
-The `or_insert` method on `Entry` is defined to return a mutable reference to
-the value for the corresponding `Entry` key if that key exists, and if not,
-inserts the parameter as the new value for this key and returns a mutable
-reference to the new value. This technique is much cleaner than writing the
-logic ourselves and, in addition, plays more nicely with the borrow checker.
+Method `or_insert` pada `Entry` didefinisikan buat balikin sebuah _mutable 
+reference_ ke nilai buat key `Entry` yang terkait kalau key itu ada, dan kalau 
+nggak ada, dia nge-_insert_ parameternya sebagai nilai baru buat key ini terus 
+balikin _mutable reference_ ke nilai yang baru. Teknik ini jauh lebih bersih 
+daripada nulis logikanya sendiri dan, selain itu, main lebih akur sama _borrow 
+checker_.
 
-Running the code in Listing 8-24 will print `{"Yellow": 50, "Blue": 10}`. The
-first call to `entry` will insert the key for the Yellow team with the value
-50 because the Yellow team doesn’t have a value already. The second call to
-`entry` will not change the hash map because the Blue team already has the
-value 10.
+Jalanin kode di Listing 8-24 bakal nyetak `{"Yellow": 50, "Blue": 10}`. 
+Pemanggilan `entry` yang pertama bakal nge-_insert_ key buat tim Yellow dengan 
+nilai `50` karena tim Yellow belum punya nilai. Pemanggilan `entry` yang kedua 
+nggak bakal ngubah hash map-nya karena tim Blue udah punya nilai `10`.
 
-#### Updating a Value Based on the Old Value
+#### Ngubah Nilai Berdasarkan Nilai Lamanya
 
-Another common use case for hash maps is to look up a key’s value and then
-update it based on the old value. For instance, Listing 8-25 shows code that
-counts how many times each word appears in some text. We use a hash map with
-the words as keys and increment the value to keep track of how many times we’ve
-seen that word. If it’s the first time we’ve seen a word, we’ll first insert
-the value 0.
+Skenario umum lainnya buat hash maps adalah nyari nilai dari sebuah key terus 
+ngubah nilainya berdasarkan nilai yang lama. Misalnya, Listing 8-25 nunjukin 
+kode yang ngitung berapa kali tiap kata muncul di sebuah teks. Kita pake hash 
+map dengan kata-katanya sebagai keys dan nambahin (increment) nilainya buat 
+nyatet berapa kali kita ngeliat kata itu. Kalau ini pertama kalinya kita liat 
+kata itu, kita bakal nge-_insert_ nilai `0` dulu.
+
+<Listing number="8-25" caption="Ngitung kemunculan kata-kata pake hash map yang nyimpen kata dan jumlahnya">
 
 ```rust
 {{#rustdoc_include ../listings/ch08-common-collections/listing-08-25/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 8-25: Counting occurrences of words using a hash
-map that stores words and counts</span>
+</Listing>
 
-This code will print `{"world": 2, "hello": 1, "wonderful": 1}`. You might see
-the same key/value pairs printed in a different order: recall from the
-[“Accessing Values in a Hash Map”][access]<!-- ignore --> section that
-iterating over a hash map happens in an arbitrary order.
+Kode ini bakal nyetak `{"world": 2, "hello": 1, "wonderful": 1}`. Kita mungkin 
+bakal ngeliat pasangan key-value yang sama dicetak pake urutan yang beda: inget 
+kan di [“Akses Nilai di dalem Hash Map”][access] kalau iterasi lewat hash map 
+itu terjadi dengan urutan yang sembarangan (arbitrary).
 
-The `split_whitespace` method returns an iterator over sub-slices, separated by
-whitespace, of the value in `text`. The `or_insert` method returns a mutable
-reference (`&mut V`) to the value for the specified key. Here we store that
-mutable reference in the `count` variable, so in order to assign to that value,
-we must first dereference `count` using the asterisk (`*`). The mutable
-reference goes out of scope at the end of the `for` loop, so all of these
-changes are safe and allowed by the borrowing rules.
+Method `split_whitespace` balikin iterator yang ngelewatin *subslices*, 
+dipisahin sama spasi (whitespace), dari nilai di `text`. Method `or_insert` 
+balikin sebuah _mutable reference_ (`&mut V`) ke nilai buat key yang spesifik 
+itu. Di sini, kita nyimpen _mutable reference_ itu di variabel `count`, jadi 
+buat nge-assign (ngasih nilai) ke nilai itu, kita pertama-tama harus pake _dereference_ 
+pada `count` pake tanda bintang (`*`). _Mutable reference_-nya keluar dari 
+scope di akhir dari `for` loop, jadi semua perubahan ini aman dan dibolehin sama 
+aturan _borrowing_.
 
-### Hashing Functions
+### Fungsi Hashing
 
-By default, `HashMap` uses a hashing function called *SipHash* that can provide
-resistance to Denial of Service (DoS) attacks involving hash
-tables[^siphash]<!-- ignore -->. This is not the fastest hashing algorithm
-available, but the trade-off for better security that comes with the drop in
-performance is worth it. If you profile your code and find that the default
-hash function is too slow for your purposes, you can switch to another function
-by specifying a different hasher. A *hasher* is a type that implements the
-`BuildHasher` trait. We’ll talk about traits and how to implement them in
-Chapter 10. You don’t necessarily have to implement your own hasher from
-scratch; [crates.io](https://crates.io/)<!-- ignore --> has libraries shared by
-other Rust users that provide hashers implementing many common hashing
-algorithms.
+Secara default, `HashMap` pake fungsi hashing namanya _SipHash_ yang bisa ngasih 
+ketahanan dari serangan _denial-of-service (DoS)_ yang ngelibatin _hash 
+tables_[^siphash]. Ini bukan algoritma hashing paling cepet yang ada, tapi 
+_trade-off_ buat keamanan yang lebih baik dengan sedikit penurunan performa 
+itu sepadan sekali. Kalau kita nge-_profile_ kode kita dan ngerasa kalau 
+fungsi hash default-nya terlalu lambat buat tujuan kita, kita bisa ganti ke 
+fungsi lain dengan nentuin _hasher_ yang beda. Sebuah _hasher_ adalah tipe yang 
+mengimplementasikan trait `BuildHasher`. Kita bakal bahas traits dan cara 
+mengimplementasikan mereka di [Bab 10][traits]. Kita nggak perlu harus 
+mengimplementasikan hasher kita sendiri dari nol kok; 
+[crates.io](https://crates.io/) punya library-library yang di-share sama _user_ 
+Rust lainnya yang nyediain hashers yang mengimplementasikan banyak algoritma 
+hashing umum.
 
 [^siphash]: [https://en.wikipedia.org/wiki/SipHash](https://en.wikipedia.org/wiki/SipHash)
 
-## Summary
+## Ringkasan
 
-Vectors, strings, and hash maps will provide a large amount of functionality
-necessary in programs when you need to store, access, and modify data. Here are
-some exercises you should now be equipped to solve:
+Vectors, strings, sama hash maps bakal nyediain banyak fungsionalitas yang 
+dibutuhin di program kita pas kita perlu nyimpen, akses, dan ngubah data. Ini 
+ada beberapa latihan yang sekarang harusnya udah bisa kita selesein:
 
-* Given a list of integers, use a vector and return the median (when sorted,
-  the value in the middle position) and mode (the value that occurs most often;
-  a hash map will be helpful here) of the list.
-* Convert strings to pig latin. The first consonant of each word is moved to
-  the end of the word and “ay” is added, so “first” becomes “irst-fay.” Words
-  that start with a vowel have “hay” added to the end instead (“apple” becomes
-  “apple-hay”). Keep in mind the details about UTF-8 encoding!
-* Using a hash map and vectors, create a text interface to allow a user to add
-  employee names to a department in a company. For example, “Add Sally to
-  Engineering” or “Add Amir to Sales.” Then let the user retrieve a list of all
-  people in a department or all people in the company by department, sorted
-  alphabetically.
+1. Dikasih sekumpulan integer, pake sebuah vector dan balikin median (pas 
+   diurutin, nilai di posisi tengah) sama modus (nilai yang paling sering 
+   muncul; hash map bakal ngebantu sekali di sini) dari sekumpulan nilai itu.
+1. Convert strings ke _pig latin_. Konsonan pertama dari tiap kata dipindah ke 
+   akhir kata terus ditambahin _ay_, jadi _first_ jadi _irst-fay_. Kata-kata 
+   yang diawali sama huruf vokal ditambahin _hay_ di akhirnya (_apple_ jadi 
+   _apple-hay_). Inget detail soal _encoding_ UTF-8 ya!
+1. Pake hash map sama vectors, bikin interface teks buat ngebolehin user 
+   nambahin nama pegawai ke sebuah departemen di sebuah perusahaan; misalnya, 
+   “Tambahin Sally ke Engineering” atau “Tambahin Amir ke Sales.” Terus 
+   bolehin user buat narik (retrieve) daftar semua orang di suatu departemen 
+   atau semua orang di perusahaan berdasarkan departemen, diurutin secara alfabet.
 
-The standard library API documentation describes methods that vectors, strings,
-and hash maps have that will be helpful for these exercises!
+Dokumentasi API _standard library_ ngejelasin method-method yang dipunyai sama 
+vectors, strings, sama hash maps yang bakal ngebantu sekali buat latihan-
+latihan ini!
 
-We’re getting into more complex programs in which operations can fail, so, it’s
-a perfect time to discuss error handling. We’ll do that next!
+Kita lagi masuk ke program-program yang lebih kompleks di mana operasi bisa aja 
+gagal, jadi ini waktu yang paling pas buat bahas penanganan error (error 
+handling). Kita bakal ngelakuin itu berikutnya!
 
-[validating-references-with-lifetimes]:
-ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
+[validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [access]: #accessing-values-in-a-hash-map
+[traits]: ch10-02-traits.html

@@ -1,14 +1,14 @@
-## Recoverable Errors with `Result`
+## Error Recoverable pake `Result`
 
-Most errors aren’t serious enough to require the program to stop entirely.
-Sometimes, when a function fails, it’s for a reason that you can easily
-interpret and respond to. For example, if you try to open a file and that
-operation fails because the file doesn’t exist, you might want to create the
-file instead of terminating the process.
+Sebagian besar error nggak terlalu serius sampe harus ngehentiin program 
+sepenuhnya. Kadang pas sebuah fungsi gagal itu karena alasan yang bisa kita 
+interpretasi dan respon dengan gampang. Misalnya, kalau kita nyoba buka file 
+dan operasi itu gagal gara-gara filenya nggak ada, kita mungkin mau bikin file 
+itu bukannya malah nge-_terminate_ (menghentikan) prosesnya.
 
-Recall from [“Handling Potential Failure with `Result`”][handle_failure]<!--
-ignore --> in Chapter 2 that the `Result` enum is defined as having two
-variants, `Ok` and `Err`, as follows:
+Inget dari [“Menangani Potensi Kegagalan dengan `Result`”][handle_failure] di 
+Bab 2 kalau enum `Result` didefinisikan punya dua varian, `Ok` sama `Err`, 
+kayak gini:
 
 ```rust
 enum Result<T, E> {
@@ -17,88 +17,87 @@ enum Result<T, E> {
 }
 ```
 
-The `T` and `E` are generic type parameters: we’ll discuss generics in more
-detail in Chapter 10. What you need to know right now is that `T` represents
-the type of the value that will be returned in a success case within the `Ok`
-variant, and `E` represents the type of the error that will be returned in a
-failure case within the `Err` variant. Because `Result` has these generic type
-parameters, we can use the `Result` type and the functions defined on it in
-many different situations where the successful value and error value we want to
-return may differ.
+`T` sama `E` itu _generic type parameters_ (parameter tipe generik): kita bakal 
+bahas generik lebih detail di Bab 10. Yang perlu kita tau sekarang adalah `T` 
+merepresentasikan tipe dari nilai yang bakal dibalikin di kasus sukses di dalem 
+varian `Ok`, dan `E` merepresentasikan tipe dari error yang bakal dibalikin di 
+kasus gagal di dalem varian `Err`. Karena `Result` punya _generic type 
+parameters_ ini, kita bisa pake tipe `Result` dan fungsi-fungsi yang 
+didefinisikan padanya di banyak situasi yang beda di mana nilai sukses dan nilai 
+error yang mau kita balikin mungkin beda-beda.
 
-Let’s call a function that returns a `Result` value because the function could
-fail. In Listing 9-3 we try to open a file.
+Yuk kita manggil fungsi yang balikin nilai `Result` karena fungsinya bisa aja 
+gagal. Di Listing 9-3 kita nyoba ngebuka sebuah file.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-3" file-name="src/main.rs" caption="Membuka sebuah file">
 
 ```rust
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-03/src/main.rs}}
 ```
 
-<span class="caption">Listing 9-3: Opening a file</span>
+</Listing>
 
-The return type of `File::open` is a `Result<T, E>`. The generic parameter `T`
-has been filled in by the implementation of `File::open` with the type of the
-success value, `std::fs::File`, which is a file handle. The type of `E` used in
-the error value is `std::io::Error`. This return type means the call to
-`File::open` might succeed and return a file handle that we can read from or
-write to. The function call also might fail: for example, the file might not
-exist, or we might not have permission to access the file. The `File::open`
-function needs to have a way to tell us whether it succeeded or failed and at
-the same time give us either the file handle or error information. This
-information is exactly what the `Result` enum conveys.
+Tipe kembalian (return type) dari `File::open` adalah `Result<T, E>`. Parameter 
+generik `T` udah diisi sama implementasi dari `File::open` dengan tipe dari 
+nilai suksesnya, yaitu `std::fs::File`, yang merupakan sebuah _file handle_. 
+Tipe dari `E` yang dipake di nilai error adalah `std::io::Error`. Tipe kembalian 
+ini artinya pemanggilan ke `File::open` bisa aja sukses dan balikin _file 
+handle_ yang bisa kita baca atau tulis. Pemanggilan fungsi ini juga bisa aja 
+gagal: misalnya, filenya mungkin nggak ada, atau kita mungkin nggak punya izin 
+(permission) buat akses file itu. Fungsi `File::open` butuh cara buat ngasih 
+tau kita apakah dia sukses atau gagal dan di saat yang sama ngasih kita antara 
+_file handle_ atau informasi error. Informasi ini persis apa yang disampein 
+sama enum `Result`.
 
-In the case where `File::open` succeeds, the value in the variable
-`greeting_file_result` will be an instance of `Ok` that contains a file handle.
-In the case where it fails, the value in `greeting_file_result` will be an
-instance of `Err` that contains more information about the kind of error that
-happened.
+Di kasus di mana `File::open` sukses, nilai di variabel `greeting_file_result` 
+bakal jadi instance dari `Ok` yang nampung _file handle_. Di kasus di mana dia 
+gagal, nilai di `greeting_file_result` bakal jadi instance dari `Err` yang 
+nampung lebih banyak info soal jenis error yang terjadi.
 
-We need to add to the code in Listing 9-3 to take different actions depending
-on the value `File::open` returns. Listing 9-4 shows one way to handle the
-`Result` using a basic tool, the `match` expression that we discussed in
-Chapter 6.
+Kita perlu nambahin kode di Listing 9-3 buat ngambil tindakan yang beda 
+tergantung dari nilai yang dibalikin sama `File::open`. Listing 9-4 nunjukin 
+salah satu cara buat nanganin `Result` pake _tool_ dasar, yaitu ekspresi `match` 
+yang udah kita bahas di Bab 6.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-4" file-name="src/main.rs" caption="Pake ekspresi `match` buat nanganin varian `Result` yang mungkin dibalikin">
 
 ```rust,should_panic
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-04/src/main.rs}}
 ```
 
-<span class="caption">Listing 9-4: Using a `match` expression to handle the
-`Result` variants that might be returned</span>
+</Listing>
 
-Note that, like the `Option` enum, the `Result` enum and its variants have been
-brought into scope by the prelude, so we don’t need to specify `Result::`
-before the `Ok` and `Err` variants in the `match` arms.
+Perhatiin ya kalau sama kayak enum `Option`, enum `Result` sama varian-variannya 
+udah dibawa ke dalem scope lewat _prelude_, jadi kita nggak perlu nentuin 
+`Result::` sebelum varian `Ok` sama `Err` di _arms_ dari `match`-nya.
 
-When the result is `Ok`, this code will return the inner `file` value out of
-the `Ok` variant, and we then assign that file handle value to the variable
-`greeting_file`. After the `match`, we can use the file handle for reading or
-writing.
+Pas hasilnya `Ok`, kode ini bakal balikin nilai `file` di dalem varian `Ok`-nya, 
+dan terus kita nge-assign nilai _file handle_ itu ke variabel `greeting_file`. 
+Setelah `match`, kita bisa pake _file handle_-nya buat baca atau nulis.
 
-The other arm of the `match` handles the case where we get an `Err` value from
-`File::open`. In this example, we’ve chosen to call the `panic!` macro. If
-there’s no file named *hello.txt* in our current directory and we run this
-code, we’ll see the following output from the `panic!` macro:
+Arm lain dari `match`-nya nanganin kasus di mana kita dapet nilai `Err` dari 
+`File::open`. Di contoh ini, kita milih buat manggil macro `panic!`. Kalau 
+nggak ada file namanya _hello.txt_ di direktori kita saat ini dan kita jalanin 
+kode ini, kita bakal liat output berikut dari macro `panic!`:
 
 ```console
 {{#include ../listings/ch09-error-handling/listing-09-04/output.txt}}
 ```
 
-As usual, this output tells us exactly what has gone wrong.
+Kayak biasa, output ini ngasih tau kita persis apa yang salah.
 
-### Matching on Different Errors
+### Nge-match di Error yang Beda-beda
 
-The code in Listing 9-4 will `panic!` no matter why `File::open` failed.
-However, we want to take different actions for different failure reasons: if
-`File::open` failed because the file doesn’t exist, we want to create the file
-and return the handle to the new file. If `File::open` failed for any other
-reason—for example, because we didn’t have permission to open the file—we still
-want the code to `panic!` in the same way as it did in Listing 9-4. For this we
-add an inner `match` expression, shown in Listing 9-5.
+Kode di Listing 9-4 bakal `panic!` nggak peduli apa alasan `File::open` gagal. 
+Padahal, kita mau ngambil tindakan yang beda buat alasan kegagalan yang beda 
+juga. Kalau `File::open` gagal gara-gara filenya nggak ada, kita mau bikin 
+file itu terus balikin _handle_ ke file baru itu. Kalau `File::open` gagal buat 
+alasan apa pun lainnya—misalnya, karena kita nggak punya izin buat buka 
+filenya—kita tetep mau kodenya buat `panic!` dengan cara yang sama kayak di 
+Listing 9-4. Buat ini, kita nambahin ekspresi `match` bersarang (inner match), 
+yang ditunjukin di Listing 9-5.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-5" file-name="src/main.rs" caption="Nanganin jenis error yang beda dengan cara yang beda juga">
 
 <!-- ignore this test because otherwise it creates hello.txt which causes other
 tests to fail lol -->
@@ -107,35 +106,36 @@ tests to fail lol -->
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-05/src/main.rs}}
 ```
 
-<span class="caption">Listing 9-5: Handling different kinds of errors in
-different ways</span>
+</Listing>
 
-The type of the value that `File::open` returns inside the `Err` variant is
-`io::Error`, which is a struct provided by the standard library. This struct
-has a method `kind` that we can call to get an `io::ErrorKind` value. The enum
-`io::ErrorKind` is provided by the standard library and has variants
-representing the different kinds of errors that might result from an `io`
-operation. The variant we want to use is `ErrorKind::NotFound`, which indicates
-the file we’re trying to open doesn’t exist yet. So we match on
-`greeting_file_result`, but we also have an inner match on `error.kind()`.
+Tipe dari nilai yang dibalikin sama `File::open` di dalem varian `Err` adalah 
+`io::Error`, yang merupakan struct yang disediain sama _standard library_. 
+Struct ini punya method `kind` yang bisa kita panggil buat dapet nilai 
+`io::ErrorKind`. Enum `io::ErrorKind` disediain sama _standard library_ dan 
+punya varian-varian yang merepresentasikan berbagai jenis error yang mungkin 
+terjadi dari sebuah operasi `io`. Varian yang mau kita pake adalah 
+`ErrorKind::NotFound`, yang ngindikasikan kalau file yang lagi kita coba buka 
+itu belum ada. Jadi kita nge-match `greeting_file_result`, tapi kita juga punya 
+_inner match_ di `error.kind()`.
 
-The condition we want to check in the inner match is whether the value returned
-by `error.kind()` is the `NotFound` variant of the `ErrorKind` enum. If it is,
-we try to create the file with `File::create`. However, because `File::create`
-could also fail, we need a second arm in the inner `match` expression. When the
-file can’t be created, a different error message is printed. The second arm of
-the outer `match` stays the same, so the program panics on any error besides
-the missing file error.
+Kondisi yang mau kita cek di _inner match_ adalah apakah nilai yang dibalikin 
+sama `error.kind()` itu adalah varian `NotFound` dari enum `ErrorKind`. Kalau 
+iya, kita nyoba bikin filenya pake `File::create`. Tapi, karena `File::create` 
+juga bisa aja gagal, kita butuh _arm_ kedua di ekspresi _inner match_ kita. Pas 
+filenya nggak bisa dibuat, pesan error yang beda bakal dicetak. _Arm_ kedua dari 
+`match` bagian luar (outer match) tetep sama, jadi programnya bakal _panic_ 
+buat error apa pun selain error file nggak ditemuin.
 
-> ### Alternatives to Using `match` with `Result<T, E>`
+> #### Alternatif Buat Penggunaan `match` dengan `Result<T, E>`
 >
-> That’s a lot of `match`! The `match` expression is very useful but also very
-> much a primitive. In Chapter 13, you’ll learn about closures, which are used
-> with many of the methods defined on `Result<T, E>`. These methods can be more
-> concise than using `match` when handling `Result<T, E>` values in your code.
+> Banyak sekali ya `match`-nya! Ekspresi `match` itu sangat berguna tapi dia 
+> juga lumayan primitif. Di Bab 13, kita bakal belajar soal _closures_, yang 
+> dipake bareng banyak method yang didefinisikan pada `Result<T, E>`. Method-
+> method ini bisa lebih ringkas daripada pake `match` pas nanganin nilai 
+> `Result<T, E>` di kode kita.
 >
-> For example, here’s another way to write the same logic as shown in Listing
-> 9-5, this time using closures and the `unwrap_or_else` method:
+> Misalnya, ini cara lain buat nulis logika yang sama kayak yang ditunjukin di 
+> Listing 9-5, kali ini pake _closures_ dan method `unwrap_or_else`:
 >
 > <!-- CAN'T EXTRACT SEE https://github.com/rust-lang/mdBook/issues/1127 -->
 >
@@ -147,39 +147,44 @@ the missing file error.
 >     let greeting_file = File::open("hello.txt").unwrap_or_else(|error| {
 >         if error.kind() == ErrorKind::NotFound {
 >             File::create("hello.txt").unwrap_or_else(|error| {
->                 panic!("Problem creating the file: {:?}", error);
+>                 panic!("Masalah pas bikin file: {error:?}");
 >             })
 >         } else {
->             panic!("Problem opening the file: {:?}", error);
+>             panic!("Masalah pas buka file: {error:?}");
 >         }
 >     });
 > }
 > ```
 >
-> Although this code has the same behavior as Listing 9-5, it doesn’t contain
-> any `match` expressions and is cleaner to read. Come back to this example
-> after you’ve read Chapter 13, and look up the `unwrap_or_else` method in the
-> standard library documentation. Many more of these methods can clean up huge
-> nested `match` expressions when you’re dealing with errors.
+> Walaupun kode ini punya perilaku yang sama kayak Listing 9-5, dia nggak punya 
+> ekspresi `match` apa pun dan lebih bersih buat dibaca. Balik lagi ke contoh 
+> ini setelah kita kelar baca Bab 13, terus cek method `unwrap_or_else` di 
+> dokumentasi _standard library_. Masih banyak lagi method kayak gini yang bisa 
+> ngerapihin ekspresi `match` bersarang yang sangat besar pas kita lagi berurusan 
+> sama error.
 
-### Shortcuts for Panic on Error: `unwrap` and `expect`
+#### Jalan Pintas buat Panic Kalo Error: `unwrap` sama `expect`
 
-Using `match` works well enough, but it can be a bit verbose and doesn’t always
-communicate intent well. The `Result<T, E>` type has many helper methods
-defined on it to do various, more specific tasks. The `unwrap` method is a
-shortcut method implemented just like the `match` expression we wrote in
-Listing 9-4. If the `Result` value is the `Ok` variant, `unwrap` will return
-the value inside the `Ok`. If the `Result` is the `Err` variant, `unwrap` will
-call the `panic!` macro for us. Here is an example of `unwrap` in action:
+Pake `match` emang jalan dengan baik sih, tapi bisa agak kepanjangan (_verbose_) 
+dan nggak selalu ngomunikasikan maksud kita dengan baik. Tipe `Result<T, E>` 
+punya banyak method pembantu (helper methods) yang didefinisikan padanya buat 
+ngelakuin berbagai tugas yang lebih spesifik. Method `unwrap` itu adalah method 
+*shortcut* (jalan pintas) yang diimplementasikan persis kayak ekspresi `match` 
+yang kita tulis di Listing 9-4. Kalau nilai `Result`-nya adalah varian `Ok`, 
+`unwrap` bakal balikin nilai di dalem `Ok`-nya. Kalau `Result`-nya adalah 
+varian `Err`, `unwrap` bakal manggil macro `panic!` buat kita. Ini contoh 
+penggunaan `unwrap`:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust,should_panic
 {{#rustdoc_include ../listings/ch09-error-handling/no-listing-04-unwrap/src/main.rs}}
 ```
 
-If we run this code without a *hello.txt* file, we’ll see an error message from
-the `panic!` call that the `unwrap` method makes:
+</Listing>
+
+Kalau kita jalanin kode ini tanpa file _hello.txt_, kita bakal liat pesan error 
+dari pemanggilan `panic!` yang dilakuin sama method `unwrap`:
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-04-unwrap
@@ -188,26 +193,27 @@ copy and paste relevant text
 -->
 
 ```text
-thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: Os {
-code: 2, kind: NotFound, message: "No such file or directory" }',
-src/main.rs:4:49
+thread 'main' panicked at src/main.rs:4:49:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
 ```
 
-Similarly, the `expect` method lets us also choose the `panic!` error message.
-Using `expect` instead of `unwrap` and providing good error messages can convey
-your intent and make tracking down the source of a panic easier. The syntax of
-`expect` looks like this:
+Sama halnya, method `expect` juga ngebolehin kita buat milih pesan error `panic!`-nya 
+sendiri. Pake `expect` bukannya `unwrap` dan ngasih pesan error yang bagus 
+bisa nyampein maksud kita dan bikin ngelacak sumber _panic_ jadi lebih gampang. 
+Sintaks dari `expect` keliatan kayak gini:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust,should_panic
 {{#rustdoc_include ../listings/ch09-error-handling/no-listing-05-expect/src/main.rs}}
 ```
 
-We use `expect` in the same way as `unwrap`: to return the file handle or call
-the `panic!` macro. The error message used by `expect` in its call to `panic!`
-will be the parameter that we pass to `expect`, rather than the default
-`panic!` message that `unwrap` uses. Here’s what it looks like:
+</Listing>
+
+Kita pake `expect` dengan cara yang sama kayak `unwrap`: buat balikin _file 
+handle_-nya atau manggil macro `panic!`. Pesan error yang dipake sama `expect` 
+di pemanggilan `panic!`-nya bakal jadi parameter yang kita masukin ke `expect`, 
+bukannya pesan `panic!` default yang dipake sama `unwrap`. Ini contoh outputnya:
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/no-listing-05-expect
@@ -216,30 +222,30 @@ copy and paste relevant text
 -->
 
 ```text
-thread 'main' panicked at 'hello.txt should be included in this project: Os {
-code: 2, kind: NotFound, message: "No such file or directory" }',
-src/main.rs:5:10
+thread 'main' panicked at src/main.rs:5:10:
+hello.txt harusnya udah disertain di project ini: Os { code: 2, kind: NotFound, message: "No such file or directory" }
 ```
 
-In production-quality code, most Rustaceans choose `expect` rather than
-`unwrap` and give more context about why the operation is expected to always
-succeed. That way, if your assumptions are ever proven wrong, you have more
-information to use in debugging.
+Di _production-quality code_ (kode level produksi), kebanyakan Rustacean milih 
+`expect` daripada `unwrap` dan ngasih konteks lebih banyak soal kenapa operasi 
+itu diharapkan bakal selalu berhasil. Dengan gitu, kalau asumsi kita terbukti 
+salah, kita punya lebih banyak informasi yang bisa dipake pas _debugging_.
 
-### Propagating Errors
+### Ngelepar Balik Error (Propagating Errors)
 
-When a function’s implementation calls something that might fail, instead of
-handling the error within the function itself, you can return the error to the
-calling code so that it can decide what to do. This is known as *propagating*
-the error and gives more control to the calling code, where there might be more
-information or logic that dictates how the error should be handled than what
-you have available in the context of your code.
+Pas implementasi sebuah fungsi manggil sesuatu yang mungkin gagal, bukannya 
+nanganin error-nya di dalem fungsi itu sendiri, kita bisa milih buat balikin 
+error-nya ke kode yang manggil fungsi itu biar mereka yang mutusin mau ngapain. 
+Ini dikenal sebagai _propagating_ the error (ngelepar balik error) dan ngasih 
+kontrol lebih banyak ke kode pemanggil, di mana mungkin ada lebih banyak 
+informasi atau logika yang nentuin gimana error itu harus di-handle daripada 
+apa yang tersedia di konteks fungsi kita.
 
-For example, Listing 9-6 shows a function that reads a username from a file. If
-the file doesn’t exist or can’t be read, this function will return those errors
-to the code that called the function.
+Misalnya, Listing 9-6 nunjukin fungsi yang ngebaca username dari sebuah file. 
+Kalau filenya nggak ada atau nggak bisa dibaca, fungsi ini bakal balikin error-
+error itu ke kode yang manggil fungsi ini.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-6" file-name="src/main.rs" caption="Fungsi yang balikin error ke kode pemanggil pake `match`">
 
 <!-- Deliberately not using rustdoc_include here; the `main` function in the
 file panics. We do want to include it for reader experimentation purposes, but
@@ -249,67 +255,66 @@ don't want to include it for rustdoc testing purposes. -->
 {{#include ../listings/ch09-error-handling/listing-09-06/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 9-6: A function that returns errors to the
-calling code using `match`</span>
+</Listing>
 
-This function can be written in a much shorter way, but we’re going to start by
-doing a lot of it manually in order to explore error handling; at the end,
-we’ll show the shorter way. Let’s look at the return type of the function
-first: `Result<String, io::Error>`. This means the function is returning a
-value of the type `Result<T, E>` where the generic parameter `T` has been
-filled in with the concrete type `String`, and the generic type `E` has been
-filled in with the concrete type `io::Error`.
+Fungsi ini sebenernya bisa ditulis pake cara yang jauh lebih pendek, tapi kita 
+bakal mulai dengan ngelakuinnya secara manual biar bisa eksplor cara nanganin 
+error; nanti di akhir, kita bakal tunjukin cara yang lebih singkat. Yuk kita 
+liat tipe kembalian (return type) dari fungsinya dulu: 
+`Result<String, io::Error>`. Ini artinya fungsinya balikin nilai dari tipe 
+`Result<T, E>`, di mana parameter generik `T` udah diisi pake tipe konkret 
+`String` dan tipe generik `E` udah diisi pake tipe konkret `io::Error`.
 
-If this function succeeds without any problems, the code that calls this
-function will receive an `Ok` value that holds a `String`—the username that
-this function read from the file. If this function encounters any problems, the
-calling code will receive an `Err` value that holds an instance of `io::Error`
-that contains more information about what the problems were. We chose
-`io::Error` as the return type of this function because that happens to be the
-type of the error value returned from both of the operations we’re calling in
-this function’s body that might fail: the `File::open` function and the
-`read_to_string` method.
+Kalau fungsinya berhasil tanpa masalah apa pun, kode yang manggil fungsi ini 
+bakal nerima nilai `Ok` yang nampung sebuah `String`—yaitu `username` yang 
+dibaca sama fungsi ini dari file. Kalau fungsi ini nemu masalah apa pun, kode 
+pemanggil bakal nerima nilai `Err` yang nampung instance dari `io::Error` yang 
+isinya informasi lebih lanjut soal masalahnya. Kita milih `io::Error` sebagai 
+tipe kembalian dari fungsi ini karena kebetulan itu adalah tipe dari nilai error 
+yang dibalikin dari kedua operasi yang lagi kita panggil di dalem body fungsi ini 
+yang mungkin gagal: yaitu fungsi `File::open` sama method `read_to_string`.
 
-The body of the function starts by calling the `File::open` function. Then we
-handle the `Result` value with a `match` similar to the `match` in Listing 9-4.
-If `File::open` succeeds, the file handle in the pattern variable `file`
-becomes the value in the mutable variable `username_file` and the function
-continues. In the `Err` case, instead of calling `panic!`, we use the `return`
-keyword to return early out of the function entirely and pass the error value
-from `File::open`, now in the pattern variable `e`, back to the calling code as
-this function’s error value.
+Body dari fungsi ini dimulai dengan manggil fungsi `File::open`. Terus kita 
+nanganin nilai `Result`-nya pake `match` yang mirip kayak `match` di Listing 9-4. 
+Kalau `File::open` berhasil, _file handle_ di variabel pattern `file` bakal jadi 
+nilai di variabel _mutable_ `username_file` dan fungsinya lanjut. Di kasus `Err`, 
+bukannya manggil `panic!`, kita pake keyword `return` buat balik (return) 
+lebih awal dari fungsi sepenuhnya dan ngelepar nilai error dari `File::open`, 
+yang sekarang ada di variabel pattern `e`, balik ke kode pemanggil sebagai 
+nilai error dari fungsi ini.
 
-So if we have a file handle in `username_file`, the function then creates a new
-`String` in variable `username` and calls the `read_to_string` method on
-the file handle in `username_file` to read the contents of the file into
-`username`. The `read_to_string` method also returns a `Result` because it
-might fail, even though `File::open` succeeded. So we need another `match` to
-handle that `Result`: if `read_to_string` succeeds, then our function has
-succeeded, and we return the username from the file that’s now in `username`
-wrapped in an `Ok`. If `read_to_string` fails, we return the error value in the
-same way that we returned the error value in the `match` that handled the
-return value of `File::open`. However, we don’t need to explicitly say
-`return`, because this is the last expression in the function.
+Jadi, kalau kita punya _file handle_ di `username_file`, fungsinya terus bikin 
+`String` baru di variabel `username` terus manggil method `read_to_string` pada 
+_file handle_ di `username_file` buat baca isi filenya ke dalem `username`. 
+Method `read_to_string` juga balikin sebuah `Result` karena dia bisa aja gagal, 
+walaupun `File::open` tadi udah berhasil. Jadi kita butuh `match` satu lagi 
+buat nanganin `Result` itu: kalau `read_to_string` berhasil, berarti fungsi 
+kita udah berhasil, dan kita balikin username dari filenya yang sekarang udah 
+ada di variabel `username` yang dibungkus di dalem sebuah `Ok`. Kalau 
+`read_to_string` gagal, kita balikin nilai error-nya pake cara yang sama kayak 
+kita balikin nilai error di dalem `match` yang nanganin nilai kembalian dari 
+`File::open`. Tapi, kita nggak perlu secara eksplisit bilang `return`, karena ini 
+adalah ekspresi terakhir di fungsinya.
 
-The code that calls this code will then handle getting either an `Ok` value
-that contains a username or an `Err` value that contains an `io::Error`. It’s
-up to the calling code to decide what to do with those values. If the calling
-code gets an `Err` value, it could call `panic!` and crash the program, use a
-default username, or look up the username from somewhere other than a file, for
-example. We don’t have enough information on what the calling code is actually
-trying to do, so we propagate all the success or error information upward for
-it to handle appropriately.
+Kode yang manggil fungsi ini nanti bakal dapet antara nilai `Ok` yang isinya 
+sebuah username atau nilai `Err` yang isinya sebuah `io::Error`. Terserah kode 
+pemanggilnya mau ngapain sama nilai-nilai itu. Kalau kode pemanggilnya dapet 
+nilai `Err`, dia bisa aja manggil `panic!` terus nge-_crash_-in programnya, 
+pake username default, atau nyari username dari tempat lain selain dari file, 
+misalnya. Kita nggak punya informasi yang cukup soal apa yang sebenernya lagi 
+dicoba lakuin sama kode pemanggil, jadi kita nge-lempar balik semua informasi 
+sukses atau error ke atas biar di-handle sama dia dengan bener.
 
-This pattern of propagating errors is so common in Rust that Rust provides the
-question mark operator `?` to make this easier.
+Pola ngelepar balik error ini saking umumnya di Rust sampe Rust nyediain 
+operator tanda tanya `?` buat bikin proses ini lebih gampang.
 
-#### A Shortcut for Propagating Errors: the `?` Operator
+#### Jalan Pintas Buat Ngelepar Error: Operator `?`
 
-Listing 9-7 shows an implementation of `read_username_from_file` that has the
-same functionality as in Listing 9-6, but this implementation uses the
-`?` operator.
+Listing 9-7 nunjukin implementasi dari `read_username_from_file` yang punya 
+fungsionalitas yang sama kayak di Listing 9-6, tapi implementasi ini pake 
+operator `?`.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-7" file-name="src/main.rs" caption="Sebuah fungsi yang balikin error ke kode pemanggil pake operator `?`">
 
 <!-- Deliberately not using rustdoc_include here; the `main` function in the
 file panics. We do want to include it for reader experimentation purposes, but
@@ -319,45 +324,45 @@ don't want to include it for rustdoc testing purposes. -->
 {{#include ../listings/ch09-error-handling/listing-09-07/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 9-7: A function that returns errors to the
-calling code using the `?` operator</span>
+</Listing>
 
-The `?` placed after a `Result` value is defined to work in almost the same way
-as the `match` expressions we defined to handle the `Result` values in Listing
-9-6. If the value of the `Result` is an `Ok`, the value inside the `Ok` will
-get returned from this expression, and the program will continue. If the value
-is an `Err`, the `Err` will be returned from the whole function as if we had
-used the `return` keyword so the error value gets propagated to the calling
-code.
+Tanda `?` yang ditaruh setelah sebuah nilai `Result` itu didefinisikan buat 
+kerja dengan cara yang hampir persis sama kayak ekspresi `match` yang kita 
+definisikan buat nanganin nilai `Result` di Listing 9-6. Kalau nilai `Result`-nya 
+adalah `Ok`, nilai di dalem `Ok`-nya bakal dibalikin dari ekspresi ini, dan 
+programnya bakal lanjut. Kalau nilainya adalah `Err`, `Err` itu bakal dibalikin 
+dari keseluruhan fungsi seolah-olah kita udah pake keyword `return`, jadi nilai 
+error-nya bakal dilempar balik ke kode pemanggil.
 
-There is a difference between what the `match` expression from Listing 9-6 does
-and what the `?` operator does: error values that have the `?` operator called
-on them go through the `from` function, defined in the `From` trait in the
-standard library, which is used to convert values from one type into another.
-When the `?` operator calls the `from` function, the error type received is
-converted into the error type defined in the return type of the current
-function. This is useful when a function returns one error type to represent
-all the ways a function might fail, even if parts might fail for many different
-reasons.
+Ada sedikit perbedaan antara apa yang dilakuin ekspresi `match` di Listing 9-6 
+sama apa yang dilakuin operator `?`: nilai error yang dikenain operator `?` 
+bakal ngelewatin fungsi `from`, yang didefinisikan di trait `From` di _standard 
+library_, yang dipake buat nge-convert nilai dari satu tipe ke tipe lainnya. 
+Pas operator `?` manggil fungsi `from`, tipe error yang diterima bakal di-convert 
+jadi tipe error yang didefinisikan di tipe kembalian (return type) dari fungsi 
+saat ini. Ini sangat berguna pas sebuah fungsi balikin satu tipe error kustom 
+buat merepresentasikan semua kemungkinan cara fungsi itu bisa gagal, walaupun 
+bagian-bagian di dalemnya mungkin gagal karena banyak alasan yang beda.
 
-For example, we could change the `read_username_from_file` function in Listing
-9-7 to return a custom error type named `OurError` that we define. If we also
-define `impl From<io::Error> for OurError` to construct an instance of
-`OurError` from an `io::Error`, then the `?` operator calls in the body of
-`read_username_from_file` will call `from` and convert the error types without
-needing to add any more code to the function.
+Misalnya, kita bisa ngubah fungsi `read_username_from_file` di Listing 9-7 buat 
+balikin tipe error kustom namanya `OurError` yang kita definisikan sendiri. Kalau 
+kita juga mendefinisikan `impl From<io::Error> for OurError` buat ngonstruksi 
+sebuah instance dari `OurError` dari sebuah `io::Error`, maka pemanggilan 
+operator `?` di dalem body `read_username_from_file` bakal manggil `from` dan 
+nge-convert tipe error-nya tanpa perlu nambahin kode lain lagi ke fungsinya.
 
-In the context of Listing 9-7, the `?` at the end of the `File::open` call will
-return the value inside an `Ok` to the variable `username_file`. If an error
-occurs, the `?` operator will return early out of the whole function and give
-any `Err` value to the calling code. The same thing applies to the `?` at the
-end of the `read_to_string` call.
+Di konteks Listing 9-7, tanda `?` di akhir pemanggilan `File::open` bakal 
+balikin nilai di dalem `Ok` ke variabel `username_file`. Kalau ada error yang 
+terjadi, operator `?` bakal langsung keluar (return early) dari keseluruhan 
+fungsi dan ngasih nilai `Err` apa pun ke kode pemanggil. Hal yang sama juga 
+berlaku buat tanda `?` di akhir pemanggilan `read_to_string`.
 
-The `?` operator eliminates a lot of boilerplate and makes this function’s
-implementation simpler. We could even shorten this code further by chaining
-method calls immediately after the `?`, as shown in Listing 9-8.
+Operator `?` ngilangin sangat banyak _boilerplate code_ dan bikin implementasi 
+fungsi ini jadi lebih simpel. Kita bahkan bisa nyederhanain kode ini lebih 
+lanjut dengan nge-chaining (nyambungin) pemanggilan method langsung setelah `?`, 
+kayak yang ditunjukin di Listing 9-8.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-8" file-name="src/main.rs" caption="Nge-chaining pemanggilan method setelah operator `?`">
 
 <!-- Deliberately not using rustdoc_include here; the `main` function in the
 file panics. We do want to include it for reader experimentation purposes, but
@@ -367,21 +372,21 @@ don't want to include it for rustdoc testing purposes. -->
 {{#include ../listings/ch09-error-handling/listing-09-08/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 9-8: Chaining method calls after the `?`
-operator</span>
+</Listing>
 
-We’ve moved the creation of the new `String` in `username` to the beginning of
-the function; that part hasn’t changed. Instead of creating a variable
-`username_file`, we’ve chained the call to `read_to_string` directly onto the
-result of `File::open("hello.txt")?`. We still have a `?` at the end of the
-`read_to_string` call, and we still return an `Ok` value containing `username`
-when both `File::open` and `read_to_string` succeed rather than returning
-errors. The functionality is again the same as in Listing 9-6 and Listing 9-7;
-this is just a different, more ergonomic way to write it.
+Kita udah mindahin pembuatan `String` baru di variabel `username` ke awal dari 
+fungsinya; bagian itu nggak berubah. Bukannya bikin variabel `username_file`, 
+kita nge-chaining pemanggilan `read_to_string` secara langsung ke hasil dari 
+`File::open("hello.txt")?`. Kita tetep punya tanda `?` di akhir pemanggilan 
+`read_to_string`, dan kita tetep balikin nilai `Ok` yang nampung `username` 
+pas baik `File::open` maupun `read_to_string` berhasil, bukannya balikin 
+error-nya. Fungsionalitasnya tetep sama persis kayak di Listing 9-6 sama 
+Listing 9-7; ini cuma cara yang beda dan lebih ergonomis buat nulis kodenya.
 
-Listing 9-9 shows a way to make this even shorter using `fs::read_to_string`.
+Listing 9-9 nunjukin cara buat ngebikin ini jadi lebih singkat lagi pake 
+`fs::read_to_string`.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-9" file-name="src/main.rs" caption="Pake `fs::read_to_string` bukannya buka terus baca filenya secara manual">
 
 <!-- Deliberately not using rustdoc_include here; the `main` function in the
 file panics. We do want to include it for reader experimentation purposes, but
@@ -391,147 +396,152 @@ don't want to include it for rustdoc testing purposes. -->
 {{#include ../listings/ch09-error-handling/listing-09-09/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 9-9: Using `fs::read_to_string` instead of
-opening and then reading the file</span>
+</Listing>
 
-Reading a file into a string is a fairly common operation, so the standard
-library provides the convenient `fs::read_to_string` function that opens the
-file, creates a new `String`, reads the contents of the file, puts the contents
-into that `String`, and returns it. Of course, using `fs::read_to_string`
-doesn’t give us the opportunity to explain all the error handling, so we did it
-the longer way first.
+Baca sebuah file jadi string itu operasi yang lumayan umum, jadi _standard 
+library_ nyediain fungsi praktis `fs::read_to_string` yang buka filenya, bikin 
+`String` baru, baca isinya dari file, masukin isinya ke dalem `String` itu, 
+terus balikin nilai `String`-nya. Tentunya, kalau langsung pake 
+`fs::read_to_string` dari awal kita jadi nggak dapet kesempatan buat ngejelasin 
+semua penanganan error tadi, makanya kita bahas cara panjangnya dulu.
 
-#### Where The `?` Operator Can Be Used
+#### Di Mana Aja Operator `?` Bisa Dipake
 
-The `?` operator can only be used in functions whose return type is compatible
-with the value the `?` is used on. This is because the `?` operator is defined
-to perform an early return of a value out of the function, in the same manner
-as the `match` expression we defined in Listing 9-6. In Listing 9-6, the
-`match` was using a `Result` value, and the early return arm returned an
-`Err(e)` value. The return type of the function has to be a `Result` so that
-it’s compatible with this `return`.
+Operator `?` cuma bisa dipake di fungsi-fungsi yang tipe kembaliannya (return 
+type) kompatibel (cocok) sama nilai di mana tanda `?` itu dipake. Ini karena 
+operator `?` didefinisikan buat ngelakuin _early return_ (kembali lebih awal) 
+sebuah nilai keluar dari fungsi, sama kayak ekspresi `match` yang kita definisikan 
+di Listing 9-6. Di Listing 9-6, `match`-nya pake nilai `Result`, dan arm _early 
+return_-nya balikin nilai `Err(e)`. Tipe kembalian dari fungsinya juga harus 
+berupa sebuah `Result` biar cocok sama `return` ini.
 
-In Listing 9-10, let’s look at the error we’ll get if we use the `?` operator
-in a `main` function with a return type incompatible with the type of the value
-we use `?` on:
+Di Listing 9-10, yuk kita liat error apa yang bakal kita dapet kalau kita nyoba 
+pake operator `?` di dalem fungsi `main` yang punya tipe kembalian yang nggak 
+kompatibel sama tipe dari nilai di mana kita pake tanda `?`.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="9-10" file-name="src/main.rs" caption="Nyoba pake tanda `?` di fungsi `main` yang balikin `()` nggak bakal bisa di-compile.">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-10/src/main.rs}}
 ```
 
-<span class="caption">Listing 9-10: Attempting to use the `?` in the `main`
-function that returns `()` won’t compile</span>
+</Listing>
 
-This code opens a file, which might fail. The `?` operator follows the `Result`
-value returned by `File::open`, but this `main` function has the return type of
-`()`, not `Result`. When we compile this code, we get the following error
-message:
+Kode ini buka sebuah file, yang bisa aja gagal. Operator `?` ngikutin nilai 
+`Result` yang dibalikin sama `File::open`, tapi fungsi `main` ini punya tipe 
+kembalian `()`, bukan `Result`. Pas kita nge-compile kode ini, kita bakal dapet 
+pesan error berikut:
 
 ```console
 {{#include ../listings/ch09-error-handling/listing-09-10/output.txt}}
 ```
 
-This error points out that we’re only allowed to use the `?` operator in a
-function that returns `Result`, `Option`, or another type that implements
-`FromResidual`.
+Error ini nunjukin kalau kita cuma dibolehin pake operator `?` di fungsi yang 
+balikin `Result`, `Option`, atau tipe lain yang mengimplementasikan `FromResidual`.
 
-To fix the error, you have two choices. One choice is to change the return type
-of your function to be compatible with the value you’re using the `?` operator
-on as long as you have no restrictions preventing that. The other technique is
-to use a `match` or one of the `Result<T, E>` methods to handle the `Result<T,
-E>` in whatever way is appropriate.
+Buat benerin error-nya, kita punya dua pilihan. Pilihan pertama adalah ngubah 
+tipe kembalian dari fungsinya biar kompatibel sama nilai yang lagi kita 
+kenain operator `?` selama kita nggak punya batasan yang ngelarang hal itu. 
+Pilihan lainnya adalah pake sebuah `match` atau salah satu dari method di 
+`Result<T, E>` buat nanganin nilai `Result<T, E>`-nya dengan cara apa pun yang 
+paling pas.
 
-The error message also mentioned that `?` can be used with `Option<T>` values
-as well. As with using `?` on `Result`, you can only use `?` on `Option` in a
-function that returns an `Option`. The behavior of the `?` operator when called
-on an `Option<T>` is similar to its behavior when called on a `Result<T, E>`:
-if the value is `None`, the `None` will be returned early from the function at
-that point. If the value is `Some`, the value inside the `Some` is the
-resulting value of the expression and the function continues. Listing 9-11 has
-an example of a function that finds the last character of the first line in the
-given text:
+Pesan error-nya juga nyebutin kalau `?` bisa dipake bareng nilai `Option<T>` 
+juga. Sama kayak pas pake `?` di dalem `Result`, kita cuma bisa pake `?` di 
+dalem `Option` di sebuah fungsi yang juga balikin sebuah `Option`. Perilaku 
+dari operator `?` pas dipanggil di dalem sebuah `Option<T>` itu mirip sama 
+perilakunya pas dipanggil di dalem sebuah `Result<T, E>`: kalau nilainya adalah 
+`None`, nilai `None` bakal dibalikin lebih awal dari fungsi di titik itu. Kalau 
+nilainya adalah `Some`, nilai di dalem `Some`-nya bakal jadi nilai hasil dari 
+ekspresi tersebut, dan fungsinya lanjut jalan. Listing 9-11 punya contoh 
+sebuah fungsi yang nyari karakter terakhir dari baris pertama di dalem sebuah 
+teks.
+
+<Listing number="9-11" caption="Pake operator `?` di nilai `Option<T>`">
 
 ```rust
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-11/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 9-11: Using the `?` operator on an `Option<T>`
-value</span>
+</Listing>
 
-This function returns `Option<char>` because it’s possible that there is a
-character there, but it’s also possible that there isn’t. This code takes the
-`text` string slice argument and calls the `lines` method on it, which returns
-an iterator over the lines in the string. Because this function wants to
-examine the first line, it calls `next` on the iterator to get the first value
-from the iterator. If `text` is the empty string, this call to `next` will
-return `None`, in which case we use `?` to stop and return `None` from
-`last_char_of_first_line`. If `text` is not the empty string, `next` will
-return a `Some` value containing a string slice of the first line in `text`.
+Fungsi ini balikin `Option<char>` karena mungkin aja ada karakter di sana, tapi 
+mungkin juga nggak ada. Kode ini ngambil argumen string slice `text` terus 
+manggil method `lines` pada string tersebut, yang bakal balikin sebuah iterator 
+yang ngelewatin baris-baris di _string_-nya. Karena fungsi ini pengen nge-cek 
+baris pertamanya, dia manggil `next` pada iterator-nya buat dapet nilai pertama 
+dari iterator tersebut. Kalau `text` isinya _string_ kosong, pemanggilan 
+`next` ini bakal balikin `None`, dan di kasus itu kita pake `?` buat berhenti 
+terus balikin `None` dari `last_char_of_first_line`. Kalau `text` bukan _string_ 
+kosong, `next` bakal balikin nilai `Some` yang nampung _string slice_ dari 
+baris pertama di dalem `text`.
 
-The `?` extracts the string slice, and we can call `chars` on that string slice
-to get an iterator of its characters. We’re interested in the last character in
-this first line, so we call `last` to return the last item in the iterator.
-This is an `Option` because it’s possible that the first line is the empty
-string, for example if `text` starts with a blank line but has characters on
-other lines, as in `"\nhi"`. However, if there is a last character on the first
-line, it will be returned in the `Some` variant. The `?` operator in the middle
-gives us a concise way to express this logic, allowing us to implement the
-function in one line. If we couldn’t use the `?` operator on `Option`, we’d
-have to implement this logic using more method calls or a `match` expression.
+Tanda `?` ngekstrak _string slice_ itu, dan kita bisa manggil `chars` pada 
+_string slice_ tersebut buat dapet iterator dari karakter-karakternya. Kita 
+tertarik sama karakter terakhir di baris pertama ini, jadi kita manggil `last` 
+buat balikin item terakhir di iterator-nya. Ini adalah sebuah `Option` karena 
+mungkin aja baris pertamanya itu _string_ kosong; misalnya, kalau `text` dimulai 
+pake baris kosong tapi punya karakter di baris lainnya, kayak di `"\nhi"`. Tapi, 
+kalau emang ada karakter terakhir di baris pertama, dia bakal dibalikin di dalem 
+varian `Some`. Operator `?` di tengah-tengah itu ngasih kita cara yang ringkas 
+buat mengekspresikan logika ini, ngebolehin kita mengimplementasikan fungsi ini 
+di dalem satu baris aja. Kalau kita nggak bisa pake operator `?` di dalem `Option`, 
+kita harus mengimplementasikan logika ini pake lebih banyak pemanggilan method 
+atau pake ekspresi `match`.
 
-Note that you can use the `?` operator on a `Result` in a function that returns
-`Result`, and you can use the `?` operator on an `Option` in a function that
-returns `Option`, but you can’t mix and match. The `?` operator won’t
-automatically convert a `Result` to an `Option` or vice versa; in those cases,
-you can use methods like the `ok` method on `Result` or the `ok_or` method on
-`Option` to do the conversion explicitly.
+Perhatiin ya kalau kita bisa pake operator `?` di dalem `Result` di sebuah fungsi 
+yang balikin `Result`, dan kita bisa pake operator `?` di dalem `Option` di 
+sebuah fungsi yang balikin `Option`, tapi kita nggak bisa nyampur aduk. Operator 
+`?` nggak bakal otomatis nge-convert sebuah `Result` jadi sebuah `Option` atau 
+sebaliknya; di kasus kayak gitu, kita bisa pake method kayak `ok` pada `Result` 
+atau method `ok_or` pada `Option` buat ngelakuin proses konversi-nya secara 
+eksplisit.
 
-So far, all the `main` functions we’ve used return `()`. The `main` function is
-special because it’s the entry and exit point of executable programs, and there
-are restrictions on what its return type can be for the programs to behave as
-expected.
+Sejauh ini, semua fungsi `main` yang udah kita pake itu balikin `()`. Fungsi 
+`main` itu spesial karena dia adalah _entry point_ dan _exit point_ dari program 
+_executable_, dan ada batasan soal tipe kembaliannya apa aja yang dibolehin 
+biar programnya bisa jalan sesuai ekspektasi.
 
-Luckily, `main` can also return a `Result<(), E>`. Listing 9-12 has the
-code from Listing 9-10 but we’ve changed the return type of `main` to be
-`Result<(), Box<dyn Error>>` and added a return value `Ok(())` to the end. This
-code will now compile:
+Untungnya, `main` juga bisa balikin `Result<(), E>`. Listing 9-12 punya kode dari 
+Listing 9-10, tapi kita udah ubah tipe kembalian dari `main` jadi 
+`Result<(), Box<dyn Error>>` dan nambahin nilai kembalian `Ok(())` di akhirnya. 
+Kode ini sekarang bakal bisa di-compile.
+
+<Listing number="9-12" file-name="src/main.rs" caption="Ngubah `main` buat balikin `Result<(), E>` ngebolehin penggunaan operator `?` pada nilai `Result`.">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-12/src/main.rs}}
 ```
 
-<span class="caption">Listing 9-12: Changing `main` to return `Result<(), E>`
-allows the use of the `?` operator on `Result` values</span>
+</Listing>
 
-The `Box<dyn Error>` type is a *trait object*, which we’ll talk about in the
-[“Using Trait Objects that Allow for Values of Different
-Types”][trait-objects]<!-- ignore --> section in Chapter 17. For now, you can
-read `Box<dyn Error>` to mean “any kind of error.” Using `?` on a `Result`
-value in a `main` function with the error type `Box<dyn Error>` is allowed,
-because it allows any `Err` value to be returned early. Even though the body of
-this `main` function will only ever return errors of type `std::io::Error`, by
-specifying `Box<dyn Error>`, this signature will continue to be correct even if
-more code that returns other errors is added to the body of `main`.
+Tipe `Box<dyn Error>` adalah sebuah _trait object_, yang bakal kita bahas di 
+[“Menggunakan Trait Objects Yang Mengizinkan Nilai Dari Tipe Yang Beda-beda”][trait-objects] 
+di Bab 18. Buat sekarang, kita bisa anggep `Box<dyn Error>` artinya “jenis error 
+apa pun.” Pake `?` di dalem nilai `Result` di fungsi `main` yang punya tipe 
+error `Box<dyn Error>` itu dibolehin karena ini ngizinin nilai `Err` apa pun 
+buat dibalikin lebih awal. Walaupun body dari fungsi `main` ini cuma bakal pernah 
+balikin error bertipe `std::io::Error`, dengan nentuin `Box<dyn Error>`, 
+_signature_ ini bakal tetep bener biarpun nanti ada lebih banyak kode yang 
+balikin error tipe lain yang ditambahin ke dalem body `main`.
 
-When a `main` function returns a `Result<(), E>`, the executable will
-exit with a value of `0` if `main` returns `Ok(())` and will exit with a
-nonzero value if `main` returns an `Err` value. Executables written in C return
-integers when they exit: programs that exit successfully return the integer
-`0`, and programs that error return some integer other than `0`. Rust also
-returns integers from executables to be compatible with this convention.
+Pas fungsi `main` balikin `Result<(), E>`, executable-nya bakal exit (keluar) 
+dengan nilai `0` kalau `main` balikin `Ok(())` dan bakal exit dengan nilai selain 
+nol kalau `main` balikin nilai `Err`. Program executable yang ditulis dalam C 
+bakal balikin integer pas mereka exit: program yang berhasil bakal balikin 
+integer `0`, dan program yang error bakal balikin integer selain `0`. Rust juga 
+balikin integer dari program executable buat tetep kompatibel sama konvensi ini.
 
-The `main` function may return any types that implement [the
-`std::process::Termination` trait][termination]<!-- ignore -->, which contains
-a function `report` that returns an `ExitCode`. Consult the standard library
-documentation for more information on implementing the `Termination` trait for
-your own types.
+Fungsi `main` bisa balikin tipe apa pun yang mengimplementasikan trait 
+[`std::process::Termination`][termination], yang punya fungsi `report` yang 
+balikin sebuah `ExitCode`. Cek dokumentasi _standard library_ buat info lebih 
+lanjut soal gimana cara mengimplementasikan trait `Termination` buat tipe kustom 
+kita sendiri.
 
-Now that we’ve discussed the details of calling `panic!` or returning `Result`,
-let’s return to the topic of how to decide which is appropriate to use in which
-cases.
+Sekarang setelah kita bahas detail soal manggil `panic!` atau balikin `Result`, 
+yuk kita balik ke topik soal gimana cara mutusin mana yang pas buat dipake di 
+kasus yang mana.
 
 [handle_failure]: ch02-00-guessing-game-tutorial.html#handling-potential-failure-with-result
-[trait-objects]: ch17-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
+[trait-objects]: ch18-02-trait-objects.html#using-trait-objects-that-allow-for-values-of-different-types
 [termination]: ../std/process/trait.Termination.html

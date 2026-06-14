@@ -1,14 +1,16 @@
-# Using Structs to Structure Related Data
+# Pake Structs buat Ngatur Data Terkait
 
-A *struct*, or *structure*, is a custom data type that lets you package
-together and name multiple related values that make up a meaningful group. If
-you’re familiar with an object-oriented language, a *struct* is like an
-object’s data attributes. In this chapter, we’ll compare and contrast tuples
-with structs to build on what you already know and demonstrate when structs are
-a better way to group data.
+Sebuah _struct_, atau _structure_, adalah tipe data kustom yang ngebolehin kita 
+ngebungkus dan ngasih nama ke beberapa nilai terkait yang ngebentuk sebuah 
+grup yang bermakna. Kalau kita udah kenal sama bahasa pemrograman berbasis 
+objek (object-oriented), sebuah _struct_ itu kayak atribut data dari sebuah 
+objek. Di bab ini, kita bakal bandingin tuple sama struct buat ngembangin apa 
+yang udah kita tau dan nunjukin kapan struct jadi cara yang lebih oke buat 
+ngelempokin data.
 
-We’ll demonstrate how to define and instantiate structs. We’ll discuss how to
-define associated functions, especially the kind of associated functions called
-*methods*, to specify behavior associated with a struct type. Structs and enums
-(discussed in Chapter 6) are the building blocks for creating new types in your
-program’s domain to take full advantage of Rust’s compile-time type checking.
+Kita bakal praktekin gimana cara mendefinisikan sama menginisialisasi struct. 
+Kita bakal bahas gimana cara mendefinisikan _associated functions_, terutama 
+jenis _associated functions_ yang disebut _methods_, buat nentuin perilaku 
+yang terkait sama sebuah tipe struct. Struct sama enum (yang dibahas di Bab 6) 
+adalah blok dasar buat bikin tipe-tipe baru di domain program kita buat 
+manfaatin pengecekan tipe _compile-time_ Rust secara maksimal.

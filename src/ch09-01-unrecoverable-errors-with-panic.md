@@ -1,112 +1,124 @@
-## Unrecoverable Errors with `panic!`
+## Error Unrecoverable pake `panic!`
 
-Sometimes, bad things happen in your code, and there’s nothing you can do about
-it. In these cases, Rust has the `panic!` macro. There are two ways to cause a
-panic in practice: by taking an action that causes our code to panic (such as
-accessing an array past the end) or by explicitly calling the `panic!` macro.
-In both cases, we cause a panic in our program. By default, these panics will
-print a failure message, unwind, clean up the stack, and quit. Via an
-environment variable, you can also have Rust display the call stack when a
-panic occurs to make it easier to track down the source of the panic.
+Kadang hal-hal buruk terjadi di kode kita, dan nggak ada yang bisa kita lakuin 
+buat ngatasinnya. Di kasus kayak gini, Rust punya macro `panic!`. Ada dua cara 
+buat micu sebuah _panic_ di praktiknya: dengan ngambil aksi yang bikin kode 
+kita _panic_ (kayak akses array ngelewatin akhirnya) atau dengan secara 
+eksplisit manggil macro `panic!`. Di dua kasus itu, kita nyebabin sebuah _panic_ 
+di program kita. Secara default, _panics_ ini bakal nyetak pesan kegagalan, 
+_unwind_ (nggulung balik), ngebersihin _stack_, terus _quit_ (keluar). Lewat 
+_environment variable_ (variabel lingkungan), kita juga bisa nyuruh Rust buat 
+nampilin _call stack_ pas sebuah _panic_ terjadi biar lebih gampang buat ngelacak 
+sumber dari _panic_ itu.
 
-> ### Unwinding the Stack or Aborting in Response to a Panic
+> ### Unwinding the Stack atau Aborting sebagai Respon ke Panic
 >
-> By default, when a panic occurs, the program starts *unwinding*, which
-> means Rust walks back up the stack and cleans up the data from each function
-> it encounters. However, this walking back and cleanup is a lot of work. Rust,
-> therefore, allows you to choose the alternative of immediately *aborting*,
-> which ends the program without cleaning up.
+> Secara default, pas sebuah _panic_ terjadi, program mulai proses _unwinding_, 
+> yang artinya Rust jalan mundur ke atas _stack_ terus ngebersihin data dari 
+> tiap fungsi yang dia temuin. Tapi, jalan mundur terus ngebersihin data itu 
+> butuh banyak kerjaan. Makanya, Rust ngebolehin kita milih alternatif yaitu 
+> langsung _aborting_ (ngebatalin), yang ngeakhirin program tanpa ngebersihin 
+> apa-apa.
 >
-> Memory that the program was using will then need to be cleaned
-> up by the operating system. If in your project you need to make the resulting
-> binary as small as possible, you can switch from unwinding to aborting upon a
-> panic by adding `panic = 'abort'` to the appropriate `[profile]` sections in
-> your *Cargo.toml* file. For example, if you want to abort on panic in release
-> mode, add this:
+> Memori yang tadinya dipake program terus bakal perlu dibersihin sama sistem 
+> operasi (OS). Kalau di project kita kita butuh ngebikin file _binary_ hasil 
+> akhirnya sekecil mungkin, kita bisa pindah dari _unwinding_ jadi _aborting_ 
+> pas terjadi _panic_ dengan nambahin `panic = 'abort'` ke bagian `[profile]` 
+> yang sesuai di file _Cargo.toml_ kita. Misalnya, kalau kita mau _abort_ pas 
+> _panic_ di _release mode_, tambahin ini:
 >
 > ```toml
 > [profile.release]
 > panic = 'abort'
 > ```
 
-Let’s try calling `panic!` in a simple program:
+Yuk kita coba manggil `panic!` di program yang simpel:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust,should_panic,panics
 {{#rustdoc_include ../listings/ch09-error-handling/no-listing-01-panic/src/main.rs}}
 ```
 
-When you run the program, you’ll see something like this:
+</Listing>
+
+Pas kita jalanin programnya, kita bakal liat yang kayak gini:
 
 ```console
 {{#include ../listings/ch09-error-handling/no-listing-01-panic/output.txt}}
 ```
 
-The call to `panic!` causes the error message contained in the last two lines.
-The first line shows our panic message and the place in our source code where
-the panic occurred: *src/main.rs:2:5* indicates that it’s the second line,
-fifth character of our *src/main.rs* file.
+Pemanggilan `panic!` nyebabin pesan error yang ada di dua baris terakhir. Baris 
+pertama nunjukin pesan _panic_ kita dan lokasi di _source code_ kita di mana 
+_panic_-nya terjadi: _src/main.rs:2:5_ nunjukin kalau itu ada di baris kedua, 
+karakter kelima di file _src/main.rs_ kita.
 
-In this case, the line indicated is part of our code, and if we go to that
-line, we see the `panic!` macro call. In other cases, the `panic!` call might
-be in code that our code calls, and the filename and line number reported by
-the error message will be someone else’s code where the `panic!` macro is
-called, not the line of our code that eventually led to the `panic!` call. We
-can use the backtrace of the functions the `panic!` call came from to figure
-out the part of our code that is causing the problem. We’ll discuss backtraces
-in more detail next.
+Di kasus ini, baris yang ditunjuk adalah bagian dari kode kita, dan kalau kita 
+buka baris itu, kita bakal liat pemanggilan macro `panic!`. Di kasus lain, 
+pemanggilan `panic!` mungkin ada di kode yang dipanggil sama kode kita, dan 
+nama file serta nomor baris yang dilaporin sama pesan error-nya bakal nunjukin 
+kode punya orang lain di mana macro `panic!` itu dipanggil, bukan baris kode 
+kita yang akhirnya nyebabin pemanggilan `panic!` itu.
 
-### Using a `panic!` Backtrace
+<!-- Old heading. Do not remove or links may break. -->
 
-Let’s look at another example to see what it’s like when a `panic!` call comes
-from a library because of a bug in our code instead of from our code calling
-the macro directly. Listing 9-1 has some code that attempts to access an
-index in a vector beyond the range of valid indexes.
+<a id="using-a-panic-backtrace"></a>
 
-<span class="filename">Filename: src/main.rs</span>
+Kita bisa pake _backtrace_ dari fungsi-fungsi tempat `panic!` dipanggil buat 
+nyari tau bagian mana dari kode kita yang nyebabin masalahnya. Buat mahamin 
+gimana cara pake _backtrace_ `panic!`, yuk kita liat contoh lain dan liat 
+gimana rasanya pas pemanggilan `panic!` dateng dari sebuah _library_ gara-gara 
+ada _bug_ di kode kita, bukannya dari kode kita yang manggil macro-nya secara 
+langsung. Listing 9-1 punya kode yang nyoba akses indeks di vector yang ngelewatin 
+rentang (range) indeks yang valid.
+
+<Listing number="9-1" file-name="src/main.rs" caption="Nyoba akses elemen yang ngelewatin akhir sebuah vector, yang bakal nyebabin pemanggilan `panic!`">
 
 ```rust,should_panic,panics
 {{#rustdoc_include ../listings/ch09-error-handling/listing-09-01/src/main.rs}}
 ```
 
-<span class="caption">Listing 9-1: Attempting to access an element beyond the
-end of a vector, which will cause a call to `panic!`</span>
+</Listing>
 
-Here, we’re attempting to access the 100th element of our vector (which is at
-index 99 because indexing starts at zero), but the vector has only 3 elements.
-In this situation, Rust will panic. Using `[]` is supposed to return an
-element, but if you pass an invalid index, there’s no element that Rust could
-return here that would be correct.
+Di sini, kita lagi nyoba akses elemen ke-100 dari vector kita (yang ada di indeks 
+99 karena indexing mulai dari nol), tapi vector-nya cuma punya tiga elemen. Di 
+situasi ini, Rust bakal _panic_. Pake `[]` seharusnya balikin sebuah elemen, 
+tapi kalau kita ngasih indeks yang nggak valid, nggak ada elemen yang bisa 
+dibalikin Rust di sini yang bener.
 
-In C, attempting to read beyond the end of a data structure is undefined
-behavior. You might get whatever is at the location in memory that would
-correspond to that element in the data structure, even though the memory
-doesn’t belong to that structure. This is called a *buffer overread* and can
-lead to security vulnerabilities if an attacker is able to manipulate the index
-in such a way as to read data they shouldn’t be allowed to that is stored after
-the data structure.
+Di C, nyoba baca data ngelewatin akhir dari struktur data itu dianggap sebagai 
+_undefined behavior_ (perilaku yang nggak terdefinisi). Kita mungkin bakal dapet 
+apa pun yang ada di lokasi memori yang harusnya sesuai sama elemen itu di 
+struktur datanya, walaupun memori itu bukan milik struktur data tersebut. Ini 
+disebut _buffer overread_ dan bisa memicu celah keamanan (_security vulnerabilities_) 
+kalau seorang _attacker_ (penyerang) bisa memanipulasi indeks sedemikian rupa 
+biar bisa baca data yang nggak boleh mereka baca yang disimpan setelah struktur 
+data itu.
 
-To protect your program from this sort of vulnerability, if you try to read an
-element at an index that doesn’t exist, Rust will stop execution and refuse to
-continue. Let’s try it and see:
+Buat ngelindungin program kita dari celah semacam ini, kalau kita nyoba baca 
+elemen di indeks yang nggak ada, Rust bakal ngehentiin eksekusi dan nolak buat 
+lanjut. Yuk kita coba dan liat hasilnya:
 
 ```console
 {{#include ../listings/ch09-error-handling/listing-09-01/output.txt}}
 ```
 
-This error points at line 4 of our `main.rs` where we attempt to access index
-99. The next note line tells us that we can set the `RUST_BACKTRACE`
-environment variable to get a backtrace of exactly what happened to cause the
-error. A *backtrace* is a list of all the functions that have been called to
-get to this point. Backtraces in Rust work as they do in other languages: the
-key to reading the backtrace is to start from the top and read until you see
-files you wrote. That’s the spot where the problem originated. The lines above
-that spot are code that your code has called; the lines below are code that
-called your code. These before-and-after lines might include core Rust code,
-standard library code, or crates that you’re using. Let’s try getting a
-backtrace by setting the `RUST_BACKTRACE` environment variable to any value
-except 0. Listing 9-2 shows output similar to what you’ll see.
+Error ini nunjuk ke baris 4 dari _main.rs_ kita di mana kita nyoba akses indeks 
+`99` dari vector di `v`.
+
+Baris `note:` ngasih tau kita kalau kita bisa nge-set _environment variable_ 
+`RUST_BACKTRACE` buat dapetin _backtrace_ dari apa persisnya yang terjadi yang 
+nyebabin error itu. Sebuah _backtrace_ adalah daftar dari semua fungsi yang 
+udah dipanggil sampe bisa nyampe ke titik ini. _Backtraces_ di Rust cara 
+kerjanya sama kayak di bahasa lain: kunci buat baca _backtrace_ adalah mulai 
+dari atas terus baca sampe kita liat file yang kita tulis sendiri. Itu adalah 
+titik di mana masalahnya bermula. Baris-baris di atas titik itu adalah kode yang 
+dipanggil sama kode kita; baris-baris di bawahnya adalah kode yang manggil kode 
+kita. Baris-baris sebelum dan sesudah ini mungkin nyakup kode inti Rust, kode 
+_standard library_, atau crates yang lagi kita pake. Yuk kita coba dapetin 
+_backtrace_ dengan nge-set _environment variable_ `RUST_BACKTRACE` ke nilai apa 
+pun kecuali `0`. Listing 9-2 nunjukin output yang mirip sama apa yang bakal kita 
+liat.
 
 <!-- manual-regeneration
 cd listings/ch09-error-handling/listing-09-01
@@ -115,51 +127,53 @@ copy the backtrace output below
 check the backtrace number mentioned in the text below the listing
 -->
 
+<Listing number="9-2" caption="_Backtrace_ yang dihasilin oleh pemanggilan `panic!` yang ditampilin pas _environment variable_ `RUST_BACKTRACE` di-set">
+
 ```console
 $ RUST_BACKTRACE=1 cargo run
-thread 'main' panicked at 'index out of bounds: the len is 3 but the index is 99', src/main.rs:4:5
+thread 'main' panicked at src/main.rs:4:6:
+index out of bounds: the len is 3 but the index is 99
 stack backtrace:
    0: rust_begin_unwind
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/std/src/panicking.rs:584:5
+             at /rustc/4d91de4e48198da2e33413efdcd9cd2cc0c46688/library/std/src/panicking.rs:692:5
    1: core::panicking::panic_fmt
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/core/src/panicking.rs:142:14
+             at /rustc/4d91de4e48198da2e33413efdcd9cd2cc0c46688/library/core/src/panicking.rs:75:14
    2: core::panicking::panic_bounds_check
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/core/src/panicking.rs:84:5
+             at /rustc/4d91de4e48198da2e33413efdcd9cd2cc0c46688/library/core/src/panicking.rs:273:5
    3: <usize as core::slice::index::SliceIndex<[T]>>::index
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/core/src/slice/index.rs:242:10
+             at file:///home/.rustup/toolchains/1.85/lib/rustlib/src/rust/library/core/src/slice/index.rs:274:10
    4: core::slice::index::<impl core::ops::index::Index<I> for [T]>::index
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/core/src/slice/index.rs:18:9
+             at file:///home/.rustup/toolchains/1.85/lib/rustlib/src/rust/library/core/src/slice/index.rs:16:9
    5: <alloc::vec::Vec<T,A> as core::ops::index::Index<I>>::index
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/alloc/src/vec/mod.rs:2591:9
+             at file:///home/.rustup/toolchains/1.85/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3361:9
    6: panic::main
-             at ./src/main.rs:4:5
+             at ./src/main.rs:4:6
    7: core::ops::function::FnOnce::call_once
-             at /rustc/e092d0b6b43f2de967af0887873151bb1c0b18d3/library/core/src/ops/function.rs:248:5
+             at file:///home/.rustup/toolchains/1.85/lib/rustlib/src/rust/library/core/src/ops/function.rs:250:5
 note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
 ```
 
-<span class="caption">Listing 9-2: The backtrace generated by a call to
-`panic!` displayed when the environment variable `RUST_BACKTRACE` is set</span>
+</Listing>
 
-That’s a lot of output! The exact output you see might be different depending
-on your operating system and Rust version. In order to get backtraces with this
-information, debug symbols must be enabled. Debug symbols are enabled by
-default when using `cargo build` or `cargo run` without the `--release` flag,
-as we have here.
+Outputnya lumayan banyak tuh! Output pasti yang bakal kita liat mungkin beda-beda 
+tergantung dari sistem operasi sama versi Rust yang dipake. Biar dapet 
+_backtraces_ dengan informasi sebanyak ini, _debug symbols_ harus dinyalain. 
+_Debug symbols_ dinyalain secara default pas kita pake `cargo build` atau 
+`cargo run` tanpa _flag_ `--release`, kayak yang kita lakuin di sini.
 
-In the output in Listing 9-2, line 6 of the backtrace points to the line in our
-project that’s causing the problem: line 4 of *src/main.rs*. If we don’t want
-our program to panic, we should start our investigation at the location pointed
-to by the first line mentioning a file we wrote. In Listing 9-1, where we
-deliberately wrote code that would panic, the way to fix the panic is to not
-request an element beyond the range of the vector indexes. When your code
-panics in the future, you’ll need to figure out what action the code is taking
-with what values to cause the panic and what the code should do instead.
+Di output di Listing 9-2, baris 6 dari _backtrace_-nya nunjuk ke baris di 
+project kita yang nyebabin masalahnya: baris 4 dari _src/main.rs_. Kalau kita 
+nggak mau program kita _panic_, kita harus mulai nyari masalahnya di lokasi 
+yang ditunjuk sama baris pertama yang nyebutin file yang kita tulis sendiri. Di 
+Listing 9-1, di mana kita sengaja nulis kode yang bakal _panic_, cara buat 
+benerin _panic_-nya adalah dengan nggak minta elemen yang ada di luar rentang 
+indeks vector-nya. Pas kode kita _panic_ di masa depan nanti, kita harus nyari 
+tau aksi apa yang lagi dilakuin sama kode itu pake nilai apa sampe bisa 
+nyebabin _panic_ dan apa yang seharusnya dilakuin sama kode itu sebagai gantinya.
 
-We’ll come back to `panic!` and when we should and should not use `panic!` to
-handle error conditions in the [“To `panic!` or Not to
-`panic!`”][to-panic-or-not-to-panic]<!-- ignore --> section later in this
-chapter. Next, we’ll look at how to recover from an error using `Result`.
+Kita bakal balik lagi bahas `panic!` dan kapan kita harus dan nggak harus pake 
+`panic!` buat nanganin kondisi error di bagian [“To `panic!` or Not to 
+`panic!`”][to-panic-or-not-to-panic] nanti di bab ini. Selanjutnya, kita bakal 
+liat gimana caranya buat pulih dari sebuah error pake `Result`.
 
-[to-panic-or-not-to-panic]:
-ch09-03-to-panic-or-not-to-panic.html#to-panic-or-not-to-panic
+[to-panic-or-not-to-panic]: ch09-03-to-panic-or-not-to-panic.html#to-panic-or-not-to-panic

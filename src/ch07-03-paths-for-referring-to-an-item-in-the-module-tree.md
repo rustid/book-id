@@ -1,297 +1,299 @@
-## Paths for Referring to an Item in the Module Tree
+## Paths (Jalur) buat Ngerujuk Item di Pohon Modul
 
-To show Rust where to find an item in a module tree, we use a path in the same
-way we use a path when navigating a filesystem. To call a function, we need to
-know its path.
+Buat ngasih tau Rust di mana harus nyari sebuah item di pohon modul, kita pake 
+_path_ (jalur) dengan cara yang sama kayak kita pake path pas navigasi sistem 
+file. Buat manggil sebuah fungsi, kita harus tau _path_-nya.
 
-A path can take two forms:
+Sebuah _path_ bisa punya dua bentuk:
 
-* An *absolute path* is the full path starting from a crate root; for code
-  from an external crate, the absolute path begins with the crate name, and for
-  code from the current crate, it starts with the literal `crate`.
-* A *relative path* starts from the current module and uses `self`, `super`, or
-  an identifier in the current module.
+- _Absolute path_ (path absolut) adalah path lengkap mulai dari _crate root_; 
+  buat kode dari crate eksternal, absolute path dimulai pake nama crate-nya, 
+  dan buat kode dari crate saat ini, dia dimulai pake literal `crate`.
+- _Relative path_ (path relatif) dimulai dari modul saat ini terus pake `self`, 
+  `super`, atau identifier (nama) di modul saat ini.
 
-Both absolute and relative paths are followed by one or more identifiers
-separated by double colons (`::`).
+Baik absolute maupun relative path diikuti sama satu atau lebih identifier yang 
+dipisahin pake titik dua ganda (`::`).
 
-Returning to Listing 7-1, say we want to call the `add_to_waitlist` function.
-This is the same as asking: what’s the path of the `add_to_waitlist` function?
-Listing 7-3 contains Listing 7-1 with some of the modules and functions
-removed.
+Balik lagi ke Listing 7-1, katakanlah kita mau manggil fungsi `add_to_waitlist`. 
+Ini sama aja kayak nanya: apa sih path dari fungsi `add_to_waitlist`? 
+Listing 7-3 isinya Listing 7-1 tapi beberapa modul sama fungsinya dihapus biar 
+fokus.
 
-We’ll show two ways to call the `add_to_waitlist` function from a new function
-`eat_at_restaurant` defined in the crate root. These paths are correct, but
-there’s another problem remaining that will prevent this example from compiling
-as-is. We’ll explain why in a bit.
+Kita bakal nunjukin dua cara buat manggil fungsi `add_to_waitlist` dari fungsi 
+baru, `eat_at_restaurant`, yang didefinisikan di _crate root_. Path-path ini 
+udah bener, tapi ada satu masalah lagi yang bakal nyegah contoh ini buat bisa 
+di-compile gitu aja. Kita bakal jelasin alasannya bentar lagi.
 
-The `eat_at_restaurant` function is part of our library crate’s public API, so
-we mark it with the `pub` keyword. In the [“Exposing Paths with the `pub`
-Keyword”][pub]<!-- ignore --> section, we’ll go into more detail about `pub`.
+Fungsi `eat_at_restaurant` itu bagian dari API _public_ dari _library crate_ 
+kita, jadi kita nandain dia pake keyword `pub`. Di bagian [“Mengekspos Paths 
+dengan Keyword `pub`”][pub], kita bakal bahas `pub` lebih detail.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-3" file-name="src/lib.rs" caption="Manggil fungsi `add_to_waitlist` pake absolute dan relative paths">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-03/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-3: Calling the `add_to_waitlist` function using
-absolute and relative paths</span>
+</Listing>
 
-The first time we call the `add_to_waitlist` function in `eat_at_restaurant`,
-we use an absolute path. The `add_to_waitlist` function is defined in the same
-crate as `eat_at_restaurant`, which means we can use the `crate` keyword to
-start an absolute path. We then include each of the successive modules until we
-make our way to `add_to_waitlist`. You can imagine a filesystem with the same
-structure: we’d specify the path `/front_of_house/hosting/add_to_waitlist` to
-run the `add_to_waitlist` program; using the `crate` name to start from the
-crate root is like using `/` to start from the filesystem root in your shell.
+Pertama kali kita manggil fungsi `add_to_waitlist` di `eat_at_restaurant`, 
+kita pake absolute path. Fungsi `add_to_waitlist` didefinisikan di crate yang 
+sama kayak `eat_at_restaurant`, yang artinya kita bisa pake keyword `crate` 
+buat mulai absolute path-nya. Terus kita masukin tiap modul secara berurutan 
+sampe kita nyampe ke `add_to_waitlist`. Bayangin aja sistem file dengan 
+struktur yang sama: kita bakal nentuin path 
+`/front_of_house/hosting/add_to_waitlist` buat jalanin program `add_to_waitlist`; 
+pake nama `crate` buat mulai dari _crate root_ itu kayak pake `/` buat mulai 
+dari _root_ sistem file di terminal (shell) kita.
 
-The second time we call `add_to_waitlist` in `eat_at_restaurant`, we use a
-relative path. The path starts with `front_of_house`, the name of the module
-defined at the same level of the module tree as `eat_at_restaurant`. Here the
-filesystem equivalent would be using the path
-`front_of_house/hosting/add_to_waitlist`. Starting with a module name means
-that the path is relative.
+Kedua kalinya kita manggil `add_to_waitlist` di `eat_at_restaurant`, kita 
+pake relative path. Path-nya dimulai dari `front_of_house`, nama modul yang 
+didefinisikan di level yang sama di pohon modul dengan `eat_at_restaurant`. Di 
+sini, kalau di sistem file, ini sama aja kayak pake path 
+`front_of_house/hosting/add_to_waitlist`. Mulai pake nama modul artinya 
+path-nya itu relatif.
 
-Choosing whether to use a relative or absolute path is a decision you’ll make
-based on your project, and depends on whether you’re more likely to move item
-definition code separately from or together with the code that uses the item.
-For example, if we move the `front_of_house` module and the `eat_at_restaurant`
-function into a module named `customer_experience`, we’d need to update the
-absolute path to `add_to_waitlist`, but the relative path would still be valid.
-However, if we moved the `eat_at_restaurant` function separately into a module
-named `dining`, the absolute path to the `add_to_waitlist` call would stay the
-same, but the relative path would need to be updated. Our preference in general
-is to specify absolute paths because it’s more likely we’ll want to move code
-definitions and item calls independently of each other.
+Milih buat pake relative atau absolute path itu keputusan yang bakal kita ambil 
+berdasarkan project kita, dan itu tergantung apakah kita lebih sering mindahin 
+kode definisi item secara terpisah atau barengan sama kode yang pake item itu. 
+Misalnya, kalau kita mindahin modul `front_of_house` sama fungsi 
+`eat_at_restaurant` ke dalem modul namanya `customer_experience`, kita harus 
+update absolute path ke `add_to_waitlist`, tapi relative path-nya tetep bakal 
+valid. Sebaliknya, kalau kita mindahin fungsi `eat_at_restaurant` secara 
+terpisah ke dalem modul namanya `dining`, absolute path buat manggil 
+`add_to_waitlist` bakal tetep sama, tapi relative path-nya harus di-update. 
+Preferensi kita secara umum adalah nentuin pake absolute path karena biasanya 
+kita lebih sering mindahin definisi kode sama pemanggilan item secara 
+independen satu sama lain.
 
-Let’s try to compile Listing 7-3 and find out why it won’t compile yet! The
-error we get is shown in Listing 7-4.
+Yuk kita coba compile Listing 7-3 dan cari tau kenapa ini belum bisa 
+di-compile! Error yang kita dapet ditunjukin di Listing 7-4.
+
+<Listing number="7-4" caption="Error _compiler_ pas nge-build kode di Listing 7-3">
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-03/output.txt}}
 ```
 
-<span class="caption">Listing 7-4: Compiler errors from building the code in
-Listing 7-3</span>
+</Listing>
 
-The error messages say that module `hosting` is private. In other words, we
-have the correct paths for the `hosting` module and the `add_to_waitlist`
-function, but Rust won’t let us use them because it doesn’t have access to the
-private sections. In Rust, all items (functions, methods, structs, enums,
-modules, and constants) are private to parent modules by default. If you want
-to make an item like a function or struct private, you put it in a module.
+Pesan error-nya bilang kalau modul `hosting` itu _private_. Dengan kata lain, 
+kita udah punya path yang bener buat modul `hosting` sama fungsi 
+`add_to_waitlist`, tapi Rust nggak ngebolehin kita pake mereka karena Rust 
+nggak punya akses ke bagian _private_-nya. Di Rust, semua item (fungsi, method, 
+struct, enum, modul, sama konstanta) itu _private_ terhadap modul induknya 
+secara default. Kalau kita mau bikin sebuah item kayak fungsi atau struct jadi 
+_private_, kita taruh dia di dalem modul.
 
-Items in a parent module can’t use the private items inside child modules, but
-items in child modules can use the items in their ancestor modules. This is
-because child modules wrap and hide their implementation details, but the child
-modules can see the context in which they’re defined. To continue with our
-metaphor, think of the privacy rules as being like the back office of a
-restaurant: what goes on in there is private to restaurant customers, but
-office managers can see and do everything in the restaurant they operate.
+Item di modul induk nggak bisa pake item _private_ di dalem anak modulnya 
+(child modules), tapi item di anak modul bisa pake item di modul leluhurnya 
+(ancestor modules). Ini karena anak modul ngebungkus dan nyembunyiin detail 
+implementasinya, tapi anak modul bisa liat konteks di mana mereka didefinisikan. 
+Lanjutin analogi kita, bayangin aturan privasi ini kayak dapur restoran 
+(_back office_): apa yang terjadi di sana itu _private_ buat pelanggan restoran, 
+tapi manajer bisa liat dan ngelakuin apa aja di restoran yang mereka jalanin.
 
-Rust chose to have the module system function this way so that hiding inner
-implementation details is the default. That way, you know which parts of the
-inner code you can change without breaking outer code. However, Rust does give
-you the option to expose inner parts of child modules’ code to outer ancestor
-modules by using the `pub` keyword to make an item public.
+Rust milih buat bikin sistem modul jalan kayak gini biar nyembunyiin detail 
+implementasi internal jadi default. Dengan gitu, kita tau bagian kode internal 
+mana yang bisa kita ubah tanpa ngerusak kode eksternalnya. Tapi, Rust tetep 
+ngasih kita opsi buat ngekspos bagian internal dari kode anak modul ke modul 
+leluhurnya pake keyword `pub` buat bikin item jadi _public_.
 
-### Exposing Paths with the `pub` Keyword
+### Mengekspos Paths dengan Keyword `pub`
 
-Let’s return to the error in Listing 7-4 that told us the `hosting` module is
-private. We want the `eat_at_restaurant` function in the parent module to have
-access to the `add_to_waitlist` function in the child module, so we mark the
-`hosting` module with the `pub` keyword, as shown in Listing 7-5.
+Yuk balik lagi ke error di Listing 7-4 yang ngasih tau kita kalau modul 
+`hosting` itu _private_. Kita mau fungsi `eat_at_restaurant` di modul induknya 
+punya akses ke fungsi `add_to_waitlist` di anak modulnya, jadi kita nandain 
+modul `hosting` pake keyword `pub`, kayak yang ditunjukin di Listing 7-5.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-5" file-name="src/lib.rs" caption="Mendeklarasikan modul `hosting` sebagai `pub` biar bisa dipake dari `eat_at_restaurant`">
 
 ```rust,ignore,does_not_compile
-{{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-05/src/lib.rs}}
+{{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-05/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 7-5: Declaring the `hosting` module as `pub` to
-use it from `eat_at_restaurant`</span>
+</Listing>
 
-Unfortunately, the code in Listing 7-5 still results in an error, as shown in
-Listing 7-6.
+Sayangnya, kode di Listing 7-5 tetep ngasilin error _compiler_, kayak yang 
+ditunjukin di Listing 7-6.
+
+<Listing number="7-6" caption="Error _compiler_ pas nge-build kode di Listing 7-5">
 
 ```console
 {{#include ../listings/ch07-managing-growing-projects/listing-07-05/output.txt}}
 ```
 
-<span class="caption">Listing 7-6: Compiler errors from building the code in
-Listing 7-5</span>
+</Listing>
 
-What happened? Adding the `pub` keyword in front of `mod hosting` makes the
-module public. With this change, if we can access `front_of_house`, we can
-access `hosting`. But the *contents* of `hosting` are still private; making the
-module public doesn’t make its contents public. The `pub` keyword on a module
-only lets code in its ancestor modules refer to it, not access its inner code.
-Because modules are containers, there’s not much we can do by only making the
-module public; we need to go further and choose to make one or more of the
-items within the module public as well.
+Apa yang terjadi? Nambahin keyword `pub` di depan `mod hosting` bikin modul 
+itu jadi _public_. Dengan perubahan ini, kalau kita bisa akses `front_of_house`, 
+kita bisa akses `hosting`. Tapi _isi_ dari `hosting` itu tetep _private_; 
+bikin modul jadi _public_ nggak bikin isinya otomatis ikutan _public_. Keyword 
+`pub` pada sebuah modul cuma ngebolehin kode di modul leluhurnya buat ngerujuk 
+ke dia, bukan buat akses kode di dalemnya. Karena modul itu adalah wadah 
+(container), nggak banyak yang bisa kita lakuin dengan cuma bikin modulnya jadi 
+_public_; kita perlu melangkah lebih jauh terus milih buat bikin satu atau lebih 
+item di dalem modulnya ikutan jadi _public_ juga.
 
-The errors in Listing 7-6 say that the `add_to_waitlist` function is private.
-The privacy rules apply to structs, enums, functions, and methods as well as
-modules.
+Error di Listing 7-6 bilang kalau fungsi `add_to_waitlist` itu _private_. Aturan 
+privasi berlaku buat struct, enum, fungsi, dan method, dan juga modul.
 
-Let’s also make the `add_to_waitlist` function public by adding the `pub`
-keyword before its definition, as in Listing 7-7.
+Yuk kita bikin fungsi `add_to_waitlist` jadi _public_ juga dengan nambahin 
+keyword `pub` sebelum definisinya, kayak di Listing 7-7.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-7" file-name="src/lib.rs" caption="Nambahin keyword `pub` ke `mod hosting` dan `fn add_to_waitlist` ngebolehin kita manggil fungsinya dari `eat_at_restaurant`">
 
 ```rust,noplayground,test_harness
-{{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-07/src/lib.rs}}
+{{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-07/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 7-7: Adding the `pub` keyword to `mod hosting`
-and `fn add_to_waitlist` lets us call the function from
-`eat_at_restaurant`</span>
+</Listing>
 
-Now the code will compile! To see why adding the `pub` keyword lets us use
-these paths in `add_to_waitlist` with respect to the privacy rules, let’s look
-at the absolute and the relative paths.
+Sekarang kodenya bisa di-compile! Buat liat kenapa nambahin keyword `pub` 
+ngebolehin kita pake path-path ini di `eat_at_restaurant` sesuai sama aturan 
+privasi, yuk kita bahas absolute sama relative path-nya.
 
-In the absolute path, we start with `crate`, the root of our crate’s module
-tree. The `front_of_house` module is defined in the crate root. While
-`front_of_house` isn’t public, because the `eat_at_restaurant` function is
-defined in the same module as `front_of_house` (that is, `eat_at_restaurant`
-and `front_of_house` are siblings), we can refer to `front_of_house` from
-`eat_at_restaurant`. Next is the `hosting` module marked with `pub`. We can
-access the parent module of `hosting`, so we can access `hosting`. Finally, the
-`add_to_waitlist` function is marked with `pub` and we can access its parent
-module, so this function call works!
+Di absolute path, kita mulai pake `crate`, yaitu akar (_root_) dari pohon 
+modul crate kita. Modul `front_of_house` didefinisikan di _crate root_. Walaupun 
+`front_of_house` itu bukan _public_, tapi karena fungsi `eat_at_restaurant` 
+didefinisikan di modul yang sama kayak `front_of_house` (artinya `eat_at_restaurant` 
+sama `front_of_house` itu sodaraan), kita bisa ngerujuk ke `front_of_house` dari 
+`eat_at_restaurant`. Terus lanjut ke modul `hosting` yang udah ditandain pake 
+`pub`. Kita bisa akses modul induk dari `hosting`, jadi kita bisa akses 
+`hosting`. Terakhir, fungsi `add_to_waitlist` ditandain pake `pub` dan kita 
+bisa akses modul induknya, jadi pemanggilan fungsi ini berhasil!
 
-In the relative path, the logic is the same as the absolute path except for the
-first step: rather than starting from the crate root, the path starts from
-`front_of_house`. The `front_of_house` module is defined within the same module
-as `eat_at_restaurant`, so the relative path starting from the module in which
-`eat_at_restaurant` is defined works. Then, because `hosting` and
-`add_to_waitlist` are marked with `pub`, the rest of the path works, and this
-function call is valid!
+Di relative path, logikanya sama persis kayak absolute path kecuali buat langkah 
+pertama: bukannya mulai dari _crate root_, path-nya mulai dari `front_of_house`. 
+Modul `front_of_house` didefinisikan di dalem modul yang sama kayak 
+`eat_at_restaurant`, jadi relative path yang dimulai dari modul tempat 
+`eat_at_restaurant` didefinisikan itu berhasil. Terus, karena `hosting` sama 
+`add_to_waitlist` ditandain pake `pub`, sisa path-nya berhasil, dan pemanggilan 
+fungsi ini jadi valid!
 
-If you plan on sharing your library crate so other projects can use your code,
-your public API is your contract with users of your crate that determines how
-they can interact with your code. There are many considerations around managing
-changes to your public API to make it easier for people to depend on your
-crate. These considerations are out of the scope of this book; if you’re
-interested in this topic, see [The Rust API Guidelines][api-guidelines].
+Kalau kita berencana buat nge-share _library crate_ kita biar project lain 
+bisa pake kode kita, API _public_ kita adalah kontrak kita sama _user_ dari crate 
+kita yang nentuin gimana mereka bisa berinteraksi sama kode kita. Ada banyak 
+pertimbangan soal cara ngelola perubahan di API _public_ kita buat ngebikin orang 
+lebih gampang bergantung sama crate kita. Pertimbangan-pertimbangan ini di luar 
+cakupan buku ini; kalau kita tertarik sama topik ini, cek [The Rust API Guidelines][api-guidelines].
 
-> #### Best Practices for Packages with a Binary and a Library
+> #### Best Practices buat Packages yang Punya Binary sama Library
 >
-> We mentioned a package can contain both a *src/main.rs* binary crate root as
-> well as a *src/lib.rs* library crate root, and both crates will have the
-> package name by default. Typically, packages with this pattern of containing
-> both a library and a binary crate will have just enough code in the binary
-> crate to start an executable that calls code with the library crate. This
-> lets other projects benefit from the most functionality that the package
-> provides, because the library crate’s code can be shared.
+> Kita sempet nyebut kalau sebuah package bisa punya baik _crate root binary_ di 
+> _src/main.rs_ maupun _crate root library_ di _src/lib.rs_, dan kedua crates ini 
+> bakal punya nama yang sama secara default. Biasanya, packages dengan pola ini 
+> yang punya baik _library_ maupun _binary crate_ bakal punya kode di _binary 
+> crate_-nya secukupnya aja buat mulai _executable_ yang manggil kode yang 
+> didefinisikan di _library crate_. Ini bikin project lain bisa dapet manfaat 
+> dari sebagian besar fungsionalitas yang disediain package-nya karena kode di 
+> _library crate_-nya bisa di-share.
 >
-> The module tree should be defined in *src/lib.rs*. Then, any public items can
-> be used in the binary crate by starting paths with the name of the package.
-> The binary crate becomes a user of the library crate just like a completely
-> external crate would use the library crate: it can only use the public API.
-> This helps you design a good API; not only are you the author, you’re also a
-> client!
+> Pohon modul harusnya didefinisikan di _src/lib.rs_. Terus, item _public_ mana 
+> pun bisa dipake di _binary crate_ dengan mulai path-nya pake nama package-nya. 
+> _Binary crate_ itu jadi _user_ dari _library crate_-nya sama kayak _crate_ 
+> eksternal lainnya yang bakal pake _library crate_ itu: dia cuma bisa pake 
+> API _public_-nya. Ini ngebantu kita desain API yang bagus; kita nggak cuma jadi 
+> _author_-nya, tapi kita juga jadi kliennya!
 >
-> In [Chapter 12][ch12]<!-- ignore -->, we’ll demonstrate this organizational
-> practice with a command-line program that will contain both a binary crate
-> and a library crate.
+> Di [Bab 12][ch12], kita bakal nunjukin praktik organisasi ini pake program 
+> _command line_ yang bakal isinya _binary crate_ sekaligus _library crate_.
 
-### Starting Relative Paths with `super`
+### Memulai Relative Paths dengan `super`
 
-We can construct relative paths that begin in the parent module, rather than
-the current module or the crate root, by using `super` at the start of the
-path. This is like starting a filesystem path with the `..` syntax. Using
-`super` allows us to reference an item that we know is in the parent module,
-which can make rearranging the module tree easier when the module is closely
-related to the parent, but the parent might be moved elsewhere in the module
-tree someday.
+Kita bisa ngebangun relative paths yang mulai dari modul induknya, bukannya 
+modul saat ini atau _crate root_, pake `super` di awal path-nya. Ini kayak 
+mulai path sistem file pake sintaks `..` yang artinya naik ke direktori 
+induknya. Pake `super` ngebolehin kita ngerujuk item yang kita tau ada di 
+modul induknya, yang bisa ngebikin penataan ulang pohon modul jadi lebih gampang 
+kalau modul itu terkait erat sama induknya tapi si induk mungkin dipindah ke 
+tempat lain di pohon modul suatu hari nanti.
 
-Consider the code in Listing 7-8 that models the situation in which a chef
-fixes an incorrect order and personally brings it out to the customer. The
-function `fix_incorrect_order` defined in the `back_of_house` module calls the
-function `deliver_order` defined in the parent module by specifying the path to
-`deliver_order` starting with `super`:
+Coba liat kode di Listing 7-8 yang mensimulasikan situasi di mana seorang koki 
+benerin pesanan yang salah terus ngasih langsung ke pelanggannya. Fungsi 
+`fix_incorrect_order` yang didefinisikan di modul `back_of_house` manggil 
+fungsi `deliver_order` yang didefinisikan di modul induknya dengan nentuin 
+path ke `deliver_order`, mulai pake `super`.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-8" file-name="src/lib.rs" caption="Manggil fungsi pake relative path yang dimulai dengan `super`">
 
 ```rust,noplayground,test_harness
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-08/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-8: Calling a function using a relative path
-starting with `super`</span>
+</Listing>
 
-The `fix_incorrect_order` function is in the `back_of_house` module, so we can
-use `super` to go to the parent module of `back_of_house`, which in this case
-is `crate`, the root. From there, we look for `deliver_order` and find it.
-Success! We think the `back_of_house` module and the `deliver_order` function
-are likely to stay in the same relationship to each other and get moved
-together should we decide to reorganize the crate’s module tree. Therefore, we
-used `super` so we’ll have fewer places to update code in the future if this
-code gets moved to a different module.
+Fungsi `fix_incorrect_order` ada di modul `back_of_house`, jadi kita bisa pake 
+`super` buat pindah ke modul induk dari `back_of_house`, yang di kasus ini 
+adalah `crate`, yaitu _root_-nya. Dari situ, kita nyari `deliver_order` dan 
+nemuin dia. Mantap! Kita rasa modul `back_of_house` sama fungsi `deliver_order` 
+kemungkinan bakal tetep punya hubungan yang sama satu sama lain dan bakal 
+dipindah barengan kalau kita mutusin buat ngerombak pohon modul crate kita. 
+Makanya, kita pake `super` biar lebih dikit tempat yang harus di-update nanti 
+kalau kode ini dipindah ke modul yang beda.
 
-### Making Structs and Enums Public
+### Bikin Structs dan Enums Jadi Public
 
-We can also use `pub` to designate structs and enums as public, but there are a
-few details extra to the usage of `pub` with structs and enums. If we use `pub`
-before a struct definition, we make the struct public, but the struct’s fields
-will still be private. We can make each field public or not on a case-by-case
-basis. In Listing 7-9, we’ve defined a public `back_of_house::Breakfast` struct
-with a public `toast` field but a private `seasonal_fruit` field. This models
-the case in a restaurant where the customer can pick the type of bread that
-comes with a meal, but the chef decides which fruit accompanies the meal based
-on what’s in season and in stock. The available fruit changes quickly, so
-customers can’t choose the fruit or even see which fruit they’ll get.
+Kita juga bisa pake `pub` buat nandain structs sama enums jadi _public_, tapi 
+ada beberapa detail tambahan buat penggunaan `pub` bareng structs sama enums. 
+Kalau kita pake `pub` sebelum definisi struct, kita bikin struct-nya jadi 
+_public_, tapi field-field di struct-nya bakal tetep _private_. Kita bisa 
+bikin tiap field jadi _public_ atau nggak sesuai kasusnya masing-masing. Di 
+Listing 7-9, kita mendefinisikan sebuah struct _public_ `back_of_house::Breakfast` 
+dengan field `toast` yang _public_ tapi field `seasonal_fruit` yang _private_. 
+Ini mensimulasikan kasus di restoran di mana pelanggan bisa milih roti yang 
+dateng bareng makanannya, tapi koki yang mutusin buah apa yang nyertain makanannya 
+berdasarkan musim sama stoknya. Ketersediaan buah berubah-ubah dengan cepet, 
+jadi pelanggan nggak bisa milih buahnya atau bahkan tau buah apa yang bakal 
+mereka dapet.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-9" file-name="src/lib.rs" caption="Sebuah struct dengan beberapa field _public_ dan beberapa field _private_">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-09/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-9: A struct with some public fields and some
-private fields</span>
+</Listing>
 
-Because the `toast` field in the `back_of_house::Breakfast` struct is public,
-in `eat_at_restaurant` we can write and read to the `toast` field using dot
-notation. Notice that we can’t use the `seasonal_fruit` field in
-`eat_at_restaurant` because `seasonal_fruit` is private. Try uncommenting the
-line modifying the `seasonal_fruit` field value to see what error you get!
+Karena field `toast` di struct `back_of_house::Breakfast` itu _public_, di 
+`eat_at_restaurant` kita bisa nulis dan baca field `toast` pake notasi titik. 
+Perhatiin kalau kita nggak bisa pake field `seasonal_fruit` di `eat_at_restaurant`, 
+karena `seasonal_fruit` itu _private_. Coba di-uncomment baris yang ngubah nilai 
+field `seasonal_fruit` buat liat error apa yang bakal dapet!
 
-Also, note that because `back_of_house::Breakfast` has a private field, the
-struct needs to provide a public associated function that constructs an
-instance of `Breakfast` (we’ve named it `summer` here). If `Breakfast` didn’t
-have such a function, we couldn’t create an instance of `Breakfast` in
-`eat_at_restaurant` because we couldn’t set the value of the private
-`seasonal_fruit` field in `eat_at_restaurant`.
+Terus, perhatiin karena `back_of_house::Breakfast` punya field _private_, struct 
+ini harus nyediain fungsi _associated_ yang _public_ yang ngebikin (mengkonstruksi) 
+instance dari `Breakfast` (kita namain `summer` di sini). Kalau `Breakfast` nggak 
+punya fungsi kayak gitu, kita nggak bakal bisa bikin instance dari `Breakfast` 
+di `eat_at_restaurant` karena kita nggak bisa set nilai dari field 
+`seasonal_fruit` yang _private_ di `eat_at_restaurant`.
 
-In contrast, if we make an enum public, all of its variants are then public. We
-only need the `pub` before the `enum` keyword, as shown in Listing 7-10.
+Sebaliknya, kalau kita bikin sebuah enum jadi _public_, semua variannya ikutan 
+jadi _public_. Kita cuma perlu naruh `pub` sebelum keyword `enum`, kayak yang 
+ditunjukin di Listing 7-10.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="7-10" file-name="src/lib.rs" caption="Nandain enum sebagai _public_ bikin semua variannya ikutan _public_.">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch07-managing-growing-projects/listing-07-10/src/lib.rs}}
 ```
 
-<span class="caption">Listing 7-10: Designating an enum as public makes all its
-variants public</span>
+</Listing>
 
-Because we made the `Appetizer` enum public, we can use the `Soup` and `Salad`
-variants in `eat_at_restaurant`.
+Karena kita bikin enum `Appetizer` jadi _public_, kita bisa pake varian `Soup` 
+sama `Salad` di `eat_at_restaurant`.
 
-Enums aren’t very useful unless their variants are public; it would be annoying
-to have to annotate all enum variants with `pub` in every case, so the default
-for enum variants is to be public. Structs are often useful without their
-fields being public, so struct fields follow the general rule of everything
-being private by default unless annotated with `pub`.
+Enums nggak terlalu berguna kalau variannya nggak _public_; bakal nyebelin 
+sekali kalau harus nganotasi semua varian enum pake `pub` di setiap kasus, jadi 
+default buat varian enum adalah _public_. Structs biasanya berguna walaupun 
+field-nya nggak _public_, jadi field struct ngikutin aturan umum bahwa segala 
+hal itu _private_ secara default kecuali dianotasi pake `pub`.
 
-There’s one more situation involving `pub` that we haven’t covered, and that is
-our last module system feature: the `use` keyword. We’ll cover `use` by itself
-first, and then we’ll show how to combine `pub` and `use`.
+Ada satu lagi situasi yang ngelibatin `pub` yang belum kita bahas, dan itu 
+adalah fitur sistem modul kita yang terakhir: keyword `use`. Kita bakal ngebahas 
+`use` sendirian dulu, terus kita bakal nunjukin gimana cara gabungin `pub` sama 
+`use`.
 
 [pub]: ch07-03-paths-for-referring-to-an-item-in-the-module-tree.html#exposing-paths-with-the-pub-keyword
 [api-guidelines]: https://rust-lang.github.io/api-guidelines/

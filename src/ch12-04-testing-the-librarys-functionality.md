@@ -1,244 +1,231 @@
-## Developing the Library’s Functionality with Test-Driven Development
+## Mengembangkan Fungsionalitas Library dengan Test-Driven Development
 
-Now that we’ve extracted the logic into *src/lib.rs* and left the argument
-collecting and error handling in *src/main.rs*, it’s much easier to write tests
-for the core functionality of our code. We can call functions directly with
-various arguments and check return values without having to call our binary
-from the command line.
+Sekarang setelah logika pencarian kita terpisah di _src/lib.rs_ dari fungsi 
+`main`, jauh lebih mudah untuk menulis pengujian buat fungsionalitas inti dari 
+kode kita. Kita bisa memanggil fungsi secara langsung dengan berbagai argumen 
+dan mengecek nilai kembaliannya tanpa perlu menjalankan *binary* kita dari 
+*command line*.
 
-In this section, we’ll add the searching logic to the `minigrep` program
-using the test-driven development (TDD) process with the following steps:
+Di bagian ini, kita bakal menambahkan logika pencarian ke program `minigrep` 
+memakai proses *test-driven development* (TDD) dengan langkah-langkah berikut:
 
-1. Write a test that fails and run it to make sure it fails for the reason you
-   expect.
-2. Write or modify just enough code to make the new test pass.
-3. Refactor the code you just added or changed and make sure the tests
-   continue to pass.
-4. Repeat from step 1!
+1. Tulis sebuah pengujian yang gagal lalu jalankan buat memastikan kalau pengujian 
+   itu gagal dengan alasan yang kita harapkan.
+2. Tulis atau ubah kode secukupnya saja buat bikin pengujian baru itu sukses.
+3. *Refactor* (rombak) kode yang baru saja ditambahkan atau diubah dan pastikan 
+   pengujiannya tetap sukses.
+4. Ulangi lagi dari langkah 1!
 
-Though it’s just one of many ways to write software, TDD can help drive code
-design. Writing the test before you write the code that makes the test pass
-helps to maintain high test coverage throughout the process.
+Meskipun ini cuma salah satu dari sekian banyak cara buat nulis *software*, 
+TDD bisa membantu mengarahkan desain kode. Menulis pengujian sebelum kita 
+menulis kode yang bakal membuat pengujian itu sukses membantu mempertahankan 
+*test coverage* (cakupan pengujian) yang tinggi di sepanjang proses.
 
-We’ll test drive the implementation of the functionality that will actually do
-the searching for the query string in the file contents and produce a list of
-lines that match the query. We’ll add this functionality in a function called
-`search`.
+Kita bakal menguji-kembangkan (test-drive) implementasi fungsionalitas yang 
+nantinya bakal benar-benar melakukan pencarian _string_ kueri di dalam isi file 
+lalu menghasilkan daftar baris yang cocok dengan kueri tersebut. Kita bakal 
+menambahkan fungsionalitas ini ke dalam sebuah fungsi bernama `search`.
 
-### Writing a Failing Test
+### Menulis Pengujian yang Gagal
 
-Because we don’t need them anymore, let’s remove the `println!` statements from
-*src/lib.rs* and *src/main.rs* that we used to check the program’s behavior.
-Then, in *src/lib.rs*, add a `tests` module with a test function, as we did in
-[Chapter 11][ch11-anatomy]<!-- ignore -->. The test function specifies the
-behavior we want the `search` function to have: it will take a query and the
-text to search, and it will return only the lines from the text that contain
-the query. Listing 12-15 shows this test, which won’t compile yet.
+Di _src/lib.rs_, kita bakal menambahkan modul `tests` dengan fungsi pengujiannya, 
+seperti yang kita lakukan di [Bab 11][ch11-anatomy]. Fungsi pengujian ini 
+menentukan perilaku yang kita inginkan dari fungsi `search`: fungsi ini bakal 
+menerima sebuah kueri dan teks tempat kita mencari, lalu ia cuma bakal 
+mengembalikan baris-baris dari teks tersebut yang mengandung kuerinya. Listing 
+12-15 menunjukkan pengujian ini.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-15" file-name="src/lib.rs" caption="Membuat pengujian yang gagal buat fungsi `search` untuk fungsionalitas yang kita harapkan ada">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-15/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-15: Creating a failing test for the `search`
-function we wish we had</span>
+</Listing>
 
-This test searches for the string `"duct"`. The text we’re searching is three
-lines, only one of which contains `"duct"` (Note that the backslash after the
-opening double quote tells Rust not to put a newline character at the beginning
-of the contents of this string literal). We assert that the value returned from
-the `search` function contains only the line we expect.
+Pengujian ini mencari string `"duct"`. Teks yang lagi kita cari ada tiga baris, 
+dan cuma satu yang mengandung `"duct"` (perhatikan bahwa tanda *backslash* 
+setelah tanda kutip ganda pembuka memberi tahu Rust buat tidak menambahkan 
+karakter *newline* alias baris baru di awal konten string literal ini). Kita 
+menegaskan bahwa nilai yang dikembalikan oleh fungsi `search` cuma berisi 
+baris yang kita harapkan.
 
-We aren’t yet able to run this test and watch it fail because the test doesn’t
-even compile: the `search` function doesn’t exist yet! In accordance with TDD
-principles, we’ll add just enough code to get the test to compile and run by
-adding a definition of the `search` function that always returns an empty
-vector, as shown in Listing 12-16. Then the test should compile and fail
-because an empty vector doesn’t match a vector containing the line `"safe,
-fast, productive."`
+Kalau kita menjalankan pengujian ini sekarang, ia bakal gagal karena macro 
+`unimplemented!` mengalami _panic_ dengan pesan “not implemented”. Mengikuti 
+prinsip-prinsip TDD, kita bakal mengambil langkah kecil dengan menambahkan kode 
+secukupnya agar pengujian ini tidak _panic_ saat memanggil fungsi tersebut; kita 
+lakukan dengan mendefinisikan fungsi `search` agar selalu mengembalikan vector 
+kosong, seperti yang ditunjukkan di Listing 12-16. Kemudian pengujian ini 
+seharusnya berhasil di-compile dan lalu gagal karena vector kosong tidak cocok 
+dengan vector yang isinya baris `"safe, fast, productive."`
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-16" file-name="src/lib.rs" caption="Mendefinisikan fungsi `search` secukupnya saja sehingga ia tidak _panic_ saat dipanggil">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-16/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-16: Defining just enough of the `search`
-function so our test will compile</span>
+</Listing>
 
-Notice that we need to define an explicit lifetime `'a` in the signature of
-`search` and use that lifetime with the `contents` argument and the return
-value. Recall in [Chapter 10][ch10-lifetimes]<!-- ignore --> that the lifetime
-parameters specify which argument lifetime is connected to the lifetime of the
-return value. In this case, we indicate that the returned vector should contain
-string slices that reference slices of the argument `contents` (rather than the
-argument `query`).
+Sekarang mari kita bahas kenapa kita perlu mendefinisikan _lifetime_ `'a` secara 
+eksplisit di *signature* fungsi `search` dan memakai _lifetime_ itu bersama 
+argumen `contents` dan nilai kembaliannya. Ingat kembali di [Bab 10][ch10-lifetimes] 
+bahwa parameter _lifetime_ menentukan *lifetime* argumen mana yang terhubung 
+dengan *lifetime* nilai kembaliannya. Di kasus ini, kita mengindikasikan kalau 
+vector yang dikembalikan seharusnya berisi _string slices_ yang merujuk pada 
+_slices_ dari argumen `contents` (bukannya dari argumen `query`).
 
-In other words, we tell Rust that the data returned by the `search` function
-will live as long as the data passed into the `search` function in the
-`contents` argument. This is important! The data referenced *by* a slice needs
-to be valid for the reference to be valid; if the compiler assumes we’re making
-string slices of `query` rather than `contents`, it will do its safety checking
-incorrectly.
+Dengan kata lain, kita memberi tahu Rust kalau data yang dikembalikan oleh fungsi 
+`search` bakal hidup (live) selama data yang diteruskan ke dalam fungsi `search` 
+lewat argumen `contents`. Ini penting! Data yang dirujuk _oleh_ sebuah _slice_ 
+harus tetap valid agar referensinya juga ikut valid; kalau _compiler_ 
+mengasumsikan kalau kita lagi bikin _string slices_ dari `query` bukannya 
+`contents`, pengecekan keamanannya bakal dilakukan dengan tidak tepat.
 
-If we forget the lifetime annotations and try to compile this function, we’ll
-get this error:
+Kalau kita kelupaan menganotasi _lifetime_ dan mencoba men-compile fungsi ini, 
+kita bakal dapat error ini:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-02-missing-lifetimes/output.txt}}
 ```
 
-Rust can’t possibly know which of the two arguments we need, so we need to tell
-it explicitly. Because `contents` is the argument that contains all of our text
-and we want to return the parts of that text that match, we know `contents` is
-the argument that should be connected to the return value using the lifetime
-syntax.
+Rust tidak bisa tahu pasti dari kedua parameter ini mana yang kita butuhkan buat 
+outputnya, jadi kita harus memberitahukannya secara eksplisit. Perhatikan bahwa 
+teks bantuannya menyarankan buat menentukan parameter _lifetime_ yang sama buat 
+semua parameter beserta tipe outputnya, yang mana itu salah! Karena `contents` 
+adalah parameter yang berisi semua teks kita dan kita mau mengembalikan 
+bagian-bagian dari teks itu yang cocok, kita jadi tahu kalau cuma parameter 
+`contents` yang seharusnya dihubungkan dengan nilai kembaliannya menggunakan 
+sintaks _lifetime_.
 
-Other programming languages don’t require you to connect arguments to return
-values in the signature, but this practice will get easier over time. You might
-want to compare this example with the [“Validating References with
-Lifetimes”][validating-references-with-lifetimes]<!-- ignore --> section in
-Chapter 10.
+Bahasa pemrograman lain biasanya tidak mengharuskan kita buat menghubungkan 
+argumen dengan nilai kembalian di *signature*-nya, tapi praktik ini bakal 
+terasa lebih mudah seiring berjalannya waktu. Kita mungkin mau membandingkan 
+contoh ini dengan contoh-contoh di bagian [“Memvalidasi Referensi dengan 
+Lifetimes”][validating-references-with-lifetimes] di Bab 10.
 
-Now let’s run the test:
+### Menulis Kode Agar Pengujian Sukses
 
-```console
-{{#include ../listings/ch12-an-io-project/listing-12-16/output.txt}}
-```
+Saat ini, pengujian kita gagal karena kita selalu mengembalikan vector kosong. 
+Buat memperbaikinya dan mengimplementasikan `search`, program kita harus mengikuti 
+langkah-langkah berikut:
 
-Great, the test fails, exactly as we expected. Let’s get the test to pass!
+1. Iterasi melewati setiap baris dari konten.
+2. Mengecek apakah baris tersebut mengandung string kueri kita.
+3. Jika iya, tambahkan baris itu ke daftar nilai yang bakal kita kembalikan.
+4. Jika tidak, jangan lakukan apa-apa.
+5. Kembalikan daftar hasil yang cocok.
 
-### Writing Code to Pass the Test
+Mari kerjakan satu per satu setiap langkahnya, dimulai dari iterasi melewati 
+baris-baris.
 
-Currently, our test is failing because we always return an empty vector. To fix
-that and implement `search`, our program needs to follow these steps:
+#### Iterasi Melewati Baris dengan Method `lines`
 
-* Iterate through each line of the contents.
-* Check whether the line contains our query string.
-* If it does, add it to the list of values we’re returning.
-* If it doesn’t, do nothing.
-* Return the list of results that match.
+Rust punya method yang membantu sekali buat menangani iterasi baris per baris 
+dari strings, dinamai dengan nama yang nyaman yaitu `lines`, yang bekerja seperti 
+yang ditunjukkan di Listing 12-17. Perhatikan kalau kode ini belum bisa di-compile.
 
-Let’s work through each step, starting with iterating through lines.
-
-#### Iterating Through Lines with the `lines` Method
-
-Rust has a helpful method to handle line-by-line iteration of strings,
-conveniently named `lines`, that works as shown in Listing 12-17. Note this
-won’t compile yet.
-
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-17" file-name="src/lib.rs" caption="Iterasi melewati tiap baris di `contents`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-17/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-17: Iterating through each line in `contents`
-</span>
+</Listing>
 
-The `lines` method returns an iterator. We’ll talk about iterators in depth in
-[Chapter 13][ch13-iterators]<!-- ignore -->, but recall that you saw this way
-of using an iterator in [Listing 3-5][ch3-iter]<!-- ignore -->, where we used a
-`for` loop with an iterator to run some code on each item in a collection.
+Method `lines` mengembalikan sebuah iterator. Kita bakal membahas iterator lebih 
+mendalam di [Bab 13][ch13-iterators], tapi ingat kembali bahwa kita pernah 
+melihat cara memakai iterator seperti ini di [Listing 3-5][ch3-iter], di mana 
+kita memakai *for loop* dengan sebuah iterator buat menjalankan beberapa kode 
+pada setiap *item* di dalam sebuah _collection_ (koleksi).
 
-#### Searching Each Line for the Query
+#### Mencari Kueri di Setiap Baris
 
-Next, we’ll check whether the current line contains our query string.
-Fortunately, strings have a helpful method named `contains` that does this for
-us! Add a call to the `contains` method in the `search` function, as shown in
-Listing 12-18. Note this still won’t compile yet.
+Berikutnya, kita bakal mengecek apakah baris saat ini mengandung string kueri 
+kita. Untungnya, tipe string punya method pembantu (helper) bernama `contains` 
+yang ngelakuin persis apa yang kita butuhkan! Tambahkan pemanggilan ke method 
+`contains` di dalam fungsi `search`, seperti yang ditunjukkan di Listing 12-18. 
+Perhatikan kalau kode ini masih belum bisa di-compile.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-18" file-name="src/lib.rs" caption="Menambahkan fungsionalitas buat ngecek apakah barisnya mengandung string di `query`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-18/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-18: Adding functionality to see whether the
-line contains the string in `query`</span>
+</Listing>
 
-At the moment, we’re building up functionality. To get it to compile, we need
-to return a value from the body as we indicated we would in the function
-signature.
+Saat ini, kita baru membangun fungsionalitasnya. Supaya kodenya bisa di-compile, 
+kita perlu mengembalikan sebuah nilai dari body fungsi sesuai indikasi yang 
+kita berikan di *signature* fungsi.
 
-#### Storing Matching Lines
+#### Menyimpan Baris yang Cocok
 
-To finish this function, we need a way to store the matching lines that we want
-to return. For that, we can make a mutable vector before the `for` loop and
-call the `push` method to store a `line` in the vector. After the `for` loop,
-we return the vector, as shown in Listing 12-19.
+Buat menyelesaikan fungsi ini, kita butuh cara buat menyimpan baris-baris yang 
+cocok yang mau kita kembalikan. Buat melakukan itu, kita bisa membuat vector 
+*mutable* sebelum *for loop* lalu memanggil method `push` buat menyimpan `line` 
+ke dalam vector tersebut. Setelah *for loop* selesai, kita mengembalikan 
+vector-nya, seperti yang ditunjukkan di Listing 12-19.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-19" file-name="src/lib.rs" caption="Menyimpan baris-baris yang cocok supaya kita bisa mengembalikannya">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-19/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-19: Storing the lines that match so we can
-return them</span>
+</Listing>
 
-Now the `search` function should return only the lines that contain `query`,
-and our test should pass. Let’s run the test:
+Sekarang fungsi `search` seharusnya hanya mengembalikan baris-baris yang 
+mengandung `query`, dan pengujian kita seharusnya sukses. Mari kita jalankan 
+pengujiannya:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-19/output.txt}}
 ```
 
-Our test passed, so we know it works!
+Pengujian kita sukses, jadi kita tahu kalau ini berfungsi!
 
-At this point, we could consider opportunities for refactoring the
-implementation of the search function while keeping the tests passing to
-maintain the same functionality. The code in the search function isn’t too bad,
-but it doesn’t take advantage of some useful features of iterators. We’ll
-return to this example in [Chapter 13][ch13-iterators]<!-- ignore -->, where
-we’ll explore iterators in detail, and look at how to improve it.
+Di titik ini, kita bisa mempertimbangkan peluang buat me-*refactor* implementasi 
+dari fungsi pencarian sambil menjaga agar pengujiannya tetap sukses demi 
+mempertahankan fungsionalitas yang sama. Kode di fungsi pencariannya tidak 
+terlalu jelek sih, tapi dia tidak memanfaatkan beberapa fitur iterator yang 
+sangat berguna. Kita bakal kembali lagi ke contoh ini di [Bab 13][ch13-iterators], 
+di mana kita bakal mengeksplorasi iterator lebih dalam, dan melihat gimana cara 
+meningkatkannya.
 
-#### Using the `search` Function in the `run` Function
-
-Now that the `search` function is working and tested, we need to call `search`
-from our `run` function. We need to pass the `config.query` value and the
-`contents` that `run` reads from the file to the `search` function. Then `run`
-will print each line returned from `search`:
-
-<span class="filename">Filename: src/lib.rs</span>
-
-```rust,ignore
-{{#rustdoc_include ../listings/ch12-an-io-project/no-listing-02-using-search-in-run/src/lib.rs:here}}
-```
-
-We’re still using a `for` loop to return each line from `search` and print it.
-
-Now the entire program should work! Let’s try it out, first with a word that
-should return exactly one line from the Emily Dickinson poem, “frog”:
+Sekarang keseluruhan programnya seharusnya sudah bisa jalan! Mari kita coba, 
+pertama dengan kata yang seharusnya cuma mengembalikan satu baris persis dari 
+puisi Emily Dickinson: _frog_.
 
 ```console
 {{#include ../listings/ch12-an-io-project/no-listing-02-using-search-in-run/output.txt}}
 ```
 
-Cool! Now let’s try a word that will match multiple lines, like “body”:
+Keren! Sekarang mari kita coba pakai kata yang bakal cocok dengan beberapa baris 
+sekaligus, misalnya _body_:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-03-multiple-matches/output.txt}}
 ```
 
-And finally, let’s make sure that we don’t get any lines when we search for a
-word that isn’t anywhere in the poem, such as “monomorphization”:
+Dan terakhir, mari kita pastikan kalau kita tidak dapat baris apa pun ketika 
+kita mencari kata yang sama sekali tidak ada di dalam puisinya, misalnya 
+_monomorphization_:
 
 ```console
 {{#include ../listings/ch12-an-io-project/output-only-04-no-matches/output.txt}}
 ```
 
-Excellent! We’ve built our own mini version of a classic tool and learned a lot
-about how to structure applications. We’ve also learned a bit about file input
-and output, lifetimes, testing, and command line parsing.
+Luar biasa! Kita sudah membangun versi mini kita sendiri dari alat klasik dan 
+belajar banyak hal soal cara menata aplikasi. Kita juga belajar sedikit tentang 
+input dan output file, _lifetimes_, pengujian, dan penguraian *command line*.
 
-To round out this project, we’ll briefly demonstrate how to work with
-environment variables and how to print to standard error, both of which are
-useful when you’re writing command line programs.
+Buat melengkapi project ini, kita bakal mendemonstrasikan secara singkat gimana 
+cara berurusan dengan _environment variables_ (variabel lingkungan) dan gimana 
+cara mencetak pesan ke *standard error*, yang mana keduanya sangat berguna pas 
+kita lagi nulis program *command line*.
 
-[validating-references-with-lifetimes]:
-ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
+[validating-references-with-lifetimes]: ch10-03-lifetime-syntax.html#validating-references-with-lifetimes
 [ch11-anatomy]: ch11-01-writing-tests.html#the-anatomy-of-a-test-function
 [ch10-lifetimes]: ch10-03-lifetime-syntax.html
 [ch3-iter]: ch03-05-control-flow.html#looping-through-a-collection-with-for

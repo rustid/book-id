@@ -1,32 +1,42 @@
-# Writing Automated Tests
+# Menulis Pengujian Otomatis (Automated Tests)
 
-In his 1972 essay “The Humble Programmer,” Edsger W. Dijkstra said that
-“Program testing can be a very effective way to show the presence of bugs, but
-it is hopelessly inadequate for showing their absence.” That doesn’t mean we
-shouldn’t try to test as much as we can!
+Di esainya pada tahun 1972 yang berjudul “The Humble Programmer,” Edsger W. 
+Dijkstra bilang kalau “pengujian program (program testing) bisa jadi cara 
+yang sangat efektif buat menunjukkan adanya _bugs_, tapi sangat tidak 
+memadai buat menunjukkan kalau _bugs_ itu tidak ada.” Itu bukan berarti 
+kita tidak boleh mencoba melakukan pengujian sebanyak mungkin!
 
-Correctness in our programs is the extent to which our code does what we intend
-it to do. Rust is designed with a high degree of concern about the correctness
-of programs, but correctness is complex and not easy to prove. Rust’s type
-system shoulders a huge part of this burden, but the type system cannot catch
-everything. As such, Rust includes support for writing automated software tests.
+Kebenaran (correctness) dalam program kita adalah sejauh mana kode kita 
+melakukan apa yang kita inginkan. Rust didesain dengan tingkat kepedulian 
+yang tinggi soal kebenaran dari program, tapi kebenaran itu kompleks dan 
+tidak mudah dibuktikan. Sistem tipe (type system) Rust menanggung sebagian 
+besar beban ini, tapi sistem tipe tidak bisa menangkap semuanya. Oleh 
+karena itu, Rust menyertakan dukungan buat menulis pengujian perangkat lunak 
+otomatis (_automated software tests_).
 
-Say we write a function `add_two` that adds 2 to whatever number is passed to
-it. This function’s signature accepts an integer as a parameter and returns an
-integer as a result. When we implement and compile that function, Rust does all
-the type checking and borrow checking that you’ve learned so far to ensure
-that, for instance, we aren’t passing a `String` value or an invalid reference
-to this function. But Rust *can’t* check that this function will do precisely
-what we intend, which is return the parameter plus 2 rather than, say, the
-parameter plus 10 or the parameter minus 50! That’s where tests come in.
+Katakanlah kita menulis sebuah fungsi `add_two` yang menambahkan 2 ke angka 
+apa pun yang dimasukkan ke dalamnya. _Signature_ dari fungsi ini menerima 
+sebuah integer sebagai parameter dan mengembalikan sebuah integer sebagai 
+hasil. Saat kita mengimplementasikan dan men-compile fungsi tersebut, Rust 
+melakukan semua pengecekan tipe dan _borrow checking_ yang sudah kita 
+pelajari sejauh ini untuk memastikan bahwa, misalnya, kita tidak memberikan 
+nilai `String` atau referensi yang tidak valid ke fungsi ini. Tapi Rust 
+_tidak bisa_ mengecek apakah fungsi ini bakal melakukan persis apa yang kita 
+inginkan, yaitu mengembalikan parameternya ditambah 2, bukannya malah 
+parameternya ditambah 10 atau dikurang 50! Di sinilah pengujian (_tests_) 
+berperan.
 
-We can write tests that assert, for example, that when we pass `3` to the
-`add_two` function, the returned value is `5`. We can run these tests whenever
-we make changes to our code to make sure any existing correct behavior has not
-changed.
+Kita bisa menulis pengujian yang menegaskan (assert), misalnya, bahwa saat 
+kita memasukkan angka `3` ke fungsi `add_two`, nilai yang dikembalikan 
+adalah `5`. Kita bisa menjalankan pengujian-pengujian ini kapan pun kita 
+membuat perubahan pada kode kita buat memastikan setiap perilaku benar yang 
+sudah ada itu tidak berubah.
 
-Testing is a complex skill: although we can’t cover every detail about how to
-write good tests in one chapter, we’ll discuss the mechanics of Rust’s testing
-facilities. We’ll talk about the annotations and macros available to you when
-writing your tests, the default behavior and options provided for running your
-tests, and how to organize tests into unit tests and integration tests.
+Pengujian adalah keterampilan yang kompleks: walaupun kita tidak bisa 
+membahas setiap detail soal gimana cara nulis pengujian yang bagus di 
+dalam satu bab, di bab ini kita bakal membahas mekanisme dari fasilitas 
+pengujian Rust. Kita bakal membahas anotasi dan _macros_ yang tersedia pas 
+kita menulis pengujian kita, perilaku _default_ dan opsi-opsi yang 
+disediakan buat menjalankan pengujian kita, dan gimana cara mengatur 
+pengujian jadi _unit tests_ (pengujian unit) dan _integration tests_ 
+(pengujian integrasi).

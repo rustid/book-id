@@ -1,90 +1,103 @@
-## Extensible Concurrency with the `Sync` and `Send` Traits
+## Konkurensi yang Bisa Diperluas (Extensible) dengan Trait `Send` dan `Sync`
 
-Interestingly, the Rust language has *very* few concurrency features. Almost
-every concurrency feature we’ve talked about so far in this chapter has been
-part of the standard library, not the language. Your options for handling
-concurrency are not limited to the language or the standard library; you can
-write your own concurrency features or use those written by others.
+<!-- Old link, do not remove -->
 
-However, two concurrency concepts are embedded in the language: the
-`std::marker` traits `Sync` and `Send`.
+<a id="extensible-concurrency-with-the-sync-and-send-traits"></a>
 
-### Allowing Transference of Ownership Between Threads with `Send`
+Yang menarik, hampir semua fitur konkurensi yang udah kita bahas sejauh ini di 
+bab ini adalah bagian dari _standard library_, bukan bagian dari bahasa Rust itu 
+sendiri. Pilihan kita buat menangani konkurensi tidak cuma terbatas pada apa 
+yang disediakan oleh bahasa atau _standard library_; kita bisa nulis fitur 
+konkurensi kita sendiri atau memakai yang udah ditulis sama orang lain.
 
-The `Send` marker trait indicates that ownership of values of the type
-implementing `Send` can be transferred between threads. Almost every Rust type
-is `Send`, but there are some exceptions, including `Rc<T>`: this cannot be
-`Send` because if you cloned an `Rc<T>` value and tried to transfer ownership
-of the clone to another thread, both threads might update the reference count
-at the same time. For this reason, `Rc<T>` is implemented for use in
-single-threaded situations where you don’t want to pay the thread-safe
-performance penalty.
+Namun, di antara konsep-konsep konkurensi utama yang tertanam (embedded) di 
+dalam bahasanya ketimbang di _standard library_ adalah _marker traits_ (trait 
+penanda) `std::marker` yaitu `Send` dan `Sync`.
 
-Therefore, Rust’s type system and trait bounds ensure that you can never
-accidentally send an `Rc<T>` value across threads unsafely. When we tried to do
-this in Listing 16-14, we got the error `the trait Send is not implemented for
-Rc<Mutex<i32>>`. When we switched to `Arc<T>`, which is `Send`, the code
-compiled.
+### Mengizinkan Transfer Kepemilikan Antar Threads dengan `Send`
 
-Any type composed entirely of `Send` types is automatically marked as `Send` as
-well. Almost all primitive types are `Send`, aside from raw pointers, which
-we’ll discuss in Chapter 19.
+_Marker trait_ `Send` mengindikasikan bahwa kepemilikan (ownership) dari nilai 
+dengan tipe yang mengimplementasikan `Send` itu bisa ditransfer antar _threads_. 
+Hampir setiap tipe di Rust mengimplementasikan `Send`, tapi ada beberapa 
+pengecualian, termasuk `Rc<T>`: tipe ini tidak bisa mengimplementasikan `Send` 
+karena kalau kita meng-_clone_ sebuah nilai `Rc<T>` lalu mencoba buat mentransfer 
+kepemilikan dari *clone* tersebut ke _thread_ lain, kedua _threads_ bisa aja 
+meng-update _reference count_ di waktu yang bersamaan. Atas alasan inilah, 
+`Rc<T>` diimplementasikan buat dipakai di situasi *single-threaded* di mana kita 
+tidak mau membayar penalti performa (performance penalty) demi keamanan _thread_.
 
-### Allowing Access from Multiple Threads with `Sync`
+Oleh karena itu, sistem tipe dan *trait bounds* Rust memastikan kalau kita tidak 
+bakal bisa secara tidak sengaja mengirim nilai `Rc<T>` melintasi _threads_ 
+dengan cara yang tidak aman. Pas kita mencoba melakukan ini di Listing 16-14, 
+kita dapat error `` the trait `Send` is not implemented for `Rc<Mutex<i32>>` ``. 
+Pas kita ganti jadi pakai `Arc<T>`, yang mana emang mengimplementasikan `Send`, 
+kodenya berhasil di-compile.
 
-The `Sync` marker trait indicates that it is safe for the type implementing
-`Sync` to be referenced from multiple threads. In other words, any type `T` is
-`Sync` if `&T` (an immutable reference to `T`) is `Send`, meaning the reference
-can be sent safely to another thread. Similar to `Send`, primitive types are
-`Sync`, and types composed entirely of types that are `Sync` are also `Sync`.
+Tipe apa pun yang secara utuh disusun (composed entirely) dari tipe-tipe yang 
+mengimplementasikan `Send` bakal secara otomatis ditandai sebagai `Send` juga. 
+Hampir semua tipe primitif itu `Send`, kecuali untuk _raw pointers_ (pointer 
+mentah), yang bakal kita bahas di Bab 20.
 
-The smart pointer `Rc<T>` is also not `Sync` for the same reasons that it’s not
-`Send`. The `RefCell<T>` type (which we talked about in Chapter 15) and the
-family of related `Cell<T>` types are not `Sync`. The implementation of borrow
-checking that `RefCell<T>` does at runtime is not thread-safe. The smart
-pointer `Mutex<T>` is `Sync` and can be used to share access with multiple
-threads as you saw in the [“Sharing a `Mutex<T>` Between Multiple
-Threads”][sharing-a-mutext-between-multiple-threads]<!-- ignore --> section.
+### Mengizinkan Akses dari Banyak Threads dengan `Sync`
 
-### Implementing `Send` and `Sync` Manually Is Unsafe
+_Marker trait_ `Sync` mengindikasikan kalau aman buat sebuah tipe yang 
+mengimplementasikan `Sync` untuk dirujuk (referenced) dari banyak _threads_. 
+Dengan kata lain, tipe `T` apa pun mengimplementasikan `Sync` kalau `&T` 
+(referensi _immutable_ ke `T`) mengimplementasikan `Send`, yang berarti 
+referensi tersebut bisa dikirim dengan aman ke _thread_ lain. Sama kayak `Send`, 
+semua tipe primitif mengimplementasikan `Sync`, dan tipe-tipe yang secara utuh 
+disusun dari tipe-tipe yang mengimplementasikan `Sync` juga bakal mengimplementasikan 
+`Sync`.
 
-Because types that are made up of `Send` and `Sync` traits are automatically
-also `Send` and `Sync`, we don’t have to implement those traits manually. As
-marker traits, they don’t even have any methods to implement. They’re just
-useful for enforcing invariants related to concurrency.
+_Smart pointer_ `Rc<T>` juga tidak mengimplementasikan `Sync` dengan alasan yang 
+sama kayak kenapa dia tidak mengimplementasikan `Send`. Tipe `RefCell<T>` 
+(yang kita bahas di Bab 15) dan keluarga dari tipe `Cell<T>` yang terkait juga 
+tidak mengimplementasikan `Sync`. Implementasi dari _borrow checking_ yang 
+dilakukan `RefCell<T>` saat _runtime_ itu tidak _thread-safe_ (tidak aman di 
+lingkungan banyak utas). _Smart pointer_ `Mutex<T>` mengimplementasikan `Sync` 
+dan bisa dipakai buat berbagi akses dengan banyak _threads_, seperti yang kita 
+lihat di [“Berbagi `Mutex<T>` di Antara Beberapa Threads”][sharing-a-mutext-between-multiple-threads].
 
-Manually implementing these traits involves implementing unsafe Rust code.
-We’ll talk about using unsafe Rust code in Chapter 19; for now, the important
-information is that building new concurrent types not made up of `Send` and
-`Sync` parts requires careful thought to uphold the safety guarantees. [“The
-Rustonomicon”][nomicon] has more information about these guarantees and how to
-uphold them.
+### Mengimplementasikan `Send` dan `Sync` secara Manual Itu Unsafe (Tidak Aman)
 
-## Summary
+Karena tipe yang secara utuh disusun dari tipe-tipe lain yang mengimplementasikan 
+trait `Send` dan `Sync` itu juga otomatis mengimplementasikan `Send` dan `Sync`, 
+kita tidak perlu mengimplementasikan trait-trait tersebut secara manual. Sebagai 
+_marker traits_, mereka bahkan tidak punya method apa pun buat diimplementasikan. 
+Mereka cuma berguna buat memaksakan (enforcing) aturan baku (invariants) yang 
+berkaitan dengan konkurensi.
 
-This isn’t the last you’ll see of concurrency in this book: the project in
-Chapter 20 will use the concepts in this chapter in a more realistic situation
-than the smaller examples discussed here.
+Mengimplementasikan trait-trait ini secara manual melibatkan penulisan kode Rust 
+yang `unsafe`. Kita bakal ngomongin soal memakai kode Rust yang `unsafe` di 
+Bab 20; buat sekarang, informasi pentingnya adalah bahwa membangun tipe konkuren 
+baru yang tidak disusun dari bagian-bagian yang `Send` dan `Sync` membutuhkan 
+pemikiran yang ekstra hati-hati buat mempertahankan jaminan keamanannya (safety 
+guarantees). [“The Rustonomicon”][nomicon] punya lebih banyak informasi soal 
+jaminan-jaminan ini dan gimana cara mempertahankannya.
 
-As mentioned earlier, because very little of how Rust handles concurrency is
-part of the language, many concurrency solutions are implemented as crates.
-These evolve more quickly than the standard library, so be sure to search
-online for the current, state-of-the-art crates to use in multithreaded
-situations.
+## Ringkasan
 
-The Rust standard library provides channels for message passing and smart
-pointer types, such as `Mutex<T>` and `Arc<T>`, that are safe to use in
-concurrent contexts. The type system and the borrow checker ensure that the
-code using these solutions won’t end up with data races or invalid references.
-Once you get your code to compile, you can rest assured that it will happily
-run on multiple threads without the kinds of hard-to-track-down bugs common in
-other languages. Concurrent programming is no longer a concept to be afraid of:
-go forth and make your programs concurrent, fearlessly!
+Ini bukan terakhir kalinya kita bakal melihat konkurensi di buku ini: bab 
+berikutnya berfokus pada pemrograman *async*, dan project di Bab 21 bakal memakai 
+konsep-konsep di bab ini di dalam situasi yang lebih realistis ketimbang 
+contoh-contoh kecil yang dibahas di sini.
 
-Next, we’ll talk about idiomatic ways to model problems and structure solutions
-as your Rust programs get bigger. In addition, we’ll discuss how Rust’s idioms
-relate to those you might be familiar with from object-oriented programming.
+Seperti yang disebutkan sebelumnya, karena cuma sebagian kecil dari cara Rust 
+menangani konkurensi itu yang menjadi bagian dari bahasanya, banyak solusi 
+konkurensi diimplementasikan dalam bentuk _crates_. Crate-crate ini berevolusi 
+lebih cepat daripada _standard library_, jadi pastikan kita mencari secara online 
+buat _crates_ yang paling mutakhir (state-of-the-art) buat dipakai di situasi-
+situasi *multithreaded*.
 
-[sharing-a-mutext-between-multiple-threads]:
-ch16-03-shared-state.html#sharing-a-mutext-between-multiple-threads
+_Standard library_ Rust menyediakan _channels_ buat pengiriman pesan (_message 
+passing_) dan tipe-tipe _smart pointer_, seperti `Mutex<T>` dan `Arc<T>`, yang 
+aman buat dipakai di konteks konkuren. Sistem tipe dan _borrow checker_ memastikan 
+kalau kode yang memakai solusi-solusi ini tidak bakal berujung pada *data races* 
+atau referensi yang tidak valid. Begitu kita berhasil membikin kode kita bisa 
+di-compile, kita bisa bernapas lega karena dia bakal jalan dengan bahagia di atas 
+banyak _threads_ tanpa jenis _bugs_ yang susah dilacak kayak yang biasa terjadi 
+di bahasa pemrograman lain. Pemrograman konkuren bukan lagi konsep yang perlu 
+ditakutkan: maju terus dan bikin program kita konkuren tanpa rasa takut!
+
+[sharing-a-mutext-between-multiple-threads]: ch16-03-shared-state.html#sharing-a-mutext-between-multiple-threads
 [nomicon]: ../nomicon/index.html

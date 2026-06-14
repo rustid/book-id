@@ -1,180 +1,194 @@
-## Working with Environment Variables
+## Berurusan dengan Environment Variables
 
-We’ll improve `minigrep` by adding an extra feature: an option for
-case-insensitive searching that the user can turn on via an environment
-variable. We could make this feature a command line option and require that
-users enter it each time they want it to apply, but by instead making it an
-environment variable, we allow our users to set the environment variable once
-and have all their searches be case insensitive in that terminal session.
+Kita bakal meningkatkan *binary* `minigrep` dengan menambahkan fitur tambahan: 
+opsi pencarian *case-insensitive* (tidak membedakan huruf besar/kecil) yang 
+bisa dinyalakan oleh *user* via *environment variable* (variabel lingkungan). 
+Kita bisa saja bikin fitur ini jadi opsi di *command line* dan mewajibkan 
+*user* buat memasukkannya setiap kali mereka mau fitur itu aktif, tapi dengan 
+menjadikannya *environment variable*, kita membiarkan para *user* untuk menge-set 
+*environment variable*-nya sekali saja dan semua pencarian mereka bakal jadi 
+*case-insensitive* selama sesi terminal (terminal session) tersebut.
 
-### Writing a Failing Test for the Case-Insensitive `search` Function
+### Menulis Pengujian yang Gagal buat Fungsi `search` yang Case-Insensitive
 
-We first add a new `search_case_insensitive` function that will be called when
-the environment variable has a value. We’ll continue to follow the TDD process,
-so the first step is again to write a failing test. We’ll add a new test for
-the new `search_case_insensitive` function and rename our old test from
-`one_result` to `case_sensitive` to clarify the differences between the two
-tests, as shown in Listing 12-20.
+Pertama-tama kita menambahkan fungsi `search_case_insensitive` baru ke _library_ 
+`minigrep` yang bakal dipanggil pas *environment variable*-nya punya nilai. Kita 
+bakal terus ngikutin proses TDD, jadi langkah pertamanya adalah kembali menulis 
+pengujian yang gagal. Kita bakal menambahkan pengujian baru buat fungsi baru 
+`search_case_insensitive` ini lalu me-*rename* pengujian lama kita dari 
+`one_result` jadi `case_sensitive` buat memperjelas perbedaan di antara kedua 
+pengujian ini, seperti yang ditunjukkan di Listing 12-20.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-20" file-name="src/lib.rs" caption="Menambahkan pengujian baru yang gagal untuk fungsi case-insensitive yang mau kita tambahkan">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-20/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-20: Adding a new failing test for the
-case-insensitive function we’re about to add</span>
+</Listing>
 
-Note that we’ve edited the old test’s `contents` too. We’ve added a new line
-with the text `"Duct tape."` using a capital D that shouldn’t match the query
-`"duct"` when we’re searching in a case-sensitive manner. Changing the old test
-in this way helps ensure that we don’t accidentally break the case-sensitive
-search functionality that we’ve already implemented. This test should pass now
-and should continue to pass as we work on the case-insensitive search.
+Perhatikan bahwa kita juga sudah ngedit `contents` di pengujian lama. Kita 
+menambahkan satu baris baru dengan teks `"Duct tape."` yang memakai huruf _D_ 
+kapital yang tidak boleh cocok dengan kueri `"duct"` ketika kita lagi mencari 
+dengan metode pencarian yang *case-sensitive*. Ngubah pengujian lama dengan 
+cara ini ngebantu kita memastikan kalau kita tidak bakal tidak sengaja merusak 
+fungsionalitas pencarian *case-sensitive* yang sudah kita implementasikan. 
+Pengujian ini seharusnya sukses sekarang dan bakal terus sukses saat kita 
+ngerjain fungsi pencarian yang *case-insensitive*.
 
-The new test for the case-*insensitive* search uses `"rUsT"` as its query. In
-the `search_case_insensitive` function we’re about to add, the query `"rUsT"`
-should match the line containing `"Rust:"` with a capital R and match the line
-`"Trust me."` even though both have different casing from the query. This is
-our failing test, and it will fail to compile because we haven’t yet defined
-the `search_case_insensitive` function. Feel free to add a skeleton
-implementation that always returns an empty vector, similar to the way we did
-for the `search` function in Listing 12-16 to see the test compile and fail.
+Pengujian baru buat pencarian yang *case-insensitive* ini memakai `"rUsT"` 
+sebagai kuerinya. Di dalam fungsi `search_case_insensitive` yang bakal kita 
+tambahkan nanti, kueri `"rUsT"` ini seharusnya cocok sama baris yang 
+mengandung `"Rust:"` dengan huruf _R_ kapital, dan juga cocok sama baris 
+`"Trust me."` biarpun *casing* (huruf besar/kecil)-nya berbeda dari kueri aslinya. 
+Ini adalah pengujian kita yang gagal, dan pengujian ini bakal gagal di-compile 
+karena kita belum mendefinisikan fungsi `search_case_insensitive`. Kalau mau, 
+silakan tambahkan implementasi kerangkanya yang selalu mengembalikan vector 
+kosong, mirip kayak yang kita lakukan buat fungsi `search` di Listing 12-16 buat 
+melihat pengujiannya berhasil di-compile lalu gagal.
 
-### Implementing the `search_case_insensitive` Function
+### Mengimplementasikan Fungsi `search_case_insensitive`
 
-The `search_case_insensitive` function, shown in Listing 12-21, will be almost
-the same as the `search` function. The only difference is that we’ll lowercase
-the `query` and each `line` so whatever the case of the input arguments,
-they’ll be the same case when we check whether the line contains the query.
+Fungsi `search_case_insensitive`, yang ditunjukkan di Listing 12-21, bakal 
+mirip sekali sama fungsi `search`. Satu-satunya perbedaan adalah kita bakal 
+mengubah `query` dan setiap `line` jadi huruf kecil (lowercase) agar tidak peduli 
+apa *casing* dari argumen inputnya, mereka bakal punya *casing* yang sama pas 
+kita mengecek apakah baris tersebut mengandung kuerinya.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="12-21" file-name="src/lib.rs" caption="Mendefinisikan fungsi `search_case_insensitive` agar mengubah kueri dan baris teks jadi huruf kecil sebelum membandingkan keduanya">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-21/src/lib.rs:here}}
 ```
 
-<span class="caption">Listing 12-21: Defining the `search_case_insensitive`
-function to lowercase the query and the line before comparing them</span>
+</Listing>
 
-First, we lowercase the `query` string and store it in a shadowed variable with
-the same name. Calling `to_lowercase` on the query is necessary so no
-matter whether the user’s query is `"rust"`, `"RUST"`, `"Rust"`, or `"rUsT"`,
-we’ll treat the query as if it were `"rust"` and be insensitive to the case.
-While `to_lowercase` will handle basic Unicode, it won’t be 100% accurate. If
-we were writing a real application, we’d want to do a bit more work here, but
-this section is about environment variables, not Unicode, so we’ll leave it at
-that here.
+Pertama kita ngubah string `query` jadi huruf kecil lalu menyimpannya ke dalam 
+variabel baru dengan nama yang sama, menimpa (shadowing) variabel `query` aslinya. 
+Memanggil `to_lowercase` pada kueri ini diperlukan supaya tidak peduli apakah 
+kueri dari *user* itu `"rust"`, `"RUST"`, `"Rust"`, atau `"rUsT"`, kita bakal 
+memperlakukan kueri tersebut seolah-olah itu `"rust"` dan tidak mempedulikan 
+*casing*-nya. Meskipun `to_lowercase` bakal menangani Unicode dasar, fungsi ini 
+tidak 100 persen akurat. Kalau kita lagi bikin aplikasi sungguhan, kita bakal 
+mau bekerja sedikit lebih jauh di sini, tapi bagian ini membahas tentang 
+_environment variables_, bukan Unicode, jadi kita biarkan saja seperti ini buat 
+sekarang.
 
-Note that `query` is now a `String` rather than a string slice, because calling
-`to_lowercase` creates new data rather than referencing existing data. Say the
-query is `"rUsT"`, as an example: that string slice doesn’t contain a lowercase
-`u` or `t` for us to use, so we have to allocate a new `String` containing
-`"rust"`. When we pass `query` as an argument to the `contains` method now, we
-need to add an ampersand because the signature of `contains` is defined to take
-a string slice.
+Perhatikan bahwa `query` sekarang adalah tipe `String` bukannya _string slice_ 
+karena pemanggilan `to_lowercase` itu membikin data baru alih-alih merujuk ke 
+data yang sudah ada. Katakanlah kuerinya itu `"rUsT"`, sebagai contoh: *string 
+slice* tersebut tidak mengandung karakter `u` atau `t` kecil yang bisa kita 
+pakai, jadi kita harus mengalokasikan memori buat `String` baru yang mengandung 
+`"rust"`. Saat kita meneruskan `query` sebagai argumen ke method `contains` 
+sekarang, kita perlu menambahkan *ampersand* (`&`) karena *signature* dari 
+`contains` didefinisikan buat nerima _string slice_.
 
-Next, we add a call to `to_lowercase` on each `line` to lowercase all
-characters. Now that we’ve converted `line` and `query` to lowercase, we’ll
-find matches no matter what the case of the query is.
+Selanjutnya, kita nambahin panggilan ke `to_lowercase` di setiap `line` buat 
+mengubah semua karakternya jadi huruf kecil. Sekarang karena kita udah mengonversi 
+baik `line` maupun `query` jadi huruf kecil, kita bakal menemukan baris yang 
+cocok tidak peduli apa *casing* kuerinya.
 
-Let’s see if this implementation passes the tests:
+Mari kita lihat apakah implementasi ini berhasil melewati pengujian:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-21/output.txt}}
 ```
 
-Great! They passed. Now, let’s call the new `search_case_insensitive` function
-from the `run` function. First, we’ll add a configuration option to the
-`Config` struct to switch between case-sensitive and case-insensitive search.
-Adding this field will cause compiler errors because we aren’t initializing
-this field anywhere yet:
+Mantap! Mereka sukses. Sekarang, mari kita panggil fungsi 
+`search_case_insensitive` baru ini dari dalam fungsi `run`. Pertama kita bakal 
+menambahkan opsi konfigurasi ke struct `Config` buat beralih antara metode 
+pencarian *case-sensitive* dan *case-insensitive*. Nambahin field ini bakal 
+menghasilkan error *compiler* karena kita belum menginisialisasi field ini di 
+mana pun:
 
-<span class="filename">Filename: src/lib.rs</span>
-
-```rust,ignore,does_not_compile
-{{#rustdoc_include ../listings/ch12-an-io-project/listing-12-22/src/lib.rs:here}}
-```
-
-We added the `ignore_case` field that holds a Boolean. Next, we need the `run`
-function to check the `ignore_case` field’s value and use that to decide
-whether to call the `search` function or the `search_case_insensitive`
-function, as shown in Listing 12-22. This still won’t compile yet.
-
-<span class="filename">Filename: src/lib.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
-{{#rustdoc_include ../listings/ch12-an-io-project/listing-12-22/src/lib.rs:there}}
+{{#rustdoc_include ../listings/ch12-an-io-project/listing-12-22/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 12-22: Calling either `search` or
-`search_case_insensitive` based on the value in `config.ignore_case`</span>
+Kita nambahin field `ignore_case` yang menampung sebuah Boolean. Selanjutnya, 
+kita butuh fungsi `run` buat mengecek nilai dari field `ignore_case` lalu 
+memakai nilai itu buat menentukan apakah harus memanggil fungsi `search` atau 
+fungsi `search_case_insensitive`, seperti yang ditunjukkan di Listing 12-22. 
+Ini masih belum bisa di-compile.
 
-Finally, we need to check for the environment variable. The functions for
-working with environment variables are in the `env` module in the standard
-library, so we bring that module into scope at the top of *src/lib.rs*. Then
-we’ll use the `var` function from the `env` module to check to see if any value
-has been set for an environment variable named `IGNORE_CASE`, as shown in
-Listing 12-23.
+<Listing number="12-22" file-name="src/main.rs" caption="Memanggil `search` atau `search_case_insensitive` berdasarkan nilai dari `config.ignore_case`">
 
-<span class="filename">Filename: src/lib.rs</span>
-
-```rust,noplayground
-{{#rustdoc_include ../listings/ch12-an-io-project/listing-12-23/src/lib.rs:here}}
+```rust,ignore,does_not_compile
+{{#rustdoc_include ../listings/ch12-an-io-project/listing-12-22/src/main.rs:there}}
 ```
 
-<span class="caption">Listing 12-23: Checking for any value in an environment
-variable named `IGNORE_CASE`</span>
+</Listing>
 
-Here, we create a new variable `ignore_case`. To set its value, we call the
-`env::var` function and pass it the name of the `IGNORE_CASE` environment
-variable. The `env::var` function returns a `Result` that will be the
-successful `Ok` variant that contains the value of the environment variable if
-the environment variable is set to any value. It will return the `Err` variant
-if the environment variable is not set.
+Terakhir, kita perlu mengecek apakah *environment variable*-nya diset. 
+Fungsi-fungsi buat berinteraksi dengan *environment variables* berada di 
+dalam modul `env` di *standard library*, yang mana sudah berada di dalam 
+*scope* di bagian paling atas _src/main.rs_. Kita bakal memakai fungsi `var` 
+dari modul `env` buat mengecek dan melihat apakah ada nilai yang sudah diset 
+buat *environment variable* bernama `IGNORE_CASE`, seperti yang ditunjukkan 
+di Listing 12-23.
 
-We’re using the `is_ok` method on the `Result` to check whether the environment
-variable is set, which means the program should do a case-insensitive search.
-If the `IGNORE_CASE` environment variable isn’t set to anything, `is_ok` will
-return false and the program will perform a case-sensitive search. We don’t
-care about the *value* of the environment variable, just whether it’s set or
-unset, so we’re checking `is_ok` rather than using `unwrap`, `expect`, or any
-of the other methods we’ve seen on `Result`.
+<Listing number="12-23" file-name="src/main.rs" caption="Mengecek jika ada nilai di *environment variable* yang bernama `IGNORE_CASE`">
 
-We pass the value in the `ignore_case` variable to the `Config` instance so the
-`run` function can read that value and decide whether to call
-`search_case_insensitive` or `search`, as we implemented in Listing 12-22.
+```rust,ignore,noplayground
+{{#rustdoc_include ../listings/ch12-an-io-project/listing-12-23/src/main.rs:here}}
+```
 
-Let’s give it a try! First, we’ll run our program without the environment
-variable set and with the query `to`, which should match any line that contains
-the word “to” in all lowercase:
+</Listing>
+
+Di sini, kita membuat variabel baru, `ignore_case`. Buat menge-set nilainya, 
+kita memanggil fungsi `env::var` dan meneruskan nama dari *environment 
+variable* `IGNORE_CASE` kepadanya. Fungsi `env::var` mengembalikan sebuah 
+`Result` yang bakal jadi varian sukses `Ok` yang berisi nilai dari 
+*environment variable* tersebut jika ia telah diset dengan nilai apa pun. Ia 
+bakal mengembalikan varian `Err` kalau *environment variable*-nya tidak diset.
+
+Kita memakai method `is_ok` pada `Result` tersebut buat mengecek apakah 
+*environment variable*-nya diset, yang berarti programnya seharusnya melakukan 
+pencarian secara *case-insensitive*. Kalau *environment variable* `IGNORE_CASE` 
+tidak diset sama sekali, `is_ok` bakal mengembalikan `false` dan programnya 
+bakal melakukan pencarian *case-sensitive*. Kita tidak peduli dengan *nilai* 
+dari *environment variable*-nya, yang penting dia diset atau tidak aja, 
+makanya kita memakai `is_ok` dan tidak memakai `unwrap`, `expect`, atau 
+method lain dari `Result` yang sudah kita lihat sebelumnya.
+
+Kita meneruskan nilai di variabel `ignore_case` ke instance `Config` agar 
+fungsi `run` bisa ngebaca nilai itu dan memutuskan apakah bakal memanggil 
+`search_case_insensitive` atau `search`, seperti yang sudah kita implementasikan 
+di Listing 12-22.
+
+Mari kita coba! Pertama kita bakal jalankan program kita tanpa menge-set 
+*environment variable* apa pun dan memakai kueri `to`, yang mana seharusnya 
+cocok dengan baris mana pun yang mengandung kata _to_ dalam huruf kecil semua:
 
 ```console
 {{#include ../listings/ch12-an-io-project/listing-12-23/output.txt}}
 ```
 
-Looks like that still works! Now, let’s run the program with `IGNORE_CASE`
-set to `1` but with the same query `to`.
+Sepertinya masih jalan dengan baik! Sekarang mari kita jalankan programnya 
+dengan `IGNORE_CASE` diset ke `1` tapi dengan kueri _to_ yang sama:
 
 ```console
 $ IGNORE_CASE=1 cargo run -- to poem.txt
 ```
 
-If you’re using PowerShell, you will need to set the environment variable and
-run the program as separate commands:
+Kalau kita pakai PowerShell, kita perlu menge-set *environment variable*-nya 
+lalu menjalankan programnya sebagai dua *command* yang terpisah:
 
 ```console
 PS> $Env:IGNORE_CASE=1; cargo run -- to poem.txt
 ```
 
-This will make `IGNORE_CASE` persist for the remainder of your shell
-session. It can be unset with the `Remove-Item` cmdlet:
+Ini bakal membikin `IGNORE_CASE` bertahan (persist) sepanjang sisa sesi *shell* 
+kita. Ia bisa di-_unset_ pakai *cmdlet* `Remove-Item`:
 
 ```console
 PS> Remove-Item Env:IGNORE_CASE
 ```
 
-We should get lines that contain “to” that might have uppercase letters:
+Kita seharusnya mendapatkan baris-baris yang mengandung _to_ yang mungkin 
+huruf-hurufnya kapital:
 
 <!-- manual-regeneration
 cd listings/ch12-an-io-project/listing-12-23
@@ -189,18 +203,21 @@ To tell your name the livelong day
 To an admiring bog!
 ```
 
-Excellent, we also got lines containing “To”! Our `minigrep` program can now do
-case-insensitive searching controlled by an environment variable. Now you know
-how to manage options set using either command line arguments or environment
-variables.
+Hebat, kita juga dapat baris yang mengandung _To_! Program `minigrep` kita 
+sekarang bisa melakukan pencarian *case-insensitive* yang dikendalikan oleh 
+sebuah *environment variable*. Sekarang kita tahu gimana caranya mengatur opsi 
+yang diset melalui argumen *command line* maupun *environment variables*.
 
-Some programs allow arguments *and* environment variables for the same
-configuration. In those cases, the programs decide that one or the other takes
-precedence. For another exercise on your own, try controlling case sensitivity
-through either a command line argument or an environment variable. Decide
-whether the command line argument or the environment variable should take
-precedence if the program is run with one set to case sensitive and one set to
-ignore case.
+Beberapa program mengizinkan pemakaian argumen *dan* *environment variables* 
+buat tujuan konfigurasi yang sama. Di kasus seperti itu, program-program 
+tersebut harus memutuskan mana yang harus didahulukan (precedence). Sebagai 
+latihan, cobalah mengatur opsi *case sensitivity* (kepekaan huruf besar/kecil) 
+melalui argumen *command line* atau *environment variable*. Putuskan apakah 
+argumen *command line* atau *environment variable* yang seharusnya lebih 
+didahulukan kalau ternyata programnya dijalankan dengan salah satu opsi 
+dijadikan *case-sensitive* sementara opsi lainnya diset untuk mengabaikan 
+*casing*.
 
-The `std::env` module contains many more useful features for dealing with
-environment variables: check out its documentation to see what is available.
+Modul `std::env` berisi banyak lagi fitur yang berguna buat berurusan dengan 
+*environment variables*: cek dokumentasinya buat melihat fitur apa saja yang 
+tersedia.

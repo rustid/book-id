@@ -1,622 +1,650 @@
-## Validating References with Lifetimes
+## Memvalidasi Referensi dengan Lifetimes
 
-Lifetimes are another kind of generic that we’ve already been using. Rather
-than ensuring that a type has the behavior we want, lifetimes ensure that
-references are valid as long as we need them to be.
+_Lifetimes_ (waktu hidup) adalah jenis generik lain yang sebenarnya sudah 
+kita pakai. Bukannya memastikan kalau sebuah tipe punya perilaku yang kita mau, 
+_lifetimes_ memastikan kalau referensi bakal tetap valid selama kita masih 
+butuh.
 
-One detail we didn’t discuss in the [“References and
-Borrowing”][references-and-borrowing]<!-- ignore --> section in Chapter 4 is
-that every reference in Rust has a *lifetime*, which is the scope for which
-that reference is valid. Most of the time, lifetimes are implicit and inferred,
-just like most of the time, types are inferred. We must only annotate types
-when multiple types are possible. In a similar way, we must annotate lifetimes
-when the lifetimes of references could be related in a few different ways. Rust
-requires us to annotate the relationships using generic lifetime parameters to
-ensure the actual references used at runtime will definitely be valid.
+Satu detail yang tidak kita bahas di bagian [“Referensi dan Borrowing”][references-and-borrowing] 
+di Bab 4 adalah setiap referensi di Rust punya sebuah _lifetime_, yaitu _scope_ 
+di mana referensi itu valid. Sebagian besar waktu, _lifetimes_ itu bersifat implisit 
+dan ditebak (_inferred_), sama halnya kayak sebagian besar waktu tipe juga 
+ditebak. Kita baru diwajibkan buat menganotasi tipe kalau ada beberapa kemungkinan 
+tipe yang bisa dipakai. Mirip dengan itu, kita harus menganotasi _lifetimes_ kalau 
+_lifetimes_ dari referensi-referensi yang ada bisa berhubungan dengan beberapa 
+cara yang berbeda. Rust mewajibkan kita menganotasi hubungan ini memakai 
+parameter _lifetime_ generik untuk memastikan referensi sebenarnya yang dipakai 
+pas _runtime_ bakal pasti valid.
 
-Annotating lifetimes is not a concept most other programming languages
-have, so this is going to feel unfamiliar. Although we won’t cover lifetimes in
-their entirety in this chapter, we’ll discuss common ways you might encounter
-lifetime syntax so you can get comfortable with the concept.
+Menganotasi _lifetimes_ bahkan bukan konsep yang dimiliki kebanyakan bahasa 
+pemrograman lain, jadi ini mungkin bakal terasa asing. Meskipun kita tidak 
+bakal membahas _lifetimes_ secara menyeluruh di bab ini, kita bakal membahas 
+cara-cara umum yang mungkin bakal kita temui terkait sintaks _lifetime_ supaya 
+kita bisa nyaman dengan konsepnya.
 
-### Preventing Dangling References with Lifetimes
+### Mencegah Dangling References dengan Lifetimes
 
-The main aim of lifetimes is to prevent *dangling references*, which cause a
-program to reference data other than the data it’s intended to reference.
-Consider the program in Listing 10-16, which has an outer scope and an inner
-scope.
+Tujuan utama dari _lifetimes_ adalah buat mencegah _dangling references_ 
+(referensi menggantung), yang bikin program merujuk ke data yang salah alih-
+alih data yang sebenarnya dituju. Coba perhatikan program di Listing 10-16, yang 
+punya _scope_ luar dan _scope_ dalam.
+
+<Listing number="10-16" caption="Usaha untuk memakai referensi yang nilainya sudah keluar dari _scope_">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-16/src/main.rs}}
 ```
 
-<span class="caption">Listing 10-16: An attempt to use a reference whose value
-has gone out of scope</span>
+</Listing>
 
-> Note: The examples in Listings 10-16, 10-17, and 10-23 declare variables
-> without giving them an initial value, so the variable name exists in the
-> outer scope. At first glance, this might appear to be in conflict with Rust’s
-> having no null values. However, if we try to use a variable before giving it
-> a value, we’ll get a compile-time error, which shows that Rust indeed does
-> not allow null values.
+> Catatan: Contoh di Listing 10-16, 10-17, dan 10-23 mendeklarasikan variabel 
+> tanpa memberi mereka nilai awal, jadi nama variabelnya eksis di _scope_ luar. 
+> Sekilas, ini mungkin kelihatannya bertentangan sama aturan Rust yang tidak 
+> mengizinkan nilai null. Tapi, kalau kita mencoba memakai sebuah variabel 
+> sebelum memberinya nilai, kita bakal dapat error _compile-time_, yang 
+> menunjukkan kalau Rust memang tidak mengizinkan nilai null.
 
-The outer scope declares a variable named `r` with no initial value, and the
-inner scope declares a variable named `x` with the initial value of 5. Inside
-the inner scope, we attempt to set the value of `r` as a reference to `x`. Then
-the inner scope ends, and we attempt to print the value in `r`. This code won’t
-compile because what the value `r` is referring to has gone out of scope before we
-try to use it. Here is the error message:
+_Scope_ luar mendeklarasikan variabel bernama `r` tanpa nilai awal, dan 
+_scope_ dalam mendeklarasikan variabel bernama `x` dengan nilai awal `5`. Di 
+dalam _scope_ dalam, kita mencoba nge-set nilai `r` jadi referensi ke `x`. 
+Kemudian _scope_ dalamnya berakhir, dan kita mencoba mencetak nilai di `r`. 
+Kode ini tidak bakal bisa di-compile karena nilai yang dirujuk sama `r` sudah 
+keluar dari _scope_ sebelum kita mencoba memakainya. Ini pesan error-nya:
 
 ```console
 {{#include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-16/output.txt}}
 ```
 
-The variable `x` doesn’t “live long enough.” The reason is that `x` will be out
-of scope when the inner scope ends on line 7. But `r` is still valid for the
-outer scope; because its scope is larger, we say that it “lives longer.” If
-Rust allowed this code to work, `r` would be referencing memory that was
-deallocated when `x` went out of scope, and anything we tried to do with `r`
-wouldn’t work correctly. So how does Rust determine that this code is invalid?
-It uses a borrow checker.
+Pesan error-nya bilang kalau variabel `x` “tidak hidup cukup lama” (does not live long enough). 
+Alasannya adalah `x` bakal keluar dari _scope_ saat _scope_ dalam berakhir di 
+baris 7. Tapi `r` masih valid untuk _scope_ luar; karena _scope_-nya lebih 
+besar, kita bilang kalau dia “hidup lebih lama.” Kalau Rust membiarkan kode ini 
+jalan, `r` bakal merujuk ke memori yang sudah di-dealokasi saat `x` keluar dari 
+_scope_, dan apa pun yang kita coba lakukan dengan `r` tidak bakal jalan dengan 
+benar. Terus gimana caranya Rust bisa nentuin kalau kode ini tidak valid? Rust 
+memakai sebuah _borrow checker_.
 
-### The Borrow Checker
+### Borrow Checker
 
-The Rust compiler has a *borrow checker* that compares scopes to determine
-whether all borrows are valid. Listing 10-17 shows the same code as Listing
-10-16 but with annotations showing the lifetimes of the variables.
+_Compiler_ Rust punya sebuah _borrow checker_ yang membandingkan _scopes_ buat 
+menentukan apakah semua referensi yang dipinjam (_borrows_) itu valid. Listing 
+10-17 menunjukkan kode yang sama seperti Listing 10-16 tapi dengan anotasi 
+yang menunjukkan _lifetimes_ dari variabel-variabelnya.
+
+<Listing number="10-17" caption="Anotasi _lifetimes_ dari `r` dan `x`, dinamakan masing-masing `'a` dan `'b`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-17/src/main.rs}}
 ```
 
-<span class="caption">Listing 10-17: Annotations of the lifetimes of `r` and
-`x`, named `'a` and `'b`, respectively</span>
+</Listing>
 
-Here, we’ve annotated the lifetime of `r` with `'a` and the lifetime of `x`
-with `'b`. As you can see, the inner `'b` block is much smaller than the outer
-`'a` lifetime block. At compile time, Rust compares the size of the two
-lifetimes and sees that `r` has a lifetime of `'a` but that it refers to memory
-with a lifetime of `'b`. The program is rejected because `'b` is shorter than
-`'a`: the subject of the reference doesn’t live as long as the reference.
+Di sini, kita sudah menganotasi _lifetime_ dari `r` dengan `'a` dan _lifetime_ 
+dari `x` dengan `'b`. Seperti yang bisa dilihat, blok `'b` di dalam itu jauh 
+lebih kecil daripada blok _lifetime_ `'a` di luar. Pada saat _compile time_, Rust 
+membandingkan ukuran dari dua _lifetimes_ ini dan melihat kalau `r` punya 
+_lifetime_ `'a` tapi dia merujuk ke memori dengan _lifetime_ `'b`. Programnya 
+ditolak karena `'b` lebih pendek dari `'a`: subjek yang dirujuk tidak hidup 
+selama referensinya.
 
-Listing 10-18 fixes the code so it doesn’t have a dangling reference and
-compiles without any errors.
+Listing 10-18 memperbaiki kodenya biar dia tidak punya _dangling reference_ dan 
+bisa di-compile tanpa error sama sekali.
+
+<Listing number="10-18" caption="Referensi yang valid karena datanya punya _lifetime_ yang lebih panjang dari referensinya">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-18/src/main.rs}}
 ```
 
-<span class="caption">Listing 10-18: A valid reference because the data has a
-longer lifetime than the reference</span>
+</Listing>
 
-Here, `x` has the lifetime `'b`, which in this case is larger than `'a`. This
-means `r` can reference `x` because Rust knows that the reference in `r` will
-always be valid while `x` is valid.
+Di sini, `x` punya _lifetime_ `'b`, yang mana di kasus ini lebih besar dari `'a`. 
+Ini berarti `r` bisa merujuk ke `x` karena Rust tahu kalau referensi di `r` bakal 
+selalu valid selama `x` masih valid.
 
-Now that you know where the lifetimes of references are and how Rust analyzes
-lifetimes to ensure references will always be valid, let’s explore generic
-lifetimes of parameters and return values in the context of functions.
+Sekarang setelah kita tahu di mana _lifetimes_ dari referensi berada dan gimana 
+Rust menganalisis _lifetimes_ buat memastikan referensi bakal selalu valid, 
+mari kita eksplor _lifetimes_ generik buat parameter dan nilai kembalian di 
+dalam konteks fungsi.
 
-### Generic Lifetimes in Functions
+### Generic Lifetimes di Fungsi
 
-We’ll write a function that returns the longer of two string slices. This
-function will take two string slices and return a single string slice. After
-we’ve implemented the `longest` function, the code in Listing 10-19 should
-print `The longest string is abcd`.
+Kita bakal nulis fungsi yang mengembalikan _string slice_ yang lebih panjang 
+di antara dua _string slice_. Fungsi ini bakal menerima dua _string slice_ dan 
+mengembalikan satu _string slice_. Setelah kita mengimplementasikan fungsi `longest`, 
+kode di Listing 10-19 seharusnya mencetak `The longest string is abcd`.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-19" file-name="src/main.rs" caption="Fungsi `main` yang memanggil fungsi `longest` buat mencari mana yang lebih panjang dari dua _string slices_">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-19/src/main.rs}}
 ```
 
-<span class="caption">Listing 10-19: A `main` function that calls the `longest`
-function to find the longer of two string slices</span>
+</Listing>
 
-Note that we want the function to take string slices, which are references,
-rather than strings, because we don’t want the `longest` function to take
-ownership of its parameters. Refer to the [“String Slices as
-Parameters”][string-slices-as-parameters]<!-- ignore --> section in Chapter 4
-for more discussion about why the parameters we use in Listing 10-19 are the
-ones we want.
+Perhatikan bahwa kita mau fungsi ini menerima _string slices_, yang merupakan 
+referensi, bukannya _strings_, karena kita tidak mau fungsi `longest` mengambil 
+_ownership_ dari parameter-parameternya. Coba cek lagi bagian [“String Slices 
+sebagai Parameter”][string-slices-as-parameters] di Bab 4 buat pembahasan lebih 
+lanjut soal kenapa parameter yang kita pakai di Listing 10-19 adalah yang memang 
+kita perlukan.
 
-If we try to implement the `longest` function as shown in Listing 10-20, it
-won’t compile.
+Kalau kita mencoba mengimplementasikan fungsi `longest` seperti yang ditunjukkan 
+di Listing 10-20, kode ini tidak bakal bisa di-compile.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-20" file-name="src/main.rs" caption="Implementasi fungsi `longest` yang mengembalikan yang lebih panjang dari dua _string slices_ tapi belum bisa di-compile">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-20/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-20: An implementation of the `longest`
-function that returns the longer of two string slices but does not yet
-compile</span>
+</Listing>
 
-Instead, we get the following error that talks about lifetimes:
+Alih-alih jalan, kita dapat error berikut yang membahas soal _lifetimes_:
 
 ```console
 {{#include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-20/output.txt}}
 ```
 
-The help text reveals that the return type needs a generic lifetime parameter
-on it because Rust can’t tell whether the reference being returned refers to
-`x` or `y`. Actually, we don’t know either, because the `if` block in the body
-of this function returns a reference to `x` and the `else` block returns a
-reference to `y`!
+Teks bantuannya ngasih tau kalau tipe kembaliannya butuh parameter _lifetime_ 
+generik di situ karena Rust tidak bisa menebak apakah referensi yang bakal 
+dikembalikan itu merujuk ke `x` atau ke `y`. Nyatanya, kita juga tidak tahu, 
+karena blok `if` di dalam body fungsi ini mengembalikan referensi ke `x` dan 
+blok `else` mengembalikan referensi ke `y`!
 
-When we’re defining this function, we don’t know the concrete values that will
-be passed into this function, so we don’t know whether the `if` case or the
-`else` case will execute. We also don’t know the concrete lifetimes of the
-references that will be passed in, so we can’t look at the scopes as we did in
-Listings 10-17 and 10-18 to determine whether the reference we return will
-always be valid. The borrow checker can’t determine this either, because it
-doesn’t know how the lifetimes of `x` and `y` relate to the lifetime of the
-return value. To fix this error, we’ll add generic lifetime parameters that
-define the relationship between the references so the borrow checker can
-perform its analysis.
+Saat mendefinisikan fungsi ini, kita tidak tahu nilai konkret apa yang bakal 
+dimasukkan ke fungsi ini, jadi kita tidak tahu apakah blok `if` atau blok `else` 
+yang bakal dijalankan. Kita juga tidak tahu _lifetimes_ konkret dari referensi 
+yang bakal dimasukkan, jadi kita tidak bisa melihat _scopes_ seperti yang kita 
+lakukan di Listing 10-17 dan 10-18 untuk menentukan apakah referensi yang kita 
+kembalikan itu bakal selalu valid. _Borrow checker_ juga tidak bisa menentukannya, 
+karena dia tidak tahu gimana _lifetimes_ dari `x` dan `y` berhubungan sama 
+_lifetime_ dari nilai kembaliannya. Buat membenarkan error ini, kita bakal 
+menambahkan parameter _lifetime_ generik yang mendefinisikan hubungan antara 
+referensi-referensi tersebut agar _borrow checker_ bisa melakukan analisisnya.
 
-### Lifetime Annotation Syntax
+### Sintaks Anotasi Lifetime
 
-Lifetime annotations don’t change how long any of the references live. Rather,
-they describe the relationships of the lifetimes of multiple references to each
-other without affecting the lifetimes. Just as functions can accept any type
-when the signature specifies a generic type parameter, functions can accept
-references with any lifetime by specifying a generic lifetime parameter.
+Anotasi _lifetime_ tidak mengubah seberapa lama suatu referensi hidup. Mereka 
+justru menggambarkan hubungan dari _lifetimes_ antara banyak referensi satu sama 
+lain tanpa memengaruhi _lifetimes_ itu sendiri. Sama seperti fungsi yang bisa 
+menerima tipe apa pun saat _signature_-nya menentukan parameter tipe generik, 
+fungsi juga bisa menerima referensi dengan _lifetime_ apa pun dengan menentukan 
+parameter _lifetime_ generik.
 
-Lifetime annotations have a slightly unusual syntax: the names of lifetime
-parameters must start with an apostrophe (`'`) and are usually all lowercase
-and very short, like generic types. Most people use the name `'a` for the first
-lifetime annotation. We place lifetime parameter annotations after the `&` of a
-reference, using a space to separate the annotation from the reference’s type.
+Anotasi _lifetime_ punya sintaks yang agak tidak biasa: nama parameter _lifetime_ 
+harus dimulai dengan apostrof (tanda kutip tunggal, `'`) dan biasanya semuanya 
+huruf kecil dan sangat pendek, sama seperti tipe generik. Kebanyakan orang 
+memakai nama `'a` untuk anotasi _lifetime_ yang pertama. Kita menaruh anotasi 
+parameter _lifetime_ setelah tanda `&` dari sebuah referensi, dengan memakai 
+spasi untuk memisahkan anotasinya dari tipe referensinya.
 
-Here are some examples: a reference to an `i32` without a lifetime parameter, a
-reference to an `i32` that has a lifetime parameter named `'a`, and a mutable
-reference to an `i32` that also has the lifetime `'a`.
+Ini beberapa contohnya: sebuah referensi ke `i32` tanpa parameter _lifetime_, 
+sebuah referensi ke `i32` yang punya parameter _lifetime_ bernama `'a`, dan 
+sebuah referensi _mutable_ ke `i32` yang juga punya _lifetime_ `'a`.
 
 ```rust,ignore
-&i32        // a reference
-&'a i32     // a reference with an explicit lifetime
-&'a mut i32 // a mutable reference with an explicit lifetime
+&i32        // sebuah referensi
+&'a i32     // sebuah referensi dengan _lifetime_ eksplisit
+&'a mut i32 // sebuah referensi _mutable_ dengan _lifetime_ eksplisit
 ```
 
-One lifetime annotation by itself doesn’t have much meaning, because the
-annotations are meant to tell Rust how generic lifetime parameters of multiple
-references relate to each other. Let’s examine how the lifetime annotations
-relate to each other in the context of the `longest` function.
+Satu anotasi _lifetime_ yang berdiri sendiri tidak punya banyak arti karena 
+anotasi itu ditujukan untuk memberi tahu Rust gimana parameter _lifetime_ generik 
+dari berbagai referensi saling berhubungan. Mari kita teliti gimana anotasi 
+_lifetime_ berhubungan satu sama lain di dalam konteks fungsi `longest`.
 
-### Lifetime Annotations in Function Signatures
+### Anotasi Lifetime di Signature Fungsi
 
-To use lifetime annotations in function signatures, we need to declare the
-generic *lifetime* parameters inside angle brackets between the function name
-and the parameter list, just as we did with generic *type* parameters.
+Buat memakai anotasi _lifetime_ di _signature_ fungsi, kita harus 
+mendeklarasikan parameter _lifetime_ generik di dalam kurung sudut di antara 
+nama fungsi dan daftar parameter, sama persis seperti yang kita lakukan sama 
+parameter _tipe_ generik.
 
-We want the signature to express the following constraint: the returned
-reference will be valid as long as both the parameters are valid. This is the
-relationship between lifetimes of the parameters and the return value. We’ll
-name the lifetime `'a` and then add it to each reference, as shown in Listing
-10-21.
+Kita mau _signature_ ini mengekspresikan batasan ini: referensi yang 
+dikembalikan bakal valid setidaknya selama kedua parameter itu juga valid. Ini 
+adalah hubungan antara _lifetimes_ dari parameter dan nilai kembaliannya. 
+Kita bakal menamakan _lifetime_ itu `'a` lalu menambahkannya ke setiap 
+referensi, seperti yang ditunjukkan di Listing 10-21.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-21" file-name="src/main.rs" caption="Definisi fungsi `longest` yang menentukan kalau semua referensi di _signature_ tersebut harus punya _lifetime_ `'a` yang sama">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-21/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-21: The `longest` function definition
-specifying that all the references in the signature must have the same lifetime
-`'a`</span>
+</Listing>
 
-This code should compile and produce the result we want when we use it with the
-`main` function in Listing 10-19.
+Kode ini seharusnya bisa di-compile dan menghasilkan hasil yang kita inginkan 
+saat kita memakainya bersama fungsi `main` di Listing 10-19.
 
-The function signature now tells Rust that for some lifetime `'a`, the function
-takes two parameters, both of which are string slices that live at least as
-long as lifetime `'a`. The function signature also tells Rust that the string
-slice returned from the function will live at least as long as lifetime `'a`.
-In practice, it means that the lifetime of the reference returned by the
-`longest` function is the same as the smaller of the lifetimes of the values
-referred to by the function arguments. These relationships are what we want
-Rust to use when analyzing this code.
+_Signature_ fungsinya sekarang memberi tahu Rust bahwa untuk suatu _lifetime_ 
+`'a`, fungsi ini menerima dua parameter, di mana keduanya adalah _string slices_ 
+yang hidup setidaknya sepanjang _lifetime_ `'a`. _Signature_ fungsinya juga 
+memberi tahu Rust bahwa _string slice_ yang dikembalikan dari fungsi itu bakal 
+hidup setidaknya sepanjang _lifetime_ `'a`. Di praktiknya, ini berarti _lifetime_ 
+dari referensi yang dikembalikan oleh fungsi `longest` itu sama dengan 
+_lifetime_ yang paling kecil dari antara nilai-nilai yang dirujuk oleh 
+argumen-argumen fungsi tersebut. Hubungan-hubungan inilah yang kita mau Rust 
+pakai saat menganalisis kode ini.
 
-Remember, when we specify the lifetime parameters in this function signature,
-we’re not changing the lifetimes of any values passed in or returned. Rather,
-we’re specifying that the borrow checker should reject any values that don’t
-adhere to these constraints. Note that the `longest` function doesn’t need to
-know exactly how long `x` and `y` will live, only that some scope can be
-substituted for `'a` that will satisfy this signature.
+Ingat, saat kita menentukan parameter _lifetime_ di _signature_ fungsi ini, kita 
+tidak sedang mengubah _lifetimes_ dari nilai apa pun yang masuk atau keluar. 
+Tapi, kita sedang menentukan kalau _borrow checker_ harus menolak nilai apa pun 
+yang tidak mematuhi batasan-batasan ini. Perhatikan bahwa fungsi `longest` 
+tidak perlu tahu persis berapa lama `x` dan `y` bakal hidup, dia cuma perlu 
+tahu kalau ada suatu _scope_ yang bisa disubstitusi untuk `'a` yang bakal memenuhi 
+_signature_ ini.
 
-When annotating lifetimes in functions, the annotations go in the function
-signature, not in the function body. The lifetime annotations become part of
-the contract of the function, much like the types in the signature. Having
-function signatures contain the lifetime contract means the analysis the Rust
-compiler does can be simpler. If there’s a problem with the way a function is
-annotated or the way it is called, the compiler errors can point to the part of
-our code and the constraints more precisely. If, instead, the Rust compiler
-made more inferences about what we intended the relationships of the lifetimes
-to be, the compiler might only be able to point to a use of our code many steps
-away from the cause of the problem.
+Saat menganotasi _lifetimes_ di fungsi, anotasinya ditaruh di _signature_ fungsi, 
+bukan di body fungsi. Anotasi _lifetime_ menjadi bagian dari kontrak fungsi itu, 
+mirip dengan tipe-tipe di _signature_-nya. Memiliki _signature_ fungsi yang 
+mengandung kontrak _lifetime_ berarti analisis yang dilakukan _compiler_ Rust bisa 
+jadi lebih sederhana. Kalau ada masalah dengan cara sebuah fungsi dianotasi atau 
+cara dia dipanggil, pesan error _compiler_ bisa menunjuk ke bagian kode kita 
+serta batasannya dengan lebih tepat. Kalau sebaliknya _compiler_ Rust menebak-nebak 
+lebih banyak soal apa yang kita maksud terkait hubungan antar _lifetimes_, 
+_compiler_ mungkin cuma bakal bisa nunjukin pemakaian kode kita yang berjarak 
+beberapa langkah dari sumber masalah aslinya.
 
-When we pass concrete references to `longest`, the concrete lifetime that is
-substituted for `'a` is the part of the scope of `x` that overlaps with the
-scope of `y`. In other words, the generic lifetime `'a` will get the concrete
-lifetime that is equal to the smaller of the lifetimes of `x` and `y`. Because
-we’ve annotated the returned reference with the same lifetime parameter `'a`,
-the returned reference will also be valid for the length of the smaller of the
-lifetimes of `x` and `y`.
+Saat kita memasukkan referensi konkret ke `longest`, _lifetime_ konkret yang 
+disubstitusikan untuk `'a` adalah bagian dari _scope_ `x` yang tumpang tindih 
+(_overlap_) dengan _scope_ `y`. Dengan kata lain, _lifetime_ generik `'a` 
+bakal mendapatkan _lifetime_ konkret yang setara dengan yang lebih kecil 
+di antara _lifetimes_ `x` dan `y`. Karena kita sudah menganotasi referensi yang 
+dikembalikan dengan parameter _lifetime_ `'a` yang sama, referensi kembalian 
+itu juga bakal valid sepanjang yang lebih kecil di antara _lifetimes_ `x` dan `y`.
 
-Let’s look at how the lifetime annotations restrict the `longest` function by
-passing in references that have different concrete lifetimes. Listing 10-22 is
-a straightforward example.
+Mari kita lihat gimana anotasi _lifetime_ membatasi fungsi `longest` dengan 
+memasukkan referensi yang punya _lifetimes_ konkret yang berbeda. Listing 10-22 
+adalah contoh yang simpel.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-22" file-name="src/main.rs" caption="Memakai fungsi `longest` dengan referensi ke nilai `String` yang punya _lifetimes_ konkret yang berbeda">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-22/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-22: Using the `longest` function with
-references to `String` values that have different concrete lifetimes</span>
+</Listing>
 
-In this example, `string1` is valid until the end of the outer scope, `string2`
-is valid until the end of the inner scope, and `result` references something
-that is valid until the end of the inner scope. Run this code, and you’ll see
-that the borrow checker approves; it will compile and print `The longest string
+Di contoh ini, `string1` itu valid sampai akhir dari _scope_ luar, `string2` itu 
+valid sampai akhir _scope_ dalam, dan `result` merujuk ke sesuatu yang valid 
+sampai akhir _scope_ dalam. Jalankan kode ini dan kita bakal lihat kalau _borrow 
+checker_ menyetujuinya; kodenya bakal di-compile dan mencetak `The longest string
 is long string is long`.
 
-Next, let’s try an example that shows that the lifetime of the reference in
-`result` must be the smaller lifetime of the two arguments. We’ll move the
-declaration of the `result` variable outside the inner scope but leave the
-assignment of the value to the `result` variable inside the scope with
-`string2`. Then we’ll move the `println!` that uses `result` to outside the
-inner scope, after the inner scope has ended. The code in Listing 10-23 will
-not compile.
+Berikutnya, mari kita coba contoh yang menunjukkan kalau _lifetime_ dari 
+referensi di `result` harus merupakan _lifetime_ yang lebih kecil dari dua 
+argumennya. Kita bakal memindahkan deklarasi variabel `result` ke luar _scope_ 
+dalam tapi membiarkan proses assignment nilai ke variabel `result` di dalam 
+_scope_ bareng `string2`. Lalu kita bakal pindahin `println!` yang memakai 
+`result` ke luar _scope_ dalam, setelah _scope_ dalam tersebut berakhir. 
+Kode di Listing 10-23 tidak bakal bisa di-compile.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-23" file-name="src/main.rs" caption="Mencoba memakai `result` setelah `string2` keluar dari _scope_">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-23/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-23: Attempting to use `result` after `string2`
-has gone out of scope</span>
+</Listing>
 
-When we try to compile this code, we get this error:
+Pas kita nyoba compile kode ini, kita bakal dapet error ini:
 
 ```console
 {{#include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-23/output.txt}}
 ```
 
-The error shows that for `result` to be valid for the `println!` statement,
-`string2` would need to be valid until the end of the outer scope. Rust knows
-this because we annotated the lifetimes of the function parameters and return
-values using the same lifetime parameter `'a`.
+Error ini menunjukkan kalau biar `result` valid buat _statement_ `println!`, 
+`string2` harusnya valid sampai akhir dari _scope_ luar. Rust tahu ini karena 
+kita sudah menganotasi _lifetimes_ dari parameter fungsi dan nilai kembalian 
+dengan memakai parameter _lifetime_ `'a` yang sama.
 
-As humans, we can look at this code and see that `string1` is longer than
-`string2` and therefore `result` will contain a reference to `string1`.
-Because `string1` has not gone out of scope yet, a reference to `string1` will
-still be valid for the `println!` statement. However, the compiler can’t see
-that the reference is valid in this case. We’ve told Rust that the lifetime of
-the reference returned by the `longest` function is the same as the smaller of
-the lifetimes of the references passed in. Therefore, the borrow checker
-disallows the code in Listing 10-23 as possibly having an invalid reference.
+Sebagai manusia, kita bisa melihat kode ini dan langsung tahu kalau `string1` 
+lebih panjang dari `string2`, dan karenanya, `result` bakal berisi referensi ke 
+`string1`. Karena `string1` belum keluar dari _scope_, referensi ke `string1` 
+seharusnya masih valid buat _statement_ `println!`. Tapi, _compiler_ tidak 
+bisa melihat kalau referensinya valid di kasus ini. Kita sudah memberi tahu Rust 
+kalau _lifetime_ referensi yang dikembalikan oleh fungsi `longest` itu sama dengan 
+yang lebih kecil di antara _lifetimes_ dari referensi-referensi yang dimasukkan. 
+Maka dari itu, _borrow checker_ menolak kode di Listing 10-23 karena 
+kemungkinannya punya referensi yang tidak valid.
 
-Try designing more experiments that vary the values and lifetimes of the
-references passed in to the `longest` function and how the returned reference
-is used. Make hypotheses about whether or not your experiments will pass the
-borrow checker before you compile; then check to see if you’re right!
+Coba desain eksperimen lain yang memvariasikan nilai dan _lifetimes_ dari 
+referensi yang di-_pass_ ke fungsi `longest` serta gimana referensi kembaliannya 
+dipakai. Bikin hipotesis tentang apakah eksperimen kita bakal lolos _borrow 
+checker_ sebelum men-compile; lalu cek apakah kita benar!
 
-### Thinking in Terms of Lifetimes
+### Berpikir dalam Konteks Lifetimes
 
-The way in which you need to specify lifetime parameters depends on what your
-function is doing. For example, if we changed the implementation of the
-`longest` function to always return the first parameter rather than the longest
-string slice, we wouldn’t need to specify a lifetime on the `y` parameter. The
-following code will compile:
+Gimana cara kita menentukan parameter _lifetime_ itu bergantung pada apa yang 
+sedang dilakukan sama fungsi kita. Misalnya, kalau kita mengubah implementasi 
+fungsi `longest` biar selalu mengembalikan parameter pertama bukannya 
+_string slice_ yang paling panjang, kita tidak perlu menentukan _lifetime_ 
+pada parameter `y`. Kode berikut ini bakal bisa di-compile:
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-08-only-one-reference-with-lifetime/src/main.rs:here}}
 ```
 
-We’ve specified a lifetime parameter `'a` for the parameter `x` and the return
-type, but not for the parameter `y`, because the lifetime of `y` does not have
-any relationship with the lifetime of `x` or the return value.
+</Listing>
 
-When returning a reference from a function, the lifetime parameter for the
-return type needs to match the lifetime parameter for one of the parameters. If
-the reference returned does *not* refer to one of the parameters, it must refer
-to a value created within this function. However, this would be a dangling
-reference because the value will go out of scope at the end of the function.
-Consider this attempted implementation of the `longest` function that won’t
-compile:
+Kita sudah menentukan parameter _lifetime_ `'a` buat parameter `x` dan tipe 
+kembaliannya, tapi tidak buat parameter `y`, karena _lifetime_ `y` tidak punya 
+hubungan apa pun dengan _lifetime_ `x` atau nilai kembaliannya.
 
-<span class="filename">Filename: src/main.rs</span>
+Saat mengembalikan sebuah referensi dari sebuah fungsi, parameter _lifetime_ 
+buat tipe kembaliannya harus cocok dengan parameter _lifetime_ buat salah satu 
+dari parameternya. Kalau referensi yang dikembalikan _tidak_ merujuk ke salah 
+satu parameter, maka referensi itu pasti merujuk ke suatu nilai yang dibuat di 
+dalam fungsi itu sendiri. Namun, ini bakal jadi _dangling reference_ karena 
+nilai itu bakal keluar dari _scope_ di akhir dari fungsinya. Coba perhatikan 
+usaha implementasi fungsi `longest` yang tidak bakal bisa di-compile ini:
+
+<Listing file-name="src/main.rs">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-09-unrelated-lifetime/src/main.rs:here}}
 ```
 
-Here, even though we’ve specified a lifetime parameter `'a` for the return
-type, this implementation will fail to compile because the return value
-lifetime is not related to the lifetime of the parameters at all. Here is the
-error message we get:
+</Listing>
+
+Di sini, meskipun kita sudah menentukan parameter _lifetime_ `'a` buat tipe 
+kembaliannya, implementasi ini bakal gagal di-compile karena _lifetime_ nilai 
+kembaliannya sama sekali tidak berhubungan dengan _lifetime_ parameter-parameternya. 
+Ini pesan error yang bakal kita dapat:
 
 ```console
 {{#include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-09-unrelated-lifetime/output.txt}}
 ```
 
-The problem is that `result` goes out of scope and gets cleaned up at the end
-of the `longest` function. We’re also trying to return a reference to `result`
-from the function. There is no way we can specify lifetime parameters that
-would change the dangling reference, and Rust won’t let us create a dangling
-reference. In this case, the best fix would be to return an owned data type
-rather than a reference so the calling function is then responsible for
-cleaning up the value.
+Masalahnya adalah `result` keluar dari _scope_ dan dibersihkan di akhir dari 
+fungsi `longest`. Kita juga mencoba mengembalikan referensi ke `result` dari 
+fungsinya. Tidak ada cara buat kita menentukan parameter _lifetime_ yang bisa 
+mengubah _dangling reference_ tersebut, dan Rust tidak bakal ngebiarin kita bikin 
+_dangling reference_. Di kasus ini, perbaikan terbaiknya adalah dengan 
+mengembalikan tipe data yang _owned_ (dimiliki) bukannya sebuah referensi 
+sehingga fungsi yang memanggilnya nanti bertanggung jawab buat membersihkan 
+nilai tersebut.
 
-Ultimately, lifetime syntax is about connecting the lifetimes of various
-parameters and return values of functions. Once they’re connected, Rust has
-enough information to allow memory-safe operations and disallow operations that
-would create dangling pointers or otherwise violate memory safety.
+Pada akhirnya, sintaks _lifetime_ adalah soal menghubungkan _lifetimes_ dari 
+berbagai parameter dan nilai kembalian dari suatu fungsi. Begitu mereka 
+terhubung, Rust punya informasi yang cukup buat mengizinkan operasi yang aman 
+buat memori (memory-safe operations) dan menolak operasi yang bakal membuat 
+_dangling pointers_ atau melanggar keamanan memori.
 
-### Lifetime Annotations in Struct Definitions
+### Anotasi Lifetime di Definisi Struct
 
-So far, the structs we’ve defined all hold owned types. We can define structs to
-hold references, but in that case we would need to add a lifetime annotation on
-every reference in the struct’s definition. Listing 10-24 has a struct named
-`ImportantExcerpt` that holds a string slice.
+Sejauh ini, _struct_ yang kita definisikan semuanya menampung tipe-tipe yang 
+_owned_. Kita bisa mendefinisikan _struct_ buat menampung referensi, tapi di 
+kasus itu kita perlu menambahkan anotasi _lifetime_ pada setiap referensi di 
+dalam definisi _struct_ tersebut. Listing 10-24 punya _struct_ bernama 
+`ImportantExcerpt` yang menampung sebuah _string slice_.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-24" file-name="src/main.rs" caption="Sebuah _struct_ yang menampung referensi, yang mana butuh anotasi _lifetime_">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-24/src/main.rs}}
 ```
 
-<span class="caption">Listing 10-24: A struct that holds a reference, requiring
-a lifetime annotation</span>
+</Listing>
 
-This struct has the single field `part` that holds a string slice, which is a
-reference. As with generic data types, we declare the name of the generic
-lifetime parameter inside angle brackets after the name of the struct so we can
-use the lifetime parameter in the body of the struct definition. This
-annotation means an instance of `ImportantExcerpt` can’t outlive the reference
-it holds in its `part` field.
+_Struct_ ini punya field tunggal `part` yang menampung _string slice_, yang 
+merupakan sebuah referensi. Sama kayak tipe data generik, kita mendeklarasikan 
+nama parameter _lifetime_ generik di dalam kurung sudut setelah nama _struct_ 
+sehingga kita bisa memakai parameter _lifetime_ itu di dalam definisi _struct_-nya. 
+Anotasi ini berarti sebuah instance dari `ImportantExcerpt` tidak bisa hidup 
+lebih lama dari referensi yang ditampungnya di field `part`.
 
-The `main` function here creates an instance of the `ImportantExcerpt` struct
-that holds a reference to the first sentence of the `String` owned by the
-variable `novel`. The data in `novel` exists before the `ImportantExcerpt`
-instance is created. In addition, `novel` doesn’t go out of scope until after
-the `ImportantExcerpt` goes out of scope, so the reference in the
-`ImportantExcerpt` instance is valid.
+Fungsi `main` di sini bikin instance dari _struct_ `ImportantExcerpt` yang 
+menampung referensi ke kalimat pertama dari `String` yang dimiliki sama variabel 
+`novel`. Data di `novel` sudah ada sebelum instance `ImportantExcerpt` itu 
+dibikin. Selain itu, `novel` belum keluar dari _scope_ sampai setelah 
+`ImportantExcerpt` keluar dari _scope_, jadi referensi di dalam instance 
+`ImportantExcerpt` itu dipastikan valid.
 
-### Lifetime Elision
+### Lifetime Elision (Penghilangan Lifetime)
 
-You’ve learned that every reference has a lifetime and that you need to specify
-lifetime parameters for functions or structs that use references. However, in
-Chapter 4 we had a function in Listing 4-9, shown again in Listing 10-25, that
-compiled without lifetime annotations.
+Kita udah belajar kalau setiap referensi punya _lifetime_ dan kita harus 
+menentukan parameter _lifetime_ untuk fungsi atau _struct_ yang memakai referensi. 
+Namun, kita tadi punya fungsi di Listing 4-9, yang ditampilkan lagi di Listing 
+10-25, yang berhasil di-compile tanpa anotasi _lifetime_.
 
-<span class="filename">Filename: src/lib.rs</span>
+<Listing number="10-25" file-name="src/lib.rs" caption="Sebuah fungsi yang kita definisikan di Listing 4-9 yang berhasil di-compile tanpa anotasi _lifetime_, biarpun parameter dan tipe kembaliannya berupa referensi">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-25/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-25: A function we defined in Listing 4-9 that
-compiled without lifetime annotations, even though the parameter and return
-type are references</span>
+</Listing>
 
-The reason this function compiles without lifetime annotations is historical:
-in early versions (pre-1.0) of Rust, this code wouldn’t have compiled because
-every reference needed an explicit lifetime. At that time, the function
-signature would have been written like this:
+Alasan kenapa fungsi ini bisa di-compile tanpa anotasi _lifetime_ murni karena 
+sejarah: di versi awal (sebelum 1.0) dari Rust, kode ini tidak bakal bisa 
+di-compile karena setiap referensi butuh _lifetime_ yang eksplisit. Waktu itu, 
+_signature_ fungsi ini bakal ditulis kayak gini:
 
 ```rust,ignore
 fn first_word<'a>(s: &'a str) -> &'a str {
 ```
 
-After writing a lot of Rust code, the Rust team found that Rust programmers
-were entering the same lifetime annotations over and over in particular
-situations. These situations were predictable and followed a few deterministic
-patterns. The developers programmed these patterns into the compiler’s code so
-the borrow checker could infer the lifetimes in these situations and wouldn’t
-need explicit annotations.
+Setelah menulis banyak kode Rust, tim Rust menemukan kalau programmer Rust 
+memasukkan anotasi _lifetime_ yang sama berulang kali di situasi-situasi 
+tertentu. Situasi-situasi ini bisa diprediksi dan mengikuti beberapa pola yang 
+deterministik. Para pengembang memprogram pola-pola ini ke dalam kode _compiler_ 
+supaya _borrow checker_ bisa menebak (infer) _lifetimes_ di situasi-situasi ini 
+dan tidak membutuhkan anotasi yang eksplisit lagi.
 
-This piece of Rust history is relevant because it’s possible that more
-deterministic patterns will emerge and be added to the compiler. In the future,
-even fewer lifetime annotations might be required.
+Sejarah Rust ini cukup relevan karena mungkin saja ke depannya bakal ada pola 
+deterministik lain yang muncul dan ditambahkan ke dalam _compiler_. Di masa depan, 
+mungkin bakal lebih sedikit lagi anotasi _lifetime_ yang diwajibkan.
 
-The patterns programmed into Rust’s analysis of references are called the
-*lifetime elision rules*. These aren’t rules for programmers to follow; they’re
-a set of particular cases that the compiler will consider, and if your code
-fits these cases, you don’t need to write the lifetimes explicitly.
+Pola-pola yang diprogram ke dalam analisis referensi Rust disebut 
+_lifetime elision rules_ (aturan penghilangan lifetime). Ini bukan aturan 
+buat dipatuhi sama programmer; mereka ini adalah serangkaian kasus tertentu yang 
+bakal dipertimbangkan oleh _compiler_, dan kalau kode kita masuk ke kasus-kasus 
+ini, kita tidak perlu nulis _lifetimes_-nya secara eksplisit.
 
-The elision rules don’t provide full inference. If Rust deterministically
-applies the rules but there is still ambiguity as to what lifetimes the
-references have, the compiler won’t guess what the lifetime of the remaining
-references should be. Instead of guessing, the compiler will give you an error
-that you can resolve by adding the lifetime annotations.
+Aturan elision ini tidak memberikan tebakan (inference) yang komplit. Kalau masih 
+ada kebingungan atau ketidakpastian (ambiguity) soal apa _lifetimes_ dari 
+referensi tersebut setelah Rust menerapkan aturan-aturannya, _compiler_ tidak 
+bakal menebak-nebak apa seharusnya _lifetime_ untuk referensi yang tersisa. 
+Alih-alih menebak, _compiler_ bakal ngasih kita error yang bisa diselesaikan 
+dengan menambahkan anotasi _lifetime_ secara manual.
 
-Lifetimes on function or method parameters are called *input lifetimes*, and
-lifetimes on return values are called *output lifetimes*.
+_Lifetimes_ pada parameter fungsi atau _method_ disebut _input lifetimes_, dan 
+_lifetimes_ pada nilai kembalian disebut _output lifetimes_.
 
-The compiler uses three rules to figure out the lifetimes of the references
-when there aren’t explicit annotations. The first rule applies to input
-lifetimes, and the second and third rules apply to output lifetimes. If the
-compiler gets to the end of the three rules and there are still references for
-which it can’t figure out lifetimes, the compiler will stop with an error.
-These rules apply to `fn` definitions as well as `impl` blocks.
+_Compiler_ memakai tiga aturan buat mencari tahu _lifetimes_ dari referensi saat 
+tidak ada anotasi yang eksplisit. Aturan pertama berlaku buat _input lifetimes_, 
+sedangkan aturan kedua dan ketiga berlaku buat _output lifetimes_. Kalau 
+_compiler_ sudah sampai ke akhir dari tiga aturan ini dan masih ada referensi 
+yang tidak diketahui _lifetimes_-nya, _compiler_ bakal berhenti dengan sebuah 
+error. Aturan-aturan ini berlaku buat definisi `fn` maupun blok `impl`.
 
-The first rule is that the compiler assigns a lifetime parameter to each
-parameter that’s a reference. In other words, a function with one parameter gets
-one lifetime parameter: `fn foo<'a>(x: &'a i32)`; a function with two
-parameters gets two separate lifetime parameters: `fn foo<'a, 'b>(x: &'a i32,
-y: &'b i32)`; and so on.
+Aturan pertama adalah _compiler_ meng-assign parameter _lifetime_ ke setiap 
+parameter yang berupa referensi. Dengan kata lain, fungsi dengan satu parameter 
+dapat satu parameter _lifetime_: `fn foo<'a>(x: &'a i32)`; fungsi dengan dua 
+parameter dapat dua parameter _lifetime_ terpisah: `fn foo<'a, 'b>(x: &'a i32,
+y: &'b i32)`; dan seterusnya.
 
-The second rule is that, if there is exactly one input lifetime parameter, that
-lifetime is assigned to all output lifetime parameters: `fn foo<'a>(x: &'a i32)
+Aturan kedua adalah, kalau ada tepat satu parameter _input lifetime_, 
+_lifetime_ itu di-assign ke semua parameter _output lifetime_: `fn foo<'a>(x: &'a i32)
 -> &'a i32`.
 
-The third rule is that, if there are multiple input lifetime parameters, but
-one of them is `&self` or `&mut self` because this is a method, the lifetime of
-`self` is assigned to all output lifetime parameters. This third rule makes
-methods much nicer to read and write because fewer symbols are necessary.
+Aturan ketiga adalah, kalau ada beberapa parameter _input lifetime_, tapi salah 
+satunya adalah `&self` atau `&mut self` karena ini adalah sebuah _method_, maka 
+_lifetime_ dari `self` itu bakal di-assign ke semua parameter _output lifetime_. 
+Aturan ketiga ini bikin _methods_ jauh lebih enak buat dibaca dan ditulis karena 
+kita butuh lebih sedikit simbol.
 
-Let’s pretend we’re the compiler. We’ll apply these rules to figure out the
-lifetimes of the references in the signature of the `first_word` function in
-Listing 10-25. The signature starts without any lifetimes associated with the
-references:
+Mari pura-pura kita adalah _compiler_. Kita bakal menerapkan aturan-aturan ini 
+buat mencari tahu _lifetimes_ dari referensi di dalam _signature_ fungsi 
+`first_word` di Listing 10-25. _Signature_-nya mulai tanpa ada _lifetimes_ apa 
+pun yang berkaitan dengan referensi-referensinya:
 
 ```rust,ignore
 fn first_word(s: &str) -> &str {
 ```
 
-Then the compiler applies the first rule, which specifies that each parameter
-gets its own lifetime. We’ll call it `'a` as usual, so now the signature is
-this:
+Kemudian _compiler_ menerapkan aturan pertama, yang menentukan bahwa tiap 
+parameter dapat _lifetime_-nya masing-masing. Kita bakal menyebutnya `'a` 
+seperti biasa, jadi sekarang _signature_-nya seperti ini:
 
 ```rust,ignore
 fn first_word<'a>(s: &'a str) -> &str {
 ```
 
-The second rule applies because there is exactly one input lifetime. The second
-rule specifies that the lifetime of the one input parameter gets assigned to
-the output lifetime, so the signature is now this:
+Aturan kedua bisa diterapkan karena ada tepat satu _input lifetime_. Aturan kedua 
+menentukan bahwa _lifetime_ dari satu parameter input itu di-assign ke _output 
+lifetime_, jadi _signature_-nya sekarang jadi kayak gini:
 
 ```rust,ignore
 fn first_word<'a>(s: &'a str) -> &'a str {
 ```
 
-Now all the references in this function signature have lifetimes, and the
-compiler can continue its analysis without needing the programmer to annotate
-the lifetimes in this function signature.
+Sekarang semua referensi di _signature_ fungsi ini sudah punya _lifetimes_, dan 
+_compiler_ bisa melanjutkan analisisnya tanpa perlu _programmer_ buat menganotasi 
+_lifetimes_ di _signature_ fungsi ini.
 
-Let’s look at another example, this time using the `longest` function that had
-no lifetime parameters when we started working with it in Listing 10-20:
+Mari kita lihat contoh lain, kali ini memakai fungsi `longest` yang tidak punya 
+parameter _lifetime_ pas kita mulai ngerjain di Listing 10-20:
 
 ```rust,ignore
 fn longest(x: &str, y: &str) -> &str {
 ```
 
-Let’s apply the first rule: each parameter gets its own lifetime. This time we
-have two parameters instead of one, so we have two lifetimes:
+Mari terapkan aturan pertama: tiap parameter dapat _lifetime_-nya sendiri. Kali 
+ini kita punya dua parameter bukannya satu, jadi kita punya dua _lifetimes_:
 
 ```rust,ignore
 fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &str {
 ```
 
-You can see that the second rule doesn’t apply because there is more than one
-input lifetime. The third rule doesn’t apply either, because `longest` is a
-function rather than a method, so none of the parameters are `self`. After
-working through all three rules, we still haven’t figured out what the return
-type’s lifetime is. This is why we got an error trying to compile the code in
-Listing 10-20: the compiler worked through the lifetime elision rules but still
-couldn’t figure out all the lifetimes of the references in the signature.
+Kita bisa lihat kalau aturan kedua tidak bisa diterapkan karena ada lebih dari 
+satu _input lifetime_. Aturan ketiga juga tidak bisa diterapkan, karena `longest` 
+adalah sebuah fungsi bukannya _method_, jadi tidak ada parameter yang berupa 
+`self`. Setelah melewati ketiga aturan ini, kita masih belum tahu apa _lifetime_ 
+dari tipe kembaliannya. Inilah alasan kenapa kita dapat error pas nyoba 
+men-compile kode di Listing 10-20: _compiler_ sudah melewati aturan-aturan 
+_lifetime elision_ tapi masih belum bisa mencari tahu semua _lifetimes_ dari 
+referensi yang ada di _signature_ tersebut.
 
-Because the third rule really only applies in method signatures, we’ll look at
-lifetimes in that context next to see why the third rule means we don’t have to
-annotate lifetimes in method signatures very often.
+Karena aturan ketiga sebenarnya cuma berlaku buat _method signatures_, kita 
+bakal membahas _lifetimes_ di konteks tersebut selanjutnya buat melihat kenapa 
+aturan ketiga ini bikin kita tidak perlu menganotasi _lifetimes_ di _method 
+signatures_ terlalu sering.
 
-### Lifetime Annotations in Method Definitions
+### Anotasi Lifetime di Definisi Method
 
-When we implement methods on a struct with lifetimes, we use the same syntax as
-that of generic type parameters shown in Listing 10-11. Where we declare and
-use the lifetime parameters depends on whether they’re related to the struct
-fields or the method parameters and return values.
+Saat kita mengimplementasikan _methods_ pada _struct_ yang punya _lifetimes_, kita 
+memakai sintaks yang sama persis seperti parameter tipe generik, yang ditunjukkan 
+di Listing 10-11. Di mana kita mendeklarasikan dan memakai parameter _lifetimes_ 
+itu bergantung pada apakah mereka berhubungan dengan field _struct_-nya atau 
+parameter dan nilai kembalian _method_-nya.
 
-Lifetime names for struct fields always need to be declared after the `impl`
-keyword and then used after the struct’s name, because those lifetimes are part
-of the struct’s type.
+Nama _lifetime_ buat field _struct_ selalu harus dideklarasikan setelah keyword 
+`impl` dan kemudian dipakai setelah nama _struct_-nya karena _lifetimes_ itu 
+adalah bagian dari tipe _struct_-nya.
 
-In method signatures inside the `impl` block, references might be tied to the
-lifetime of references in the struct’s fields, or they might be independent. In
-addition, the lifetime elision rules often make it so that lifetime annotations
-aren’t necessary in method signatures. Let’s look at some examples using the
-struct named `ImportantExcerpt` that we defined in Listing 10-24.
+Di dalam _method signatures_ di dalam blok `impl`, referensi mungkin terikat ke 
+_lifetime_ dari referensi di dalam field _struct_, atau mungkin mereka independen. 
+Selain itu, aturan _lifetime elision_ sering kali bikin anotasi _lifetime_ tidak 
+diperlukan lagi di _method signatures_. Mari kita lihat beberapa contoh yang 
+memakai _struct_ bernama `ImportantExcerpt` yang kita definisikan di Listing 
+10-24.
 
-First, we’ll use a method named `level` whose only parameter is a reference to
-`self` and whose return value is an `i32`, which is not a reference to anything:
+Pertama kita bakal memakai sebuah _method_ bernama `level` yang satu-satunya 
+parameternya adalah referensi ke `self` dan nilai kembaliannya adalah sebuah `i32`, 
+yang mana bukan referensi ke apa pun:
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-10-lifetimes-on-methods/src/main.rs:1st}}
 ```
 
-The lifetime parameter declaration after `impl` and its use after the type name
-are required, but we’re not required to annotate the lifetime of the reference
-to `self` because of the first elision rule.
+Deklarasi parameter _lifetime_ setelah `impl` dan pemakaiannya setelah nama tipe 
+itu wajib, tapi kita tidak diwajibkan buat menganotasi _lifetime_ dari referensi 
+ke `self` berkat aturan _elision_ yang pertama.
 
-Here is an example where the third lifetime elision rule applies:
+Ini adalah contoh di mana aturan _lifetime elision_ yang ketiga bisa diterapkan:
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-10-lifetimes-on-methods/src/main.rs:3rd}}
 ```
 
-There are two input lifetimes, so Rust applies the first lifetime elision rule
-and gives both `&self` and `announcement` their own lifetimes. Then, because
-one of the parameters is `&self`, the return type gets the lifetime of `&self`,
-and all lifetimes have been accounted for.
+Ada dua _input lifetimes_, jadi Rust menerapkan aturan _lifetime elision_ pertama 
+dan memberi baik `&self` maupun `announcement` _lifetimes_ mereka masing-masing. 
+Lalu, karena salah satu parameternya adalah `&self`, tipe kembaliannya bakal dapat 
+_lifetime_ dari `&self`, dan semua _lifetimes_ sudah lengkap terjelaskan.
 
-### The Static Lifetime
+### Lifetime Static
 
-One special lifetime we need to discuss is `'static`, which denotes that the
-affected reference *can* live for the entire duration of the program. All
-string literals have the `'static` lifetime, which we can annotate as follows:
+Ada satu _lifetime_ spesial yang perlu kita bahas yaitu `'static`, yang 
+menandakan kalau referensi yang bersangkutan *bisa* hidup selama keseluruhan durasi 
+dari program. Semua _string literals_ punya _lifetime_ `'static`, yang bisa 
+kita anotasi seperti berikut:
 
 ```rust
-let s: &'static str = "I have a static lifetime.";
+let s: &'static str = "Saya punya lifetime static.";
 ```
 
-The text of this string is stored directly in the program’s binary, which
-is always available. Therefore, the lifetime of all string literals is
-`'static`.
+Teks dari _string_ ini disimpan langsung di dalam _binary_ program kita, yang mana 
+bakal selalu tersedia. Maka dari itu, _lifetime_ dari semua _string literals_ 
+adalah `'static`.
 
-You might see suggestions to use the `'static` lifetime in error messages. But
-before specifying `'static` as the lifetime for a reference, think about
-whether the reference you have actually lives the entire lifetime of your
-program or not, and whether you want it to. Most of the time, an error message
-suggesting the `'static` lifetime results from attempting to create a dangling
-reference or a mismatch of the available lifetimes. In such cases, the solution
-is fixing those problems, not specifying the `'static` lifetime.
+Kita mungkin bakal melihat saran di pesan error untuk memakai _lifetime_ `'static`. 
+Tapi sebelum menentukan `'static` sebagai _lifetime_ buat sebuah referensi, 
+pikirkan dulu apakah referensi yang kita punya itu sebenarnya hidup selama 
+keseluruhan _lifetime_ program kita atau tidak, dan apakah kita emang maunya 
+begitu. Sebagian besar waktu, pesan error yang menyarankan _lifetime_ `'static` 
+itu terjadi gara-gara kita mencoba membuat _dangling reference_ atau ada 
+ketidakcocokan (mismatch) antara _lifetimes_ yang tersedia. Di kasus seperti 
+itu, solusinya adalah dengan memperbaiki masalah utamanya, bukannya asal 
+menentukan _lifetime_ `'static`.
 
-## Generic Type Parameters, Trait Bounds, and Lifetimes Together
+## Parameter Tipe Generik, Trait Bounds, dan Lifetimes Secara Bersamaan
 
-Let’s briefly look at the syntax of specifying generic type parameters, trait
-bounds, and lifetimes all in one function!
+Mari kita lihat secara singkat sintaks buat menentukan parameter tipe generik, 
+_trait bounds_, dan _lifetimes_ semuanya di satu fungsi!
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/no-listing-11-generics-traits-and-lifetimes/src/main.rs:here}}
 ```
 
-This is the `longest` function from Listing 10-21 that returns the longer of
-two string slices. But now it has an extra parameter named `ann` of the generic
-type `T`, which can be filled in by any type that implements the `Display`
-trait as specified by the `where` clause. This extra parameter will be printed
-using `{}`, which is why the `Display` trait bound is necessary. Because
-lifetimes are a type of generic, the declarations of the lifetime parameter
-`'a` and the generic type parameter `T` go in the same list inside the angle
-brackets after the function name.
+Ini adalah fungsi `longest` dari Listing 10-21 yang mengembalikan _string slice_ 
+yang lebih panjang dari antara dua _string slices_. Tapi sekarang fungsi ini 
+punya parameter ekstra bernama `ann` dari tipe generik `T`, yang mana bisa 
+diisi oleh tipe apa pun yang mengimplementasikan _trait_ `Display` seperti yang 
+ditentukan sama klausa `where`. Parameter ekstra ini bakal dicetak memakai `{}`, 
+itulah kenapa kita butuh _trait bound_ `Display`. Karena _lifetimes_ itu adalah 
+salah satu tipe dari generik, deklarasi parameter _lifetime_ `'a` dan parameter 
+tipe generik `T` berada di dalam satu daftar yang sama di dalam kurung sudut 
+setelah nama fungsinya.
 
-## Summary
+## Ringkasan
 
-We covered a lot in this chapter! Now that you know about generic type
-parameters, traits and trait bounds, and generic lifetime parameters, you’re
-ready to write code without repetition that works in many different situations.
-Generic type parameters let you apply the code to different types. Traits and
-trait bounds ensure that even though the types are generic, they’ll have the
-behavior the code needs. You learned how to use lifetime annotations to ensure
-that this flexible code won’t have any dangling references. And all of this
-analysis happens at compile time, which doesn’t affect runtime performance!
+Kita sudah ngebahas banyak hal di bab ini! Sekarang setelah kita paham tentang 
+parameter tipe generik, _traits_ dan _trait bounds_, serta parameter _lifetime_ 
+generik, kita udah siap buat nulis kode tanpa pengulangan yang bisa jalan 
+di berbagai situasi yang beda-beda. Parameter tipe generik ngasih kita 
+kemampuan buat menerapkan kode ke tipe yang berbeda. _Traits_ dan _trait bounds_ 
+memastikan kalau walaupun tipe-tipenya generik, mereka tetap bakal punya 
+perilaku yang dibutuhin sama kode kita. Kita udah belajar gimana cara memakai 
+anotasi _lifetime_ buat memastikan kalau kode fleksibel ini tidak bakal punya 
+_dangling references_ (referensi yang menggantung). Dan semua analisis ini 
+terjadi saat _compile time_, yang sama sekali tidak memengaruhi performa saat 
+_runtime_!
 
-Believe it or not, there is much more to learn on the topics we discussed in
-this chapter: Chapter 17 discusses trait objects, which are another way to use
-traits. There are also more complex scenarios involving lifetime annotations
-that you will only need in very advanced scenarios; for those, you should read
-the [Rust Reference][reference]. But next, you’ll learn how to write tests in
-Rust so you can make sure your code is working the way it should.
+Percaya atau tidak, masih banyak lagi yang bisa dipelajari soal topik-topik 
+yang kita bahas di bab ini: Bab 18 bakal ngebahas _trait objects_, yang merupakan 
+cara lain buat memakai _traits_. Ada juga skenario-skenario yang lebih rumit 
+yang melibatkan anotasi _lifetime_ yang cuma bakal kita perlukan di situasi 
+yang sangat tingkat lanjut (advanced); buat itu, kita bisa membaca 
+[Rust Reference][reference]. Tapi buat langkah selanjutnya, kita bakal belajar 
+gimana cara menulis _tests_ di Rust supaya kita bisa memastikan kalau kode kita 
+berjalan persis seperti yang seharusnya.
 
-[references-and-borrowing]:
-ch04-02-references-and-borrowing.html#references-and-borrowing
-[string-slices-as-parameters]:
-ch04-03-slices.html#string-slices-as-parameters
+[references-and-borrowing]: ch04-02-references-and-borrowing.html#references-and-borrowing
+[string-slices-as-parameters]: ch04-03-slices.html#string-slices-as-parameters
 [reference]: ../reference/index.html

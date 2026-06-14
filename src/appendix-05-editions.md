@@ -1,57 +1,69 @@
-## Appendix E - Editions
+## Lampiran E - Edisi (Editions)
 
-In Chapter 1, you saw that `cargo new` adds a bit of metadata to your
-*Cargo.toml* file about an edition. This appendix talks about what that means!
+Di Bab 1, kita sudah melihat kalau perintah `cargo new` itu menambahkan sedikit 
+metadata ke dalam file _Cargo.toml_ kita terkait sebuah _edition_ (edisi). Lampiran 
+ini membahas tentang apa arti dari hal tersebut!
 
-The Rust language and compiler have a six-week release cycle, meaning users get
-a constant stream of new features. Other programming languages release larger
-changes less often; Rust releases smaller updates more frequently. After a
-while, all of these tiny changes add up. But from release to release, it can be
-difficult to look back and say, “Wow, between Rust 1.10 and Rust 1.31, Rust has
-changed a lot!”
+Bahasa pemrograman Rust dan *compiler*-nya punya siklus rilis yang bergulir 
+tiap enam minggu, yang mana berarti para pengguna bakal mendapatkan serangkaian 
+fitur baru secara konstan. Bahasa pemrograman lain biasanya merilis perubahan-
+perubahan besar dengan frekuensi yang lebih jarang; sedangkan Rust merilis 
+pembaruan-pembaruan kecil lebih sering. Setelah sekian lama, semua perubahan 
+kecil ini pada akhirnya bakal menumpuk. Tapi kalau dilihat dari satu rilis ke rilis 
+yang lain, kadang bisa jadi susah buat menengok ke belakang dan bilang, “Wow, di 
+antara Rust 1.10 dan Rust 1.31, Rust ternyata udah berubah sangat banyak!”
 
-Every two or three years, the Rust team produces a new Rust *edition*. Each
-edition brings together the features that have landed into a clear package with
-fully updated documentation and tooling. New editions ship as part of the usual
-six-week release process.
+Setiap tiga tahun sekali, tim Rust memproduksi sebuah _edition_ (edisi) baru buat 
+Rust. Setiap edisi merangkul semua fitur yang sudah berhasil mendarat menjadi 
+sebuah paket yang jelas beserta kelengkapan dokumentasi dan peralatan (_tooling_) 
+yang sudah dimutakhirkan. Edisi-edisi baru ini dikirim sebagai bagian dari rute 
+proses rilis reguler enam mingguan.
 
-Editions serve different purposes for different people:
+Edisi-edisi ini memiliki tujuan yang berbeda-beda bagi kelompok orang yang berbeda:
 
-* For active Rust users, a new edition brings together incremental changes into
-  an easy-to-understand package.
-* For non-users, a new edition signals that some major advancements have
-  landed, which might make Rust worth another look.
-* For those developing Rust, a new edition provides a rallying point for the
-  project as a whole.
+- Buat para pengguna aktif Rust, sebuah edisi baru menggabungkan perubahan-perubahan 
+  tambahan tersebut menjadi sebuah paket yang mudah dipahami.
+- Buat orang-orang yang belum memakai Rust, sebuah edisi baru menjadi sinyal 
+  kalau ada beberapa kemajuan besar yang sudah terealisasi, yang mana barangkali 
+  bakal bikin Rust jadi layak buat dilirik lagi.
+- Buat para pengembang yang ikut mengerjakan bahasa Rust, sebuah edisi baru 
+  menyediakan sebuah titik kumpul (_rallying point_) yang memacu semangat proyek ini 
+  secara keseluruhan.
 
-At the time of this writing, three Rust editions are available: Rust 2015, Rust
-2018, and Rust 2021. This book is written using Rust 2021 edition idioms.
+Saat buku ini sedang ditulis, ada empat edisi Rust yang tersedia: Rust 2015, 
+Rust 2018, Rust 2021, dan Rust 2024. Buku ini sendiri sepenuhnya ditulis memakai 
+pola dan gaya bahasa (_idioms_) dari edisi Rust 2024.
 
-The `edition` key in *Cargo.toml* indicates which edition the compiler should
-use for your code. If the key doesn’t exist, Rust uses `2015` as the edition
-value for backward compatibility reasons.
+Kunci `edition` yang ada di dalam _Cargo.toml_ menandakan edisi mana yang seharusnya 
+dipakai sama si _compiler_ untuk kode kita. Kalau kuncinya tidak ada, Rust otomatis 
+bakal memakai `2015` sebagai nilai edisinya demi alasan kompabilitas ke belakang 
+(_backward compatibility_).
 
-Each project can opt in to an edition other than the default 2015 edition.
-Editions can contain incompatible changes, such as including a new keyword that
-conflicts with identifiers in code. However, unless you opt in to those
-changes, your code will continue to compile even as you upgrade the Rust
-compiler version you use.
+Setiap project berhak memilih untuk masuk (opt in) ke sebuah edisi lain selain edisi 
+bawaan 2015. Edisi bisa saja mengandung perubahan-perubahan yang tidak kompatibel 
+(_incompatible changes_), seperti memasukkan kata kunci (_keyword_) baru yang mana 
+mungkin berkonflik dengan nama-nama _identifiers_ yang ada di dalam kode. Namun, 
+terkecuali kita secara sadar setuju masuk (opt in) ke perubahan-perubahan tersebut, 
+kode kita bakal dijamin terus bisa di-compile dengan mulus sekalipun kita 
+meng-_upgrade_ versi dari _compiler_ Rust yang kita pakai.
 
-All Rust compiler versions support any edition that existed prior to that
-compiler’s release, and they can link crates of any supported editions
-together. Edition changes only affect the way the compiler initially parses
-code. Therefore, if you’re using Rust 2015 and one of your dependencies uses
-Rust 2018, your project will compile and be able to use that dependency. The
-opposite situation, where your project uses Rust 2018 and a dependency uses
-Rust 2015, works as well.
+Semua versi _compiler_ Rust menyokong edisi apa pun yang memang udah eksis sebelum 
+versi _compiler_ tersebut dirilis, dan mereka juga sanggup menautkan (_link_) 
+_crates_ dari sembarang edisi yang disokong untuk jalan bersama-sama. Perubahan 
+edisi itu cuma berdampak pada cara sang _compiler_ mengurai (parses) kode kita pada 
+awalnya. Oleh karena itu, kalau kita lagi memakai Rust 2015 dan salah satu _dependency_ 
+(dependensi) kita memakai Rust 2018, project kita dijamin bakal tetap bisa sukses 
+di-compile dan bisa memakai dependensi tersebut. Dari sisi sebaliknya pun begitu.
 
-To be clear: most features will be available on all editions. Developers using
-any Rust edition will continue to see improvements as new stable releases are
-made. However, in some cases, mainly when new keywords are added, some new
-features might only be available in later editions. You will need to switch
-editions if you want to take advantage of such features.
+Biar lebih jelas: sebagian besar fitur itu bakal tetap tersedia di semua edisi. 
+Para pengembang yang memakai edisi Rust yang mana pun bakal terus bisa melihat 
+adanya perbaikan seiringan dengan dibuatnya rilis-rilis versi stabil yang baru. 
+Namun, di dalam beberapa kasus tertentu, utamanya pas lagi ada _keywords_ baru 
+yang ditambahkan, beberapa fitur baru itu barangkali cuma bakal tersedia di edisi-
+edisi yang dirilis belakangan. Kita harus berpindah (_switch_) edisi kalau kita pengen 
+bisa memanfaatkan fitur-fitur semacam itu.
 
-For more details, the [*Edition
-Guide*](https://doc.rust-lang.org/stable/edition-guide/) is a complete book
-about editions that enumerates the differences between editions and explains
-how to automatically upgrade your code to a new edition via `cargo fix`.
+Untuk detail lebih lanjut, buku [_The Rust Edition Guide_](https://doc.rust-lang.org/stable/edition-guide/) 
+adalah buku komplit seputar edisi yang memaparkan semua perbedaan di antara 
+tiap-tiap edisi dan menjelaskan gimana caranya meng-_upgrade_ kode kita secara 
+otomatis ke edisi baru melalui perintah `cargo fix`.

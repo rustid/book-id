@@ -1,57 +1,35 @@
-## Reading a File
+## Membaca File
 
-Now we’ll add functionality to read the file specified in the `file_path`
-argument. First, we need a sample file to test it with: we’ll use a file with a
-small amount of text over multiple lines with some repeated words. Listing 12-3
-has an Emily Dickinson poem that will work well! Create a file called
-*poem.txt* at the root level of your project, and enter the poem “I’m Nobody!
-Who are you?”
+Sekarang kita bakal menambahkan fungsionalitas untuk membaca file yang ditentukan di argumen `file_path`. Pertama kita butuh sebuah file contoh buat mengujinya: kita bakal memakai file dengan sedikit teks yang membentang di beberapa baris dan punya beberapa kata yang diulang. Listing 12-3 punya puisi Emily Dickinson yang bakal pas sekali! Buat sebuah file bernama _poem.txt_ di tingkat *root* project kita, lalu masukkan puisi “I’m Nobody! Who are you?”
 
-<span class="filename">Filename: poem.txt</span>
+<Listing number="12-3" file-name="poem.txt" caption="Sebuah puisi dari Emily Dickinson jadi *test case* yang bagus.">
 
 ```text
 {{#include ../listings/ch12-an-io-project/listing-12-03/poem.txt}}
 ```
 
-<span class="caption">Listing 12-3: A poem by Emily Dickinson makes a good test
-case</span>
+</Listing>
 
-With the text in place, edit *src/main.rs* and add code to read the file, as
-shown in Listing 12-4.
+Dengan teks yang sudah siap, edit _src/main.rs_ dan tambahkan kode buat membaca file tersebut, seperti yang ditunjukkan di Listing 12-4.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="12-4" file-name="src/main.rs" caption="Membaca isi dari file yang ditentukan oleh argumen kedua">
 
 ```rust,should_panic,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-04/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 12-4: Reading the contents of the file specified
-by the second argument</span>
+</Listing>
 
-First, we bring in a relevant part of the standard library with a `use`
-statement: we need `std::fs` to handle files.
+Pertama kita membawa bagian yang relevan dari *standard library* dengan *statement* `use`: kita butuh `std::fs` buat menangani file.
 
-In `main`, the new statement `fs::read_to_string` takes the `file_path`, opens
-that file, and returns a `std::io::Result<String>` of the file’s contents.
+Di `main`, *statement* baru `fs::read_to_string` menerima `file_path`, membuka file tersebut, dan mengembalikan nilai bertipe `std::io::Result<String>` yang berisi konten filenya.
 
-After that, we again add a temporary `println!` statement that prints the value
-of `contents` after the file is read, so we can check that the program is
-working so far.
+Setelah itu, kita kembali menambahkan *statement* `println!` sementara yang mencetak nilai dari `contents` setelah file dibaca, jadi kita bisa mengecek kalau programnya berfungsi dengan baik sejauh ini.
 
-Let’s run this code with any string as the first command line argument (because
-we haven’t implemented the searching part yet) and the *poem.txt* file as the
-second argument:
+Mari kita jalankan kode ini dengan sembarang string sebagai argumen *command line* pertama (karena kita belum mengimplementasikan bagian pencariannya) dan file _poem.txt_ sebagai argumen kedua:
 
 ```console
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-04/output.txt}}
 ```
 
-Great! The code read and then printed the contents of the file. But the code
-has a few flaws. At the moment, the `main` function has multiple
-responsibilities: generally, functions are clearer and easier to maintain if
-each function is responsible for only one idea. The other problem is that we’re
-not handling errors as well as we could. The program is still small, so these
-flaws aren’t a big problem, but as the program grows, it will be harder to fix
-them cleanly. It’s good practice to begin refactoring early on when developing
-a program, because it’s much easier to refactor smaller amounts of code. We’ll
-do that next.
+Mantap! Kodenya berhasil membaca dan kemudian mencetak isi dari filenya. Tapi kodenya punya beberapa kelemahan. Saat ini, fungsi `main` punya banyak tanggung jawab: umumnya, fungsi bakal lebih jelas dan gampang dipelihara (maintain) kalau tiap fungsi bertanggung jawab untuk satu ide saja. Masalah lainnya adalah kita belum menangani error sebaik yang kita bisa. Programnya masih kecil, jadi kelemahan-kelemahan ini belum jadi masalah besar, tapi seiring programnya makin besar, bakal lebih susah untuk memperbaikinya dengan rapi. Praktik yang bagus adalah mulai me-*refactor* sejak awal saat mengembangkan program karena bakal jauh lebih mudah untuk me-*refactor* jumlah kode yang lebih sedikit. Kita bakal melakukan itu selanjutnya.

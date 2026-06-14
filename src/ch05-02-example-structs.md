@@ -1,244 +1,244 @@
-## An Example Program Using Structs
+## Contoh Program pake Structs
 
-To understand when we might want to use structs, let’s write a program that
-calculates the area of a rectangle. We’ll start by using single variables, and
-then refactor the program until we’re using structs instead.
+Buat mahamin kapan kita mungkin mau pake struct, yuk kita tulis program yang 
+ngitung luas (_area_) dari sebuah persegi panjang. Kita bakal mulai dengan pake 
+variabel satu-satu, terus kita _refactor_ programnya sampe kita pake struct 
+sebagai gantinya.
 
-Let’s make a new binary project with Cargo called *rectangles* that will take
-the width and height of a rectangle specified in pixels and calculate the area
-of the rectangle. Listing 5-8 shows a short program with one way of doing
-exactly that in our project’s *src/main.rs*.
+Yuk kita bikin project biner baru pake Cargo namanya _rectangles_ yang bakal 
+nerima lebar (_width_) sama tinggi (_height_) dari persegi panjang dalam pixel 
+terus ngitung luasnya. Listing 5-8 nunjukin program pendek dengan satu cara 
+buat ngelakuin itu di file _src/main.rs_ project kita.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-8" file-name="src/main.rs" caption="Ngitung luas persegi panjang yang ditentuin pake variabel lebar sama tinggi yang terpisah">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-08/src/main.rs:all}}
 ```
 
-<span class="caption">Listing 5-8: Calculating the area of a rectangle
-specified by separate width and height variables</span>
+</Listing>
 
-Now, run this program using `cargo run`:
+Sekarang, jalanin program ini pake `cargo run`:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-08/output.txt}}
 ```
 
-This code succeeds in figuring out the area of the rectangle by calling the
-`area` function with each dimension, but we can do more to make this code clear
-and readable.
+Kode ini berhasil nyari tau luas persegi panjangnya dengan manggil fungsi 
+`area` pake tiap dimensinya, tapi kita bisa lakuin lebih banyak lagi buat bikin 
+kode ini lebih jelas dan enak dibaca.
 
-The issue with this code is evident in the signature of `area`:
+Masalah dari kode ini keliatan sekali di signature fungsi `area`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-08/src/main.rs:here}}
 ```
 
-The `area` function is supposed to calculate the area of one rectangle, but the
-function we wrote has two parameters, and it’s not clear anywhere in our
-program that the parameters are related. It would be more readable and more
-manageable to group width and height together. We’ve already discussed one way
-we might do that in [“The Tuple Type”][the-tuple-type]<!-- ignore --> section
-of Chapter 3: by using tuples.
+Fungsi `area` harusnya ngitung luas dari satu persegi panjang, tapi fungsi yang 
+kita tulis punya dua parameter, dan nggak jelas di mana pun di program kita 
+kalau parameter-parameter itu sebenernya berhubungan. Bakal lebih enak dibaca 
+dan lebih gampang dikelola kalau kita ngelempokin lebar sama tinggi jadi satu. 
+Kita udah bahas salah satu cara buat lakuin itu di bagian [“Tipe Tuple”][the-tuple-type] 
+di Bab 3: yaitu pake tuple.
 
-### Refactoring with Tuples
+### Refactoring pake Tuples
 
-Listing 5-9 shows another version of our program that uses tuples.
+Listing 5-9 nunjukin versi lain dari program kita yang pake tuple.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-9" file-name="src/main.rs" caption="Nentuin lebar sama tinggi persegi panjang pake sebuah tuple">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-09/src/main.rs}}
 ```
 
-<span class="caption">Listing 5-9: Specifying the width and height of the
-rectangle with a tuple</span>
+</Listing>
 
-In one way, this program is better. Tuples let us add a bit of structure, and
-we’re now passing just one argument. But in another way, this version is less
-clear: tuples don’t name their elements, so we have to index into the parts of
-the tuple, making our calculation less obvious.
+Dalam satu sisi, program ini lebih baik. Tuple ngebolehin kita nambahin sedikit 
+struktur, dan kita sekarang cuma masukin satu argumen doang. Tapi di sisi lain, 
+versi ini kurang jelas: tuple nggak ngasih nama ke elemen-elemennya, jadi kita 
+harus ngindeks ke bagian-bagian tuple-nya, yang bikin kalkulasi kita jadi 
+kurang gamblang.
 
-Mixing up the width and height wouldn’t matter for the area calculation, but if
-we want to draw the rectangle on the screen, it would matter! We would have to
-keep in mind that `width` is the tuple index `0` and `height` is the tuple
-index `1`. This would be even harder for someone else to figure out and keep in
-mind if they were to use our code. Because we haven’t conveyed the meaning of
-our data in our code, it’s now easier to introduce errors.
+Ketuker antara lebar sama tinggi nggak bakal ngaruh buat kalkulasi luas, tapi 
+kalau kita mau gambar persegi panjangnya di layar, itu baru ngaruh sekali! 
+Kita harus terus inget kalau `width` itu indeks tuple `0` dan `height` itu 
+indeks tuple `1`. Ini bakal makin susah buat orang lain buat cari tau dan 
+diinget-inget kalau mereka mau pake kode kita. Karena kita nggak nyampein 
+makna dari data kita di kode, sekarang jadi lebih gampang buat masukin error.
 
-### Refactoring with Structs: Adding More Meaning
+### Refactoring pake Structs: Nambahin Lebih Banyak Makna
 
-We use structs to add meaning by labeling the data. We can transform the tuple
-we’re using into a struct with a name for the whole as well as names for the
-parts, as shown in Listing 5-10.
+Kita pake struct buat nambahin makna dengan ngasih label ke datanya. Kita bisa 
+ngubah tuple yang kita pake jadi sebuah struct dengan nama buat keseluruhannya 
+sama nama buat tiap bagiannya, kayak yang ditunjukin di Listing 5-10.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-10" file-name="src/main.rs" caption="Mendefinisikan struct `Rectangle`">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-10/src/main.rs}}
 ```
 
-<span class="caption">Listing 5-10: Defining a `Rectangle` struct</span>
+</Listing>
 
-Here we’ve defined a struct and named it `Rectangle`. Inside the curly
-brackets, we defined the fields as `width` and `height`, both of which have
-type `u32`. Then, in `main`, we created a particular instance of `Rectangle`
-that has a width of `30` and a height of `50`.
+Di sini, kita udah mendefinisikan sebuah struct terus dikasih nama `Rectangle`. 
+Di dalem kurung kurawal, kita mendefinisikan field-field-nya sebagai `width` 
+sama `height`, yang keduanya punya tipe `u32`. Terus, di `main`, kita bikin 
+instance tertentu dari `Rectangle` yang punya lebar `30` sama tinggi `50`.
 
-Our `area` function is now defined with one parameter, which we’ve named
-`rectangle`, whose type is an immutable borrow of a struct `Rectangle`
-instance. As mentioned in Chapter 4, we want to borrow the struct rather than
-take ownership of it. This way, `main` retains its ownership and can continue
-using `rect1`, which is the reason we use the `&` in the function signature and
-where we call the function.
+Fungsi `area` kita sekarang didefinisikan dengan satu parameter, yang kita 
+kasih nama `rectangle`, yang tipenya adalah _immutable borrow_ dari sebuah 
+instance struct `Rectangle`. Kayak yang udah disebutin di Bab 4, kita mau minjem 
+(_borrow_) struct-nya bukannya ngambil _ownership_-nya. Dengan cara ini, `main` 
+tetep megang _ownership_-nya dan bisa lanjut pake `rect1`, yang merupakan 
+alasan kenapa kita pake `&` di signature fungsi sama pas kita manggil fungsinya.
 
-The `area` function accesses the `width` and `height` fields of the `Rectangle`
-instance (note that accessing fields of a borrowed struct instance does not
-move the field values, which is why you often see borrows of structs). Our
-function signature for `area` now says exactly what we mean: calculate the area
-of `Rectangle`, using its `width` and `height` fields. This conveys that the
-width and height are related to each other, and it gives descriptive names to
-the values rather than using the tuple index values of `0` and `1`. This is a
-win for clarity.
+Fungsi `area` akses field `width` sama `height` dari instance `Rectangle` 
+(perhatiin ya kalau akses field dari instance struct yang dipinjem nggak bakal 
+nge-_move_ nilai field-nya, makanya kita sering liat peminjaman struct). 
+Signature fungsi kita buat `area` sekarang bilang persis apa yang kita maksud: 
+itung luas dari `Rectangle`, pake field `width` sama `height`-nya. Ini 
+nyampein kalau lebar sama tinggi itu berhubungan satu sama lain, dan ngasih 
+nama deskriptif ke nilai-nilainya bukannya pake nilai indeks tuple `0` sama `1`. 
+Ini kemenangan buat kejelasan kodenya.
 
-### Adding Useful Functionality with Derived Traits
+### Nambahin Fungsionalitas Berguna pake Derived Traits
 
-It’d be useful to be able to print an instance of `Rectangle` while we’re
-debugging our program and see the values for all its fields. Listing 5-11 tries
-using the [`println!` macro][println]<!-- ignore --> as we have used in
-previous chapters. This won’t work, however.
+Bakal sangat berguna kalau kita bisa nyetak sebuah instance dari `Rectangle` 
+pas lagi debugging program kita dan liat nilai buat semua field-nya. Listing 5-11 
+nyoba pake [macro `println!`][println] kayak yang udah kita pake di bab-bab 
+sebelumnya. Tapi, ini nggak bakal jalan.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-11" file-name="src/main.rs" caption="Nyoba nyetak instance `Rectangle`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-11/src/main.rs}}
 ```
 
-<span class="caption">Listing 5-11: Attempting to print a `Rectangle`
-instance</span>
+</Listing>
 
-When we compile this code, we get an error with this core message:
+Pas kita compile kode ini, kita dapet error dengan pesan inti kayak gini:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-11/output.txt:3}}
 ```
 
-The `println!` macro can do many kinds of formatting, and by default, the curly
-brackets tell `println!` to use formatting known as `Display`: output intended
-for direct end user consumption. The primitive types we’ve seen so far
-implement `Display` by default because there’s only one way you’d want to show
-a `1` or any other primitive type to a user. But with structs, the way
-`println!` should format the output is less clear because there are more
-display possibilities: Do you want commas or not? Do you want to print the
-curly brackets? Should all the fields be shown? Due to this ambiguity, Rust
-doesn’t try to guess what we want, and structs don’t have a provided
-implementation of `Display` to use with `println!` and the `{}` placeholder.
+Macro `println!` bisa ngelakuin banyak jenis format, dan secara default, kurung 
+kurawal ngasih tau `println!` buat pake format yang dikenal sebagai `Display`: 
+output yang tujuannya buat dikonsumsi langsung sama end user. Tipe-tipe 
+primitif yang udah kita liat sejauh ini mengimplementasikan `Display` secara 
+default karena cuma ada satu cara kita mau nunjukin angka `1` atau tipe 
+primitif lainnya ke user. Tapi sama struct, gimana cara `println!` harus 
+format output-nya itu kurang jelas karena ada banyak kemungkinan tampilan: Mau 
+pake koma apa nggak? Mau nyetak kurung kurawal-nya juga? Apakah semua field 
+harus ditunjukin? Karena ambiguitas ini, Rust nggak nyoba buat nebak apa yang 
+kita mau, dan struct nggak dikasih implementasi bawaan dari `Display` buat 
+dipake bareng `println!` sama placeholder `{}`.
 
-If we continue reading the errors, we’ll find this helpful note:
+Kalau kita lanjut baca error-nya, kita bakal nemu catatan berguna ini:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-11/output.txt:9:10}}
 ```
 
-Let’s try it! The `println!` macro call will now look like `println!("rect1 is
-{:?}", rect1);`. Putting the specifier `:?` inside the curly brackets tells
-`println!` we want to use an output format called `Debug`. The `Debug` trait
-enables us to print our struct in a way that is useful for developers so we can
-see its value while we’re debugging our code.
+Yuk kita coba! Pemanggilan macro `println!` sekarang bakal keliatan kayak 
+`println!("rect1 is {rect1:?}");`. Naruh penentu `:?` di dalem kurung kurawal 
+ngasih tau `println!` kalau kita mau pake format output namanya `Debug`. Trait 
+`Debug` ngebolehin kita nyetak struct kita dengan cara yang berguna buat 
+developer biar kita bisa liat nilainya pas lagi debugging kode kita.
 
-Compile the code with this change. Drat! We still get an error:
+Compile kodenya dengan perubahan ini. Yah! Masih dapet error:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/output-only-01-debug/output.txt:3}}
 ```
 
-But again, the compiler gives us a helpful note:
+Tapi lagi-lagi, _compiler_-nya ngasih catatan yang ngebantu:
 
 ```text
 {{#include ../listings/ch05-using-structs-to-structure-related-data/output-only-01-debug/output.txt:9:10}}
 ```
 
-Rust *does* include functionality to print out debugging information, but we
-have to explicitly opt in to make that functionality available for our struct.
-To do that, we add the outer attribute `#[derive(Debug)]` just before the
-struct definition, as shown in Listing 5-12.
+Rust _emang_ masukin fungsionalitas buat nyetak info debugging, tapi kita harus 
+secara eksplisit milih (_opt in_) buat bikin fungsionalitas itu tersedia buat 
+struct kita. Caranya, kita tambahin atribut luar `#[derive(Debug)]` tepat 
+sebelum definisi struct-nya, kayak yang ditunjukin di Listing 5-12.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="5-12" file-name="src/main.rs" caption="Nambahin atribut buat derive trait `Debug` terus nyetak instance `Rectangle` pake debug formatting">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-12/src/main.rs}}
 ```
 
-<span class="caption">Listing 5-12: Adding the attribute to derive the `Debug`
-trait and printing the `Rectangle` instance using debug formatting</span>
+</Listing>
 
-Now when we run the program, we won’t get any errors, and we’ll see the
-following output:
+Sekarang pas kita jalanin programnya, kita nggak bakal dapet error apa-apa, dan 
+kita bakal liat output berikut:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/listing-05-12/output.txt}}
 ```
 
-Nice! It’s not the prettiest output, but it shows the values of all the fields
-for this instance, which would definitely help during debugging. When we have
-larger structs, it’s useful to have output that’s a bit easier to read; in
-those cases, we can use `{:#?}` instead of `{:?}` in the `println!` string. In
-this example, using the `{:#?}` style will output the following:
+Mantap! Emang bukan output yang paling cakep sih, tapi dia nunjukin nilai dari 
+semua field buat instance ini, yang pasti bakal ngebantu sekali pas lagi 
+debugging. Pas kita punya struct yang lebih gede, bakal berguna kalau punya 
+output yang sedikit lebih gampang dibaca; di kasus kayak gitu, kita bisa pake 
+`{:#?}` bukannya `{:?}` di string `println!`. Di contoh ini, pake gaya `{:#?}` 
+bakal ngeluarin output kayak gini:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/output-only-02-pretty-debug/output.txt}}
 ```
 
-Another way to print out a value using the `Debug` format is to use the [`dbg!`
-macro][dbg]<!-- ignore -->, which takes ownership of an expression (as opposed
-to `println!`, which takes a reference), prints the file and line number of
-where that `dbg!` macro call occurs in your code along with the resultant value
-of that expression, and returns ownership of the value.
+Cara lain buat nyetak sebuah nilai pake format `Debug` itu pake [macro `dbg!`][dbg], 
+yang ngambil _ownership_ dari sebuah ekspresi (beda sama `println!`, yang 
+ngambil referensi), nyetak nama file sama nomor baris di mana pemanggilan macro 
+`dbg!` itu ada di kode kita barengan sama nilai hasil dari ekspresi itu, terus 
+balikin _ownership_ nilainya.
 
-> Note: Calling the `dbg!` macro prints to the standard error console stream
-> (`stderr`), as opposed to `println!`, which prints to the standard output
-> console stream (`stdout`). We’ll talk more about `stderr` and `stdout` in the
-> [“Writing Error Messages to Standard Error Instead of Standard Output”
-> section in Chapter 12][err]<!-- ignore -->.
+> Catatan: Manggil macro `dbg!` itu nyetaknya ke stream konsol standard error 
+> (`stderr`), beda sama `println!`, yang nyetaknya ke stream konsol standard 
+> output (`stdout`). Kita bakal bahas lebih banyak soal `stderr` sama `stdout` 
+> di bagian [“Menulis Pesan Error ke Standard Error Bukannya Standard Output” 
+> di Bab 12][err].
 
-Here’s an example where we’re interested in the value that gets assigned to the
-`width` field, as well as the value of the whole struct in `rect1`:
+Ini contoh di mana kita tertarik sama nilai yang di-assign ke field `width`, 
+sekaligus nilai dari seluruh struct di `rect1`:
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/no-listing-05-dbg-macro/src/main.rs}}
 ```
 
-We can put `dbg!` around the expression `30 * scale` and, because `dbg!`
-returns ownership of the expression’s value, the `width` field will get the
-same value as if we didn’t have the `dbg!` call there. We don’t want `dbg!` to
-take ownership of `rect1`, so we use a reference to `rect1` in the next call.
-Here’s what the output of this example looks like:
+Kita bisa naruh `dbg!` di sekitar ekspresi `30 * scale` dan, karena `dbg!` 
+balikin _ownership_ dari nilai ekspresinya, field `width` bakal dapet nilai yang 
+sama kayak kalau kita nggak ada pemanggilan `dbg!` di situ. Kita nggak mau 
+`dbg!` ngambil _ownership_ dari `rect1`, jadi kita pake sebuah referensi ke 
+`rect1` di pemanggilan selanjutnya. Ini penampakan output dari contoh ini:
 
 ```console
 {{#include ../listings/ch05-using-structs-to-structure-related-data/no-listing-05-dbg-macro/output.txt}}
 ```
 
-We can see the first bit of output came from *src/main.rs* line 10 where we’re
-debugging the expression `30 * scale`, and its resultant value is `60` (the
-`Debug` formatting implemented for integers is to print only their value). The
-`dbg!` call on line 14 of *src/main.rs* outputs the value of `&rect1`, which is
-the `Rectangle` struct. This output uses the pretty `Debug` formatting of the
-`Rectangle` type. The `dbg!` macro can be really helpful when you’re trying to
-figure out what your code is doing!
+Kita bisa liat bagian output pertama dateng dari _src/main.rs_ baris 10 di mana 
+kita lagi debugging ekspresi `30 * scale`, dan nilai hasilnya adalah `60` 
+(formatting `Debug` yang diimplementasikan buat integer itu nyetak nilainya 
+doang). Pemanggilan `dbg!` di baris 14 dari _src/main.rs_ ngeluarin nilai dari 
+`&rect1`, yaitu struct `Rectangle`. Output ini pake formatting `Debug` yang 
+rapi dari tipe `Rectangle`. Macro `dbg!` ini bisa ngebantu sekali pas kita 
+lagi nyoba cari tau apa yang sebenernya lagi dilakuin kode kita!
 
-In addition to the `Debug` trait, Rust has provided a number of traits for us
-to use with the `derive` attribute that can add useful behavior to our custom
-types. Those traits and their behaviors are listed in [Appendix C][app-c]<!--
-ignore -->. We’ll cover how to implement these traits with custom behavior as
-well as how to create your own traits in Chapter 10. There are also many
-attributes other than `derive`; for more information, see [the “Attributes”
-section of the Rust Reference][attributes].
+Selain trait `Debug`, Rust juga nyediain sejumlah traits buat kita pake bareng 
+atribut `derive` yang bisa nambahin perilaku berguna ke tipe data kustom kita. 
+Traits itu sama perilakunya ada di daftar di [Lampiran C][app-c]. Kita bakal 
+bahas gimana cara mengimplementasikan traits ini dengan perilaku kustom 
+sekaligus gimana cara bikin traits kita sendiri di Bab 10. Ada juga banyak 
+atribut lain selain `derive`; buat info lebih lanjut, liat [bagian “Attributes” 
+di Rust Reference][attributes].
 
-Our `area` function is very specific: it only computes the area of rectangles.
-It would be helpful to tie this behavior more closely to our `Rectangle` struct
-because it won’t work with any other type. Let’s look at how we can continue to
-refactor this code by turning the `area` function into an `area` *method*
-defined on our `Rectangle` type.
+Fungsi `area` kita itu sangat spesifik: dia cuma ngitung luas persegi panjang. 
+Bakal ngebantu kalau kita ngiket perilaku ini lebih deket ke struct `Rectangle` 
+kita karena dia nggak bakal jalan sama tipe lainnya. Yuk kita liat gimana kita 
+bisa lanjut _refactor_ kode ini dengan ngerubah fungsi `area` jadi sebuah 
+_method_ `area` yang didefinisikan pada tipe `Rectangle` kita.
 
 [the-tuple-type]: ch03-02-data-types.html#the-tuple-type
 [app-c]: appendix-03-derivable-traits.md

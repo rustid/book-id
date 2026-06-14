@@ -1,28 +1,29 @@
 ## Hello, World!
 
-Now that you’ve installed Rust, it’s time to write your first Rust program.
-It’s traditional when learning a new language to write a little program that
-prints the text `Hello, world!` to the screen, so we’ll do the same here!
+Sekarang setelah kita memasang Rust, saatnya menulis program Rust pertama kita. 
+Sudah menjadi tradisi ketika belajar bahasa pemrograman baru untuk membuat program 
+kecil yang mencetak teks `Hello, world!` ke layar, jadi mari kita lakukan hal yang 
+sama di sini!
 
-> Note: This book assumes basic familiarity with the command line. Rust makes
-> no specific demands about your editing or tooling or where your code lives, so
-> if you prefer to use an integrated development environment (IDE) instead of
-> the command line, feel free to use your favorite IDE. Many IDEs now have some
-> degree of Rust support; check the IDE’s documentation for details. The Rust
-> team has been focusing on enabling great IDE support via `rust-analyzer`. See
-> [Appendix D][devtools]<!-- ignore --> for more details.
+> Catatan: Buku ini mengasumsikan kita memiliki pemahaman dasar tentang command line.  
+> Rust tidak memiliki tuntutan khusus mengenai editor, tools, atau di mana kode kita berada,  
+> jadi jika lebih suka menggunakan integrated development environment (IDE)  
+> daripada command line, silakan gunakan IDE favorit kita sendiri. Banyak IDE sekarang sudah  
+> memiliki dukungan tertentu untuk Rust; periksa dokumentasi IDE untuk detailnya.  
+> Tim Rust berfokus pada peningkatan dukungan IDE melalui `rust-analyzer`.  
+> Lihat [Lampiran D][devtools] untuk detail lebih lanjut.
 
 ### Membuat Direktori Proyek
 
-You’ll start by making a directory to store your Rust code. It doesn’t matter
-to Rust where your code lives, but for the exercises and projects in this book,
-we suggest making a _projects_ directory in your home directory and keeping all
-your projects there.
+Kita akan mulai dengan membuat sebuah direktori untuk menyimpan kode Rust kita. 
+Rust tidak peduli di mana kode kita berada, tetapi untuk latihan dan proyek dalam buku ini, 
+kami menyarankan untuk membuat direktori _projects_ di direktori home kita dan menyimpan 
+semua proyek di sana.
 
-Open a terminal and enter the following commands to make a _projects_ directory
-and a directory for the “Hello, world!” project within the _projects_ directory.
+Buka terminal dan masukkan perintah berikut untuk membuat direktori _projects_ 
+dan sebuah direktori untuk proyek “Hello, world!” di dalam direktori _projects_.
 
-For Linux, macOS, and PowerShell on Windows, enter this:
+Untuk Linux, macOS, dan PowerShell di Windows, masukkan perintah ini:
 
 ```console
 $ mkdir ~/projects
@@ -31,7 +32,7 @@ $ mkdir hello_world
 $ cd hello_world
 ```
 
-For Windows CMD, enter this:
+untuk Command Line Windows, masukkan perintah ini:
 
 ```cmd
 > mkdir "%USERPROFILE%\projects"
@@ -42,14 +43,15 @@ For Windows CMD, enter this:
 
 ### Menulis dan Menjalankan Program Rust
 
-Next, make a new source file and call it _main.rs_. Rust files always end with
-the _.rs_ extension. If you’re using more than one word in your filename, the
-convention is to use an underscore to separate them. For example, use
-_hello_world.rs_ rather than _helloworld.rs_.
+Selanjutnya, buat sebuah berkas sumber baru dan beri nama _main.rs_.
+Berkas Rust selalu diakhiri dengan ekstensi _.rs_. Jika kita menggunakan lebih
+dari satu kata dalam nama berkas, konvensinya adalah menggunakan garis bawah
+(underscore) untuk memisahkan kata-kata tersebut. Misalnya, gunakan
+_hello_world.rs_ daripada _helloworld.rs_.
 
-Now open the _main.rs_ file you just created and enter the code in Listing 1-1.
+Sekarang buka berkas _main.rs_ yang baru saja kita buat dan masukkan kode pada Listing 1-1.
 
-<span class="filename">Filename: main.rs</span>
+<Listing number="1-1" file-name="main.rs" caption="Program yang mencetak `Hello, world!`">
 
 ```rust
 fn main() {
@@ -57,11 +59,11 @@ fn main() {
 }
 ```
 
-<span class="caption">Listing 1-1: A program that prints `Hello, world!`</span>
+</Listing>
 
-Save the file and go back to your terminal window in the
-_~/projects/hello_world_ directory. On Linux or macOS, enter the following
-commands to compile and run the file:
+Simpan berkas tersebut lalu kembali ke jendela terminal kita di direktori  
+_~/projects/hello_world_. Pada Linux atau macOS, masukkan perintah berikut  
+untuk mengompilasi dan menjalankan berkas:
 
 ```console
 $ rustc main.rs
@@ -69,26 +71,27 @@ $ ./main
 Hello, world!
 ```
 
-On Windows, enter the command `.\main.exe` instead of `./main`:
+Pada Windows, masukan perintah `.\main` daripada `./main`: 
 
 ```powershell
 > rustc main.rs
-> .\main.exe
+> .\main
 Hello, world!
 ```
 
-Regardless of your operating system, the string `Hello, world!` should print to
-the terminal. If you don’t see this output, refer back to the
-[“Troubleshooting”][troubleshooting]<!-- ignore --> part of the Installation
-section for ways to get help.
+Terlepas dari sistem operasi yang kita gunakan, string `Hello, world!` seharusnya 
+muncul di terminal. Jika kita tidak melihat output ini, lihat kembali bagian
+[“Troubleshooting”][troubleshooting] pada bagian Instalasi untuk cara mendapatkan 
+bantuan.
 
-If `Hello, world!` did print, congratulations! You’ve officially written a Rust
-program. That makes you a Rust programmer—welcome!
+Jika `Hello, world!` berhasil tercetak, selamat! Kita secara resmi telah menulis
+program Rust. Itu berarti kita sudah menjadi seorang pemrogram Rust—selamat datang!
 
-### Anatomi dari Program Rust
+### Anatomi Program Rust
 
-Let’s review this “Hello, world!” program in detail. Here’s the first piece of
-the puzzle:
+Mari kita ulas program “Hello, world!” ini secara lebih rinci. Berikut adalah
+potongan pertama dari teka-teki tersebut:
+
 
 ```rust
 fn main() {
@@ -96,73 +99,73 @@ fn main() {
 }
 ```
 
-These lines define a function named `main`. The `main` function is special: it
-is always the first code that runs in every executable Rust program. Here, the
-first line declares a function named `main` that has no parameters and returns
-nothing. If there were parameters, they would go inside the parentheses `()`.
+Baris-baris ini mendefinisikan sebuah fungsi bernama `main`. Fungsi `main` itu  
+spesial: selalu menjadi kode pertama yang dijalankan dalam setiap program Rust  
+yang bisa dieksekusi. Di sini, baris pertama mendeklarasikan fungsi bernama  
+`main` yang tidak memiliki parameter dan tidak mengembalikan nilai apa pun.  
+Jika ada parameter, maka mereka akan ditulis di dalam tanda kurung `()`.
 
-The function body is wrapped in `{}`. Rust requires curly brackets around all
-function bodies. It’s good style to place the opening curly bracket on the same
-line as the function declaration, adding one space in between.
+Badan fungsi dibungkus dengan `{}`. Rust mewajibkan penggunaan kurung kurawal  
+pada semua badan fungsi. Gaya penulisan yang baik adalah meletakkan kurung kurawal  
+pembuka pada baris yang sama dengan deklarasi fungsi, dengan memberi satu spasi  
+di antaranya.
 
-> Note: If you want to stick to a standard style across Rust projects, you can
-> use an automatic formatter tool called `rustfmt` to format your code in a
-> particular style (more on `rustfmt` in
-> [Appendix D][devtools]<!-- ignore -->). The Rust team has included this tool
-> with the standard Rust distribution, as `rustc` is, so it should already be
-> installed on your computer!
+> Catatan: Jika kita ingin tetap menggunakan gaya standar di seluruh proyek Rust,  
+> kita bisa memakai alat pemformat otomatis bernama `rustfmt` untuk memformat kode  
+> sesuai gaya tertentu (lebih lanjut tentang `rustfmt` ada di [Lampiran D][devtools]).  
+> Tim Rust sudah menyertakan alat ini dalam distribusi standar Rust, sama seperti `rustc`,  
+> jadi seharusnya sudah terpasang di komputer kita!
 
-The body of the `main` function holds the following code:
+Badan fungsi `main` berisi kode berikut:
 
 ```rust
-    println!("Hello, world!");
+println!("Hello, world!");
 ```
 
-This line does all the work in this little program: it prints text to the
-screen. There are four important details to notice here.
+Baris ini melakukan seluruh pekerjaan dalam program kecil ini: mencetak teks ke layar.
+Ada tiga detail penting yang perlu kita perhatikan di sini.
 
-First, Rust style is to indent with four spaces, not a tab.
+Pertama, `println!` memanggil sebuah macro Rust. Jika yang dipanggil adalah fungsi biasa,
+maka penulisannya akan `println` (tanpa `!`). Macro Rust adalah cara untuk menulis kode
+yang menghasilkan kode lain untuk memperluas sintaks Rust, dan kita akan membahasnya lebih
+lanjut di [Bab 20][ch20-macros]. Untuk saat ini, kita hanya perlu tahu bahwa penggunaan `!`
+berarti kita sedang memanggil macro, bukan fungsi biasa, dan macro tidak selalu mengikuti
+aturan yang sama dengan fungsi.
 
-Second, `println!` calls a Rust macro. If it had called a function instead, it
-would be entered as `println` (without the `!`). We’ll discuss Rust macros in
-more detail in Chapter 19. For now, you just need to know that using a `!`
-means that you’re calling a macro instead of a normal function and that macros
-don’t always follow the same rules as functions.
+Kedua, kita melihat string `"Hello, world!"`. Kita meneruskan string ini sebagai argumen
+ke `println!`, dan string tersebut akan dicetak ke layar.
 
-Third, you see the `"Hello, world!"` string. We pass this string as an argument
-to `println!`, and the string is printed to the screen.
+Ketiga, kita mengakhiri baris dengan tanda titik koma (`;`), yang menunjukkan bahwa ekspresi
+tersebut sudah selesai dan ekspresi berikutnya siap dimulai. Sebagian besar baris kode Rust
+diakhiri dengan titik koma.
 
-Fourth, we end the line with a semicolon (`;`), which indicates that this
-expression is over and the next one is ready to begin. Most lines of Rust code
-end with a semicolon.
+### Kompilasi dan Eksekusi adalah Langkah yang Terpisah
 
-### Mengkompilasi dan Menjalankan Adalah Langkah yang Berbeda
+Kita baru saja menjalankan sebuah program baru, jadi mari kita periksa setiap langkah dalam prosesnya.
 
-You’ve just run a newly created program, so let’s examine each step in the
-process.
-
-Before running a Rust program, you must compile it using the Rust compiler by
-entering the `rustc` command and passing it the name of your source file, like
-this:
+Sebelum menjalankan program Rust, kita harus mengompilasinya dengan compiler Rust
+dengan memasukkan perintah `rustc` dan menambahkan nama berkas sumber kita, seperti ini:
 
 ```console
 $ rustc main.rs
 ```
 
-If you have a C or C++ background, you’ll notice that this is similar to `gcc`
-or `clang`. After compiling successfully, Rust outputs a binary executable.
+Jika kita memiliki latar belakang C atau C++, kita akan menyadari bahwa ini mirip
+dengan `gcc` atau `clang`. Setelah kompilasi berhasil, Rust menghasilkan sebuah
+biner yang bisa dieksekusi.
 
-On Linux, macOS, and PowerShell on Windows, you can see the executable by
-entering the `ls` command in your shell:
+Di Linux, macOS, dan PowerShell di Windows, kita bisa melihat berkas executable
+dengan memasukkan perintah `ls` di shell:
+
 
 ```console
 $ ls
 main  main.rs
 ```
 
-On Linux and macOS, you’ll see two files. With PowerShell on Windows, you’ll
-see the same three files that you would see using CMD. With CMD on Windows, you
-would enter the following:
+Di Linux dan macOS, kita akan melihat dua berkas. Dengan PowerShell di Windows,
+kita akan melihat tiga berkas yang sama seperti yang muncul saat menggunakan CMD.
+Dengan CMD di Windows, kita akan memasukkan perintah berikut:
 
 ```cmd
 > dir /B %= the /B option says to only show the file names =%
@@ -171,31 +174,33 @@ main.pdb
 main.rs
 ```
 
-This shows the source code file with the _.rs_ extension, the executable file
-(_main.exe_ on Windows, but _main_ on all other platforms), and, when using
-Windows, a file containing debugging information with the _.pdb_ extension.
-From here, you run the _main_ or _main.exe_ file, like this:
+Ini menampilkan berkas kode sumber dengan ekstensi _.rs_, berkas executable
+(_main.exe_ di Windows, tetapi _main_ di semua platform lain), dan, ketika
+menggunakan Windows, sebuah berkas yang berisi informasi debugging dengan
+ekstensi _.pdb_. Dari sini, kita bisa menjalankan berkas _main_ atau _main.exe_,
+seperti ini:
 
 ```console
-$ ./main # or .\main.exe on Windows
+$ ./main # or .\main on Windows
 ```
+Jika _main.rs_ kita adalah program “Hello, world!”, baris ini akan mencetak
+`Hello, world!` ke terminal kita.
 
-If your _main.rs_ is your “Hello, world!” program, this line prints `Hello,
-world!` to your terminal.
+Jika kita lebih familiar dengan bahasa dinamis seperti Ruby, Python, atau
+JavaScript, kita mungkin belum terbiasa dengan proses kompilasi dan eksekusi
+sebagai langkah terpisah. Rust adalah bahasa _ahead-of-time compiled_, artinya
+kita bisa mengompilasi program lalu memberikan file executable-nya kepada orang lain,
+dan mereka dapat menjalankannya tanpa harus memasang Rust. Sebaliknya, jika kita
+memberikan berkas _.rb_, _.py_, atau _.js_, orang tersebut perlu memasang Ruby,
+Python, atau JavaScript (sesuai bahasa yang digunakan). Namun, pada bahasa-bahasa
+tersebut, kita hanya perlu satu perintah untuk mengompilasi sekaligus menjalankan
+program. Semua ini adalah bentuk kompromi dalam desain bahasa pemrograman.
 
-If you’re more familiar with a dynamic language, such as Ruby, Python, or
-JavaScript, you might not be used to compiling and running a program as
-separate steps. Rust is an _ahead-of-time compiled_ language, meaning you can
-compile a program and give the executable to someone else, and they can run it
-even without having Rust installed. If you give someone a _.rb_, _.py_, or
-_.js_ file, they need to have a Ruby, Python, or JavaScript implementation
-installed (respectively). But in those languages, you only need one command to
-compile and run your program. Everything is a trade-off in language design.
-
-Just compiling with `rustc` is fine for simple programs, but as your project
-grows, you’ll want to manage all the options and make it easy to share your
-code. Next, we’ll introduce you to the Cargo tool, which will help you write
-real-world Rust programs.
+Mengompilasi dengan `rustc` saja sudah cukup untuk program sederhana,
+tetapi seiring pertumbuhan proyek, kita akan ingin mengatur semua opsi
+dan mempermudah berbagi kode. Selanjutnya, kita akan berkenalan dengan alat Cargo,
+yang akan membantu kita menulis program Rust untuk dunia nyata.
 
 [troubleshooting]: ch01-01-installation.html#troubleshooting
 [devtools]: appendix-04-useful-development-tools.html
+[ch20-macros]: ch20-05-macros.html

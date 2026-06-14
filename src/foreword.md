@@ -1,41 +1,51 @@
-# Foreword
+# Kata Pengantar
 
-It wasn’t always so clear, but the Rust programming language is fundamentally
-about *empowerment*: no matter what kind of code you are writing now, Rust
-empowers you to reach farther, to program with confidence in a wider variety of
-domains than you did before.
+Bahasa pemrograman Rust sudah menempuh perjalanan panjang dalam beberapa tahun 
+terakhir, mulai dari penciptaan dan inkubasinya oleh komunitas kecil penggemar 
+pemula, hingga menjadi salah satu bahasa pemrograman yang paling dicintai dan 
+banyak dicari di dunia. Menengok ke belakang, rasanya memang tidak terelakkan 
+kalau kekuatan dan janji yang ditawarkan Rust bakal menarik perhatian banyak 
+orang dan mendapatkan pijakan kuat di pemrograman sistem. Namun yang tidak 
+terelakkan adalah pertumbuhan minat dan inovasi global yang merambah melalui 
+komunitas sumber terbuka (open source) dan mengatalisasi adopsi skala luas di 
+berbagai industri.
 
-Take, for example, “systems-level” work that deals with low-level details of
-memory management, data representation, and concurrency. Traditionally, this
-realm of programming is seen as arcane, accessible only to a select few who
-have devoted the necessary years learning to avoid its infamous pitfalls. And
-even those who practice it do so with caution, lest their code be open to
-exploits, crashes, or corruption.
+Saat ini, sangat mudah untuk menunjuk ke fitur-fitur luar biasa yang ditawarkan 
+Rust guna menjelaskan ledakan minat dan adopsi ini. Siapa yang tidak menginginkan 
+keamanan memori, *sekaligus* performa yang kencang, *sekaligus* compiler yang 
+ramah, *sekaligus* peralatan yang hebat, di antara banyak fitur luar biasa 
+lainnya? Bahasa Rust yang kita lihat sekarang menggabungkan penelitian selama 
+bertahun-tahun dalam pemrograman sistem dengan kebijaksanaan praktis dari 
+komunitas yang lincah dan bersemangat. Bahasa ini didesain dengan tujuan dan 
+dibuat dengan cermat, menawarkan alat bagi para pengembang yang mempermudah 
+penulisan kode yang aman, kencang, dan andal.
 
-Rust breaks down these barriers by eliminating the old pitfalls and providing a
-friendly, polished set of tools to help you along the way. Programmers who need
-to “dip down” into lower-level control can do so with Rust, without taking on
-the customary risk of crashes or security holes, and without having to learn
-the fine points of a fickle toolchain. Better yet, the language is designed to
-guide you naturally towards reliable code that is efficient in terms of speed
-and memory usage.
+Namun, apa yang membuat Rust benar-benar istimewa adalah akarnya yang memberikan 
+kuasa kepada kita, sang pengguna, untuk mencapai tujuan kita. Ini adalah bahasa 
+yang ingin kita sukses, dan prinsip pemberian kuasa (empowerment) ini mengalir 
+melalui inti dari komunitas yang membangun, memelihara, dan mengadvokasi bahasa 
+ini. Sejak edisi sebelumnya dari teks definitif ini, Rust telah berkembang lebih 
+jauh menjadi bahasa yang benar-benar global dan terpercaya. Proyek Rust kini 
+didukung secara kuat oleh Rust Foundation, yang juga berinvestasi dalam 
+inisiatif-inisiatif kunci untuk memastikan Rust aman, stabil, dan berkelanjutan.
 
-Programmers who are already working with low-level code can use Rust to raise
-their ambitions. For example, introducing parallelism in Rust is a relatively
-low-risk operation: the compiler will catch the classical mistakes for you. And
-you can tackle more aggressive optimizations in your code with the confidence
-that you won’t accidentally introduce crashes or vulnerabilities.
+Edisi *The Rust Programming Language* ini adalah pemutakhiran komprehensif, 
+mencerminkan evolusi bahasa ini selama bertahun-tahun dan menyediakan informasi 
+baru yang berharga. Namun, ini bukan sekadar panduan sintaks dan pustaka—ini 
+adalah ajakan untuk bergabung dengan komunitas yang menghargai kualitas, 
+performa, dan desain yang matang. Baik kita pengembang berpengalaman yang ingin 
+menjelajahi Rust untuk pertama kalinya atau seorang Rustacean berpengalaman yang 
+ingin mengasah keterampilan kita, edisi ini menawarkan sesuatu untuk semua orang.
 
-But Rust isn’t limited to low-level systems programming. It’s expressive and
-ergonomic enough to make CLI apps, web servers, and many other kinds of code
-quite pleasant to write — you’ll find simple examples of both later in the
-book. Working with Rust allows you to build skills that transfer from one
-domain to another; you can learn Rust by writing a web app, then apply those
-same skills to target your Raspberry Pi.
+Perjalanan Rust adalah perjalanan kolaborasi, pembelajaran, dan iterasi. 
+Pertumbuhan bahasa dan ekosistemnya adalah cerminan langsung dari komunitas yang 
+lincah dan beragam di belakangnya. Kontribusi dari ribuan pengembang, mulai dari 
+desainer inti bahasa hingga kontributor kasual, adalah apa yang membuat Rust 
+menjadi alat yang unik dan kuat. Dengan membaca buku ini, kita tidak sekadar 
+mempelajari bahasa pemrograman baru—kita bergabung dengan sebuah gerakan untuk 
+membuat perangkat lunak menjadi lebih baik, lebih aman, dan lebih menyenangkan 
+untuk dikerjakan.
 
-This book fully embraces the potential of Rust to empower its users. It’s a
-friendly and approachable text intended to help you level up not just your
-knowledge of Rust, but also your reach and confidence as a programmer in
-general. So dive in, get ready to learn—and welcome to the Rust community!
+Selamat datang di komunitas Rust!
 
-— Nicholas Matsakis and Aaron Turon
+— Bec Rumbul, Executive Director of the Rust Foundation

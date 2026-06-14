@@ -1,168 +1,173 @@
-## Functions
+## Fungsi
 
-Functions are prevalent in Rust code. You’ve already seen one of the most
-important functions in the language: the `main` function, which is the entry
-point of many programs. You’ve also seen the `fn` keyword, which allows you to
-declare new functions.
+Fungsi itu ada di mana-mana di kode Rust. Kita udah liat salah satu fungsi 
+paling penting di bahasanya: fungsi `main`, yang jadi _entry point_ buat banyak 
+program. Kita juga udah liat keyword `fn`, yang ngebolehin kita mendeklarasikan 
+fungsi baru.
 
-Rust code uses *snake case* as the conventional style for function and variable
-names, in which all letters are lowercase and underscores separate words.
-Here’s a program that contains an example function definition:
+Kode Rust pake _snake case_ sebagai gaya konvensional buat nama fungsi sama 
+variabel, di mana semua hurufnya kecil (lowercase) dan pake garis bawah 
+(underscore) buat misahin kata. Ini program yang isinya contoh definisi fungsi:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-16-functions/src/main.rs}}
 ```
 
-We define a function in Rust by entering `fn` followed by a function name and a
-set of parentheses. The curly brackets tell the compiler where the function
-body begins and ends.
+Kita mendefinisikan fungsi di Rust dengan nulis `fn` diikuti sama nama fungsi 
+dan tanda kurung. Kurung kurawal ngasih tau _compiler_ di mana body fungsinya 
+mulai sama selesai.
 
-We can call any function we’ve defined by entering its name followed by a set
-of parentheses. Because `another_function` is defined in the program, it can be
-called from inside the `main` function. Note that we defined `another_function`
-*after* the `main` function in the source code; we could have defined it before
-as well. Rust doesn’t care where you define your functions, only that they’re
-defined somewhere in a scope that can be seen by the caller.
+Kita bisa manggil fungsi apa pun yang udah kita definisikan dengan nulis namanya 
+diikuti tanda kurung. Karena `another_function` didefinisikan di programnya, 
+dia bisa dipanggil dari dalem fungsi `main`. Inget ya kalau kita mendefinisikan 
+`another_function` _setelah_ fungsi `main` di source code-nya; kita bisa aja 
+mendefinisikannya sebelum `main` juga kok. Rust nggak peduli di mana kita 
+mendefinisikan fungsi kita, yang penting mereka didefinisikan di suatu tempat 
+di scope yang bisa diliat sama pemanggilnya.
 
-Let’s start a new binary project named *functions* to explore functions
-further. Place the `another_function` example in *src/main.rs* and run it. You
-should see the following output:
+Yuk kita bikin project biner baru namanya _functions_ buat eksplor fungsi lebih 
+lanjut. Taruh contoh `another_function` tadi di _src/main.rs_ terus jalanin. 
+Kita bakal liat output kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-16-functions/output.txt}}
 ```
 
-The lines execute in the order in which they appear in the `main` function.
-First the “Hello, world!” message prints, and then `another_function` is called
-and its message is printed.
+Baris-baris kodenya jalan sesuai urutan kemunculannya di fungsi `main`. Pertama 
+pesan “Hello, world!” dicetak, terus `another_function` dipanggil dan pesannya 
+dicetak.
 
-### Parameters
+### Parameter
 
-We can define functions to have *parameters*, which are special variables that
-are part of a function’s signature. When a function has parameters, you can
-provide it with concrete values for those parameters. Technically, the concrete
-values are called *arguments*, but in casual conversation, people tend to use
-the words *parameter* and *argument* interchangeably for either the variables
-in a function’s definition or the concrete values passed in when you call a
-function.
+Kita bisa mendefinisikan fungsi biar punya _parameter_, yaitu variabel khusus 
+yang jadi bagian dari _signature_ sebuah fungsi. Pas sebuah fungsi punya 
+parameter, kita bisa ngasih nilai konkret buat parameter itu. Secara teknis, 
+nilai konkret itu namanya _argument_, tapi pas lagi ngobrol santai, orang-orang 
+cenderung pake kata _parameter_ sama _argument_ secara bergantian buat nyebut 
+variabel di definisi fungsi maupun nilai konkret yang dimasukin pas manggil 
+fungsinya.
 
-In this version of `another_function` we add a parameter:
+Di versi `another_function` ini kita nambahin satu parameter:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-17-functions-with-parameters/src/main.rs}}
 ```
 
-Try running this program; you should get the following output:
+Coba jalanin program ini; kita bakal dapet output kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-17-functions-with-parameters/output.txt}}
 ```
 
-The declaration of `another_function` has one parameter named `x`. The type of
-`x` is specified as `i32`. When we pass `5` in to `another_function`, the
-`println!` macro puts `5` where the pair of curly brackets containing `x` was
-in the format string.
+Deklarasi `another_function` punya satu parameter namanya `x`. Tipe dari `x` 
+ditentuin sebagai `i32`. Pas kita masukin `5` ke `another_function`, macro 
+`println!` naruh `5` di tempat pasangan kurung kurawal yang isinya `x` di 
+format string-nya.
 
-In function signatures, you *must* declare the type of each parameter. This is
-a deliberate decision in Rust’s design: requiring type annotations in function
-definitions means the compiler almost never needs you to use them elsewhere in
-the code to figure out what type you mean. The compiler is also able to give
-more helpful error messages if it knows what types the function expects.
+Di signature fungsi, kita _harus_ mendeklarasikan tipe dari tiap parameter. Ini 
+keputusan yang disengaja di desainnya Rust: nuntut annotasi tipe di definisi 
+fungsi artinya _compiler_ hampir nggak pernah butuh kita buat nulis tipenya di 
+tempat lain di kode buat cari tau tipe mana yang kita maksud. _Compiler_ juga 
+bisa ngasih pesan error yang lebih ngebantu kalau dia tau tipe apa yang 
+diharapin sama fungsinya.
 
-When defining multiple parameters, separate the parameter declarations with
-commas, like this:
+Pas mendefinisikan banyak parameter, pisahin deklarasi parameternya pake koma, 
+kayak gini:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-18-functions-with-multiple-parameters/src/main.rs}}
 ```
 
-This example creates a function named `print_labeled_measurement` with two
-parameters. The first parameter is named `value` and is an `i32`. The second is
-named `unit_label` and is type `char`. The function then prints text containing
-both the `value` and the `unit_label`.
+Contoh ini bikin fungsi namanya `print_labeled_measurement` dengan dua 
+parameter. Parameter pertama namanya `value` dan tipenya `i32`. Yang kedua 
+namanya `unit_label` dan tipenya `char`. Fungsinya terus nyetak teks yang isinya 
+baik `value` maupun `unit_label`.
 
-Let’s try running this code. Replace the program currently in your *functions*
-project’s *src/main.rs* file with the preceding example and run it using `cargo
-run`:
+Yuk coba jalanin kode ini. Ganti program yang ada di project _functions_ kita 
+di file _src/main.rs_ sama contoh di atas terus jalanin pake `cargo run`:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-18-functions-with-multiple-parameters/output.txt}}
 ```
 
-Because we called the function with `5` as the value for `value` and `'h'` as
-the value for `unit_label`, the program output contains those values.
+Karena kita manggil fungsinya dengan `5` sebagai nilai buat `value` dan `'h'` 
+sebagai nilai buat `unit_label`, output programnya isinya nilai-nilai itu.
 
-### Statements and Expressions
+### Statement dan Ekspresi (Statements and Expressions)
 
-Function bodies are made up of a series of statements optionally ending in an
-expression. So far, the functions we’ve covered haven’t included an ending
-expression, but you have seen an expression as part of a statement. Because
-Rust is an expression-based language, this is an important distinction to
-understand. Other languages don’t have the same distinctions, so let’s look at
-what statements and expressions are and how their differences affect the bodies
-of functions.
+Body fungsi itu disusun dari serangkaian statement yang opsional bisa diakhiri 
+sama sebuah ekspresi. Sejauh ini, fungsi-fungsi yang kita bahas belum ada 
+ekspresi akhirnya, tapi kita udah liat ekspresi sebagai bagian dari sebuah 
+statement. Karena Rust itu bahasa yang berbasis ekspresi (_expression-based 
+language_), ini perbedaan penting yang harus dipahamin. Bahasa lain nggak punya 
+perbedaan yang sama, jadi yuk kita liat apa itu statement sama ekspresi dan 
+gimana perbedaannya ngaruh ke body fungsi.
 
-* **Statements** are instructions that perform some action and do not return
-  a value.
-* **Expressions** evaluate to a resultant value. Let’s look at some examples.
+- **Statement** adalah instruksi yang ngelakuin suatu aksi dan nggak balikin 
+  nilai.
+- **Ekspresi** dievaluasi jadi sebuah nilai hasil.
 
-We’ve actually already used statements and expressions. Creating a variable and
-assigning a value to it with the `let` keyword is a statement. In Listing 3-1,
-`let y = 6;` is a statement.
+Yuk kita liat beberapa contoh.
 
-<span class="filename">Filename: src/main.rs</span>
+Sebenernya kita udah pake statement sama ekspresi. Bikin variabel terus ngasih 
+nilai ke variabel itu pake keyword `let` itu adalah sebuah statement. Di 
+Listing 3-1, `let y = 6;` adalah sebuah statement.
+
+<Listing number="3-1" file-name="src/main.rs" caption="Deklarasi fungsi `main` yang isinya satu statement">
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/listing-03-01/src/main.rs}}
 ```
 
-<span class="caption">Listing 3-1: A `main` function declaration containing one statement</span>
+</Listing>
 
-Function definitions are also statements; the entire preceding example is a
-statement in itself.
+Definisi fungsi juga termasuk statement; seluruh contoh di atas itu sebenernya 
+sebuah statement. (Tapi kayak yang bakal kita liat di bawah, _manggil_ fungsi 
+itu bukan statement.)
 
-Statements do not return values. Therefore, you can’t assign a `let` statement
-to another variable, as the following code tries to do; you’ll get an error:
+Statement nggak balikin nilai. Makanya, kita nggak bisa nge-assign sebuah 
+statement `let` ke variabel lain, kayak yang dicoba sama kode berikut; kita 
+bakal dapet error:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-19-statements-vs-expressions/src/main.rs}}
 ```
 
-When you run this program, the error you’ll get looks like this:
+Pas kita jalanin program ini, error yang kita dapet bakal keliatan kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-19-statements-vs-expressions/output.txt}}
 ```
 
-The `let y = 6` statement does not return a value, so there isn’t anything for
-`x` to bind to. This is different from what happens in other languages, such as
-C and Ruby, where the assignment returns the value of the assignment. In those
-languages, you can write `x = y = 6` and have both `x` and `y` have the value
-`6`; that is not the case in Rust.
+Statement `let y = 6` nggak balikin nilai, jadi nggak ada apa-apa buat di-bind 
+ke `x`. Ini beda sama apa yang terjadi di bahasa lain, kayak C sama Ruby, di 
+mana assignment balikin nilai dari assignment-nya. Di bahasa-bahasa itu, kita 
+bisa nulis `x = y = 6` terus bikin baik `x` maupun `y` punya nilai `6`; hal itu 
+nggak berlaku di Rust.
 
-Expressions evaluate to a value and make up most of the rest of the code that
-you’ll write in Rust. Consider a math operation, such as `5 + 6`, which is an
-expression that evaluates to the value `11`. Expressions can be part of
-statements: in Listing 3-1, the `6` in the statement `let y = 6;` is an
-expression that evaluates to the value `6`. Calling a function is an
-expression. Calling a macro is an expression. A new scope block created with
-curly brackets is an expression, for example:
+Ekspresi dievaluasi jadi sebuah nilai dan nyusun sebagian besar sisa kode yang 
+bakal kita tulis di Rust. Coba pikirin operasi matematika, kayak `5 + 6`, yang 
+merupakan ekspresi yang dievaluasi jadi nilai `11`. Ekspresi bisa jadi bagian 
+dari statement: di Listing 3-1, angka `6` di statement `let y = 6;` adalah 
+sebuah ekspresi yang dievaluasi jadi nilai `6`. Manggil fungsi itu adalah sebuah 
+ekspresi. Manggil macro itu adalah sebuah ekspresi. Sebuah blok scope baru yang 
+dibuat pake kurung kurawal juga ekspresi, contohnya:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-20-blocks-are-expressions/src/main.rs}}
 ```
 
-This expression:
+Ekspresi ini:
 
 ```rust,ignore
 {
@@ -171,81 +176,81 @@ This expression:
 }
 ```
 
-is a block that, in this case, evaluates to `4`. That value gets bound to `y`
-as part of the `let` statement. Note that the `x + 1` line doesn’t have a
-semicolon at the end, which is unlike most of the lines you’ve seen so far.
-Expressions do not include ending semicolons. If you add a semicolon to the end
-of an expression, you turn it into a statement, and it will then not return a
-value. Keep this in mind as you explore function return values and expressions
-next.
+adalah sebuah blok yang, dalam kasus ini, dievaluasi jadi `4`. Nilai itu terus 
+di-bind ke `y` sebagai bagian dari statement `let`. Inget ya kalau baris 
+`x + 1` nggak punya titik koma di akhirnya, beda sama kebanyakan baris yang 
+udah kita liat sejauh ini. Ekspresi nggak pake titik koma di akhir. Kalau kita 
+nambahin titik koma di akhir ekspresi, kita ngerubahnya jadi statement, dan dia 
+nggak bakal balikin nilai. Terus inget ini pas kita eksplor nilai return fungsi 
+sama ekspresi selanjutnya.
 
-### Functions with Return Values
+### Fungsi dengan Nilai Return
 
-Functions can return values to the code that calls them. We don’t name return
-values, but we must declare their type after an arrow (`->`). In Rust, the
-return value of the function is synonymous with the value of the final
-expression in the block of the body of a function. You can return early from a
-function by using the `return` keyword and specifying a value, but most
-functions return the last expression implicitly. Here’s an example of a
-function that returns a value:
+Fungsi bisa balikin nilai ke kode yang manggil mereka. Kita nggak ngasih nama 
+buat nilai return, tapi kita harus mendeklarasikan tipenya setelah tanda panah 
+(`->`). Di Rust, nilai return dari sebuah fungsi itu sinonim sama nilai dari 
+ekspresi terakhir di blok body fungsinya. Kita bisa return lebih awal dari 
+sebuah fungsi pake keyword `return` terus nentuin nilainya, tapi kebanyakan 
+fungsi balikin ekspresi terakhir secara implisit. Ini contoh fungsi yang 
+balikin nilai:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-21-function-return-values/src/main.rs}}
 ```
 
-There are no function calls, macros, or even `let` statements in the `five`
-function—just the number `5` by itself. That’s a perfectly valid function in
-Rust. Note that the function’s return type is specified too, as `-> i32`. Try
-running this code; the output should look like this:
+Nggak ada pemanggilan fungsi, macro, atau bahkan statement `let` di fungsi 
+`five`—cuma ada angka `5` sendirian. Itu fungsi yang sangat valid di Rust. 
+Inget ya kalau tipe return fungsinya ditentuin juga, yaitu `-> i32`. Coba 
+jalanin kode ini; output-nya bakal kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-21-function-return-values/output.txt}}
 ```
 
-The `5` in `five` is the function’s return value, which is why the return type
-is `i32`. Let’s examine this in more detail. There are two important bits:
-first, the line `let x = five();` shows that we’re using the return value of a
-function to initialize a variable. Because the function `five` returns a `5`,
-that line is the same as the following:
+Angka `5` di `five` adalah nilai return fungsinya, makanya tipe return-nya 
+`i32`. Yuk kita pelajari ini lebih detail. Ada dua bagian penting: pertama, 
+baris `let x = five();` nunjukin kalau kita pake nilai return fungsi buat 
+menginisialisasi variabel. Karena fungsi `five` balikin `5`, baris itu sama 
+aja kayak gini:
 
 ```rust
 let x = 5;
 ```
 
-Second, the `five` function has no parameters and defines the type of the
-return value, but the body of the function is a lonely `5` with no semicolon
-because it’s an expression whose value we want to return.
+Kedua, fungsi `five` nggak punya parameter dan mendefinisikan tipe nilai 
+return-nya, tapi body fungsinya cuma angka `5` kesepian tanpa titik koma karena 
+itu adalah ekspresi yang nilainya mau kita balikin.
 
-Let’s look at another example:
+Yuk liat contoh lainnya:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-22-function-parameter-and-return/src/main.rs}}
 ```
 
-Running this code will print `The value of x is: 6`. But if we place a
-semicolon at the end of the line containing `x + 1`, changing it from an
-expression to a statement, we’ll get an error:
+Jalanin kode ini bakal nyetak `The value of x is: 6`. Tapi kalau kita naruh 
+titik koma di akhir baris yang isinya `x + 1`, ngerubahnya dari ekspresi jadi 
+statement, kita bakal dapet error:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-23-statements-dont-return-values/src/main.rs}}
 ```
 
-Compiling this code produces an error, as follows:
+Compile kode ini ngasilin error kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-23-statements-dont-return-values/output.txt}}
 ```
 
-The main error message, `mismatched types`, reveals the core issue with this
-code. The definition of the function `plus_one` says that it will return an
-`i32`, but statements don’t evaluate to a value, which is expressed by `()`,
-the unit type. Therefore, nothing is returned, which contradicts the function
-definition and results in an error. In this output, Rust provides a message to
-possibly help rectify this issue: it suggests removing the semicolon, which
-would fix the error.
+Pesan error utamanya, `mismatched types`, ngungkapin inti masalah kodenya. 
+Definisi fungsi `plus_one` bilang kalau dia bakal balikin `i32`, tapi statement 
+nggak dievaluasi jadi sebuah nilai, yang direpresentasikan sama `()`, yaitu tipe 
+unit. Makanya, nggak ada apa pun yang dibalikin, yang bertentangan sama 
+definisi fungsi dan ngasilin error. Di output ini, Rust ngasih pesan yang 
+mungkin bisa ngebantu benerin masalah ini: dia nyaranin buat ngapus titik 
+komanya, yang bakal benerin error-nya.

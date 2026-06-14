@@ -1,206 +1,192 @@
 ## Variabel dan Mutabilitas
 
-Sebagaimana disinggung di bagian ["Menyimpan Nilai dengan 
-Variabel"][storing-values-with-variables]<!-- ignore -->, secara baku, 
-variabel itu immutable. Ini adalah satu dari banyak dorongan yang Rust berikan
-kepada Anda untuk menulis kode dengan cara yang memanfaatkan keamanan dan
-konkurensi mudah yang ditawarkan oleh Rust. Namun Anda masih punya pilihan
-untuk membuat variabel Anda mutable. Mari kita eksplorasi bagaimana dan
-mengapa Rust mendorong Anda agar lebih suka atas imutabilitas dan mengapa
-kadang Anda perlu untuk tidak memilihnya.
+Kayak yang udah disebutin di bagian [“Menyimpan Nilai dengan Variabel”][storing-values-with-variables], 
+secara default, variabel itu _immutable_ (nggak bisa diubah). Ini salah satu 
+cara Rust "nyenggol" kita buat nulis kode yang manfaatin keamanan dan kemudahan 
+_concurrency_ yang ditawarin Rust. Tapi, kita tetep punya opsi buat bikin 
+variabel jadi _mutable_ (bisa diubah). Yuk kita eksplor gimana dan kenapa Rust 
+nyaranin kita buat lebih milih _immutability_, dan kenapa kadang kita malah mau 
+milih buat nggak pakenya.
 
-Ketika suatu variabel immutable, sekali suatu nilai diikat ke sebuah nama,
-Anda tidak bisa mengubah nilai tersebut. Untuk mengilustrasikan ini, buatlah
-sebuah proyek baru bernama *variables* dalam direktori *projects* Anda dengan
-memakai `cargo new variables`.
+Pas sebuah variabel itu _immutable_, sekali nilainya di-bind ke sebuah nama, 
+kita nggak bisa ngerubah nilai itu. Buat gambarin ini, coba bikin project baru 
+namanya _variables_ di direktori _projects_ kita pake `cargo new variables`.
 
-Lalu, dalam direktori *variables* baru Anda, buka *src/main.rs* dan ganti
-kodenya dengan kode berikut, yang kini belum bisa dikompilasi:
+Terus, di direktori _variables_ yang baru, buka _src/main.rs_ terus ganti kodenya 
+jadi kayak gini, yang sebenernya belum bisa di-compile sekarang:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-01-variables-are-immutable/src/main.rs}}
 ```
 
-Simpan dan jalankan program memakai `cargo run`. Anda mestinya memperoleh
-pesan kesalahan terkait kesalahan imutabilitas, seperti ditunjukkan dalam
-keluaran ini:
+Simpan terus jalanin programnya pake `cargo run`. Kita bakal dapet pesan error 
+soal _immutability error_, kayak yang ditunjukin di output ini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-01-variables-are-immutable/output.txt}}
 ```
 
-Contoh ini menunjukkan bagaimana compiler membantu Anda menemukan kesalahan
-dalam program Anda. Kesalahan compiler bisa membuat frustrasi, tetapi 
-sebenarnya mereka hanya berarti bahwa program Anda belum secara aman
-melakukan apa yang Anda ingin dia lakukan; mereka *bukan* berarti bahwa Anda 
-bukanlah programmer yang baik! Rustacean yang berpengalaman masih mendapat
-kesalahan compiler.
+Contoh ini nunjukin gimana _compiler_ ngebantu kita nemuin error di program kita. 
+Error dari _compiler_ emang kadang bikin kesel, tapi sebenernya itu cuma berarti 
+program kita belum aman buat ngelakuin apa yang kita mau; itu _bukan_ berarti 
+kita bukan programmer yang jago! Para _Rustacean_ yang udah pro pun tetep sering 
+dapet error dari _compiler_.
 
-Anda menerima pesan kesalahan `` cannot assign twice to immutable variable `x`
-`` karena Anda mencoba menugaskan suatu nilai kedua ke variabel `x` yang
-immutable.
+Kita dapet pesan error `` cannot assign twice to immutable variable `x` `` 
+karena kita nyoba buat ngasih nilai kedua ke variabel `x` yang _immutable_.
 
-Penting bahwa kita mendapat kesalahan saat compile ketika kita mencoba
-mengubah suatu nilai yang ditugaskan sebagai immutable karena situasi seperti
-ini dapat mengarah ke bug. Bila satu bagian dari kode kita beroperasi pada
-asumsi bahwa suatu nilai tidak akan pernah berubah dan bagian lain dari kode
-kita mengubah nilai tersebut, mungkin bahwa bagian pertama kode tidak akan
-melakukan apa yang itu dirancang untuk melakukannya. Penyebab bug jenis ini
-bisa sulit dilacak setelah fakta, khususnya ketika penggalan kedua kode
-hanya *kadang-kadang* mengubah nilai. Compiler Rust menjamin bahwa ketika
-Anda menyatakan bahwa suatu nilai tidak akan berubah, itu benar-benar tidak
-akan berubah, sehingga Anda tidak perlu melacaknya sendiri. Maka kode Anda
-lebih mudah dipahami.
+Penting sekali buat kita dapet _compile-time error_ pas kita nyoba ngerubah nilai 
+yang udah ditentuin sebagai _immutable_ karena situasi ini bisa memicu _bug_. 
+Kalau satu bagian kode kita jalan dengan asumsi kalau sebuah nilai nggak bakal 
+berubah, terus bagian kode lain malah ngerubah nilai itu, ada kemungkinan bagian 
+pertama tadi nggak bakal jalan sesuai desainnya. Penyebab _bug_ kayak gini bisa 
+susah sekali dilacak setelah kejadian, apalagi kalau bagian kode kedua ngerubah 
+nilainya cuma "kadang-kadang" doang. _Compiler_ Rust ngejamin kalau pas kita 
+bilang sebuah nilai nggak bakal berubah, ya dia benar-benar nggak bakal berubah, 
+jadi kita nggak perlu repot-repot jagain sendiri. Kode kita jadi lebih gampang 
+buat dipahamin alurnya.
 
-Tapi mutabilitas bisa sangat berguna, dan dapat membuat kode lebih nyaman
-ditulis. Walaupun variabel secara default immutable, Anda dapat membuat mereka
-mutable dengan menambahkan `mut` di depan nama variabel seperti yang telah
-Anda lakukan dalam [Bab 2][storing-values-with-variables]<!-- ignore -->. 
-Menambahkan `mut` juga menyampaikan maksud ke pembaca kode di masa depan
-dengan mengindikasikan bahwa bagian lain dari kode akan mengubah nilai
-variabel ini.
+Tapi _mutability_ emang bisa sangat berguna, dan bisa bikin kode lebih nyaman 
+buat ditulis. Walaupun variabel itu _immutable_ secara default, kita bisa bikin 
+mereka jadi _mutable_ dengan nambahin `mut` di depan nama variabelnya kayak yang 
+kita lakuin di [Bab 2][storing-values-with-variables]. Nambahin `mut` juga 
+ngasih tau maksud (intent) kita ke orang yang baca kode kita nanti kalau bagian 
+lain dari kode bakal ngerubah nilai variabel ini.
 
-Sebagai contoh, mari kita ubah *src/main.rs* menjadi yang berikut:
+Contohnya, yuk kita ubah _src/main.rs_ jadi kayak gini:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-02-adding-mut/src/main.rs}}
 ```
 
-Saat kita sekarang menjalankan program, kita memperoleh ini:
+Pas kita jalanin programnya sekarang, hasilnya kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-02-adding-mut/output.txt}}
 ```
 
-Kita diizinkan mengubah nilai yang diikat ke `x` dari `5` ke `6` ketika 
-`mut` dipakai. Pada akhirnya, menentukan apakah memakai mutabilitas atau 
-tidak terserah padamu dan tergantung kepada apa yang Anda pikir paling 
-jelas dalam situasi tersebut.
+Kita diperbolehkan buat ngerubah nilai yang di-bind ke `x` dari `5` jadi `6` 
+pas `mut` dipake. Akhirnya, keputusan buat pake _mutability_ atau nggak itu 
+balik lagi ke kita dan tergantung apa yang menurut kita paling jelas di situasi 
+tertentu itu.
 
-### Konstanta
+### Konstanta (Constants)
 
-Seperti variable yang immutable, *konstanta* adalah nilai-nilai yang terikat
-ke suatu nama dan tidak diizinkan berubah, tapi ada beberapa perbedaan
-antara konstanta dan variabel.
+Kayak variabel _immutable_, _konstanta_ adalah nilai yang di-bind ke sebuah nama 
+dan nggak boleh berubah, tapi ada beberapa perbedaan antara konstanta sama 
+variabel.
 
-Pertama, Anda tidak diizinkan memakai `mut` dengan konstanta. Konstanta tidak
-hanya sekadar immutable secara baku — mereka selalu immutable. Anda
-mendeklarasikan konstanta memakai kata kunci `const` bukan kata kunci `let`,
-dan tipe nilai *harus* dianotasikan. Kita akan membahas tipe dan anotasi tipe
-dalam bagian selanjutnya, ["Tipe Data,"][data-types]<!-- ignore -->, jadi
-jangan khawatir tentang detilnya sekarang. Ketahui saja bahwa Anda mesti selalu
-menganotasi tipe.
+Pertama, kita nggak boleh pake `mut` sama konstanta. Konstanta nggak cuma 
+_immutable_ secara default—mereka _selalu_ _immutable_. Kita mendeklarasikan 
+konstanta pake keyword `const` bukannya `let`, dan tipe nilainya _harus_ 
+diannotasi. Kita bakal bahas soal tipe dan annotasi tipe di bagian selanjutnya, 
+[“Tipe Data”][data-types], jadi nggak usah pusing dulu soal detailnya sekarang. 
+Pokoknya tau aja kalau kita harus selalu nulis tipenya.
 
-Konstanta dapat dideklarasikan dalam sebarang skup, termasuk skup global, yang
-membuat mereka berguna untuk nilai-nilai yang banyak bagian kode perlu tahu
-tentangnya.
+Konstanta bisa dideklarasikan di scope mana pun, termasuk scope global, yang 
+bikin mereka berguna buat nilai yang perlu diketahuin sama banyak bagian kode.
 
-Perbedaan terakhir adalah konstanta dapat diatur hanya ke suatu ekspresi
-konstan, bukan hasil dari suatu nilai yang hanya dapat dihitung saat runtime.
+Perbedaan terakhir adalah konstanta cuma boleh di-set ke _constant expression_, 
+bukan hasil dari nilai yang cuma bisa dihitung pas _runtime_.
 
-Ini adalah sebuah contoh dari deklarasi konstanta:
+Ini contoh deklarasi konstanta:
 
 ```rust
 const THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3;
 ```
 
-Nama konstantanya adalah `THREE_HOURS_IN_SECONDS` dan nilainya diatur ke
-hasil perkalian 60 (banyaknya detik dalam satu menit) dengan 60 (banyaknya
-menit dalam satu jam) dengan 3 (banyaknya jam yang ingin kita hitung dalam
-program ini). Konvensi penamaan Rust bagi konstanta adalah memakai huruf besar
-dengan garis bawah antara kata. Compiler dapat mengevaluasi set operasi
-terbatas saat compile, yang memungkinkan kita memilih menulis nilai ini dalam
-suatu cara yang lebih mudah dipahami dan diverifikasi, daripada menata
-konstanta ini ke nilai 10.800. Lihat [Bagian Referensi Rust tentang evaluasi
-konstanta][const-eval] untuk informasi lebih banyak tentang operasi apa yang
-dapat dipakai saat mendeklarasikan konstanta.
+Nama konstantanya adalah `THREE_HOURS_IN_SECONDS` dan nilainya di-set ke hasil 
+perkalian 60 (jumlah detik dalam satu menit) dikali 60 (jumlah menit dalam satu 
+jam) dikali 3 (jumlah jam yang mau kita itung di program ini). Konvensi 
+penamaan Rust buat konstanta adalah pake huruf kapital semua (uppercase) dengan 
+garis bawah (underscore) di antara kata-katanya. _Compiler_ bisa nge-evaluasi 
+sekumpulan operasi terbatas pas _compile time_, yang bikin kita bisa milih buat 
+nulis nilai ini dengan cara yang lebih gampang dipahamin dan diverifikasi, 
+bukannya langsung nulis nilai 10.800. Liat [bagian Rust Reference soal constant 
+evaluation][const-eval] buat info lebih lanjut soal operasi apa aja yang bisa 
+dipake pas deklarasi konstanta.
 
-Konstanta valid bagi seluruh waktu suatu program dijalankan, dalam skup
-tempat mereka dideklarasikan. Properti ini membuat konstanta berguna untuk
-nilai-nilai dalam domain aplikasi Anda yang berbagai bagian dari program
-mungkin perlu tahu, seperti banyaknya maksimum nilai yang diizinkan diperoleh
-seorang pemain, atau kecepatan cahaya.
+Konstanta itu valid selama program jalan, di dalem scope tempat mereka 
+dideklarasikan. Sifat ini bikin konstanta berguna buat nilai di domain aplikasi 
+kita yang mungkin perlu diketahuin sama banyak bagian program, kayak jumlah 
+poin maksimal yang boleh didapet player sebuah game, atau kecepatan cahaya.
 
-Menamai nilai-nilai ter-*hardcode* yang dipakai dalam seluruh program Anda
-sebagai konstanta berguna dalam menyampaikan makna nilai itu ke pemelihara
-kode di masa mendatang. Itu juga membantu agar hanya satu tempat dalam kode
-Anda yang perlu diubah bila nilai ter-*hardcode* perlu diperbarui nanti.
+Ngambil nilai _hardcoded_ yang dipake di seluruh program terus dikasih nama 
+sebagai konstanta itu sangat berguna buat nyampein makna nilai itu ke orang 
+yang bakal maintain kodenya nanti. Ini juga ngebantu biar cuma ada satu tempat 
+di kode kita yang perlu diubah kalau nilai _hardcoded_ itu perlu di-update di 
+masa depan.
 
 ### Shadowing
 
-Sebagaimana Anda lihat dalam tutorial permainan tebakan dalam
-[Bab 2][comparing-the-guess-to-the-secret-number]<!-- ignore -->, Anda dapat 
-mendeklarasikan suatu variabel baru dengan nama sama seperti variabel
-sebelumnya. Rustacean mengatakan bahwa variabel pertama *di-shadow* oleh yang
-kedua, yang berarti bahwa variabel kedua adalah yang akan dilihat oleh
-compiler ketika Anda memakai nama variabel tersebut. Efeknya, variabel
-kedua menutupi yang pertama, mengambil sebarang penggunaan dari nama variabel
-ke dirinya sendiri dengan memakai nama variabel yang sama dan mengulangi
-penggunaan kata kunci `let` sebagai berikut:
+Kayak yang kita liat di tutorial game tebak angka di [Bab 2][comparing-the-guess-to-the-secret-number], 
+kita bisa mendeklarasikan variabel baru dengan nama yang sama kayak variabel 
+sebelumnya. Para _Rustacean_ bilang kalau variabel pertama itu di-_shadow_ 
+(dibayangi) sama variabel kedua, yang artinya variabel kedua lah yang bakal 
+diliat sama _compiler_ pas kita pake nama variabel itu. Efektifnya, variabel 
+kedua menutupi variabel pertama, ngambil semua penggunaan nama variabel itu buat 
+dirinya sendiri sampe dia sendiri di-_shadow_ atau scope-nya abis. Kita bisa 
+nge-_shadow_ sebuah variabel dengan pake nama variabel yang sama dan ngulangin 
+penggunaan keyword `let` kayak gini:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama file: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-03-shadowing/src/main.rs}}
 ```
 
-Program ini pertama mengikat `x` ke suatu nilai `5`. Lalu itu membuat
-sebuah variabel baru `x` dengan mengulangi `let x =`, mengambil nilai asli
-dan menambahkan `1` sehingga nilai `x` lalu menjadi `6`. Kemudian, di dalam
-skup dalam yang dibuat dengan kurung kurawal, pernyataan `let` ketiga juga
-membayang `x` dan membuat sebuah variabel baru, mengalikan nilai sebelumnya
-dengan `2` untuk menghasilkan suatu nilai `12`. Ketika skup itu berakhir, 
-bayang dalam berakhir dan `x` kembali menjadi `6`. Ketika kita menjalankan
-program ini, itu akan mengeluarkan yang berikut:
+Program ini pertama-tama nge-bind `x` ke nilai `5`. Terus dia bikin variabel 
+baru `x` dengan ngulangin `let x =`, ngambil nilai aslinya terus ditambahin `1` 
+biar nilai `x` jadi `6`. Terus, di dalem scope dalem yang dibuat pake kurung 
+kurawal, statement `let` yang ketiga juga nge-_shadow_ `x` dan bikin variabel 
+baru, ngaliin nilai sebelumnya sama `2` biar `x` jadi `12`. Pas scope itu abis, 
+_shadowing_ dalemnya kelar dan `x` balik lagi jadi `6`. Pas kita jalanin 
+program ini, output-nya bakal kayak gini:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-03-shadowing/output.txt}}
 ```
 
-Shadowing berbeda dari menandai suatu variabel sebagai `mut` karena kita akan
-memperoleh suatu galat saat compile bila kita secara tidak sengaja mencoba
-menugaskan ulang ke variabel ini tanpa memakai kata kunci `let`. Dengan
-memakai `let`, kita bisa melakukan beberapa transformasi pada suatu nilai
-tapi memiliki variabel yang immutable setelah transformasi itu selesai.
+_Shadowing_ itu beda sama nandain variabel sebagai `mut` karena kita bakal dapet 
+_compile-time error_ kalau kita nggak sengaja nyoba buat nge-_assign_ ulang ke 
+variabel ini tanpa pake keyword `let`. Dengan pake `let`, kita bisa ngelakuin 
+beberapa transformasi pada sebuah nilai tapi tetep bikin variabelnya jadi 
+_immutable_ setelah transformasi itu selesai.
 
-Perbedaan lain antara `mut` dan shadowing adalah karena kita secara efektif
-membuat sebuah variabel baru ketika kita memakai kata kunci `let` lagi, kita
-dapat mengubah tipe nilai tapi memakai ulang nama yang sama. Misalnya, 
-katakanlah program kita meminta pengguna untuk menunjukkan berapa banyak spasi
-yang mereka inginkan antara beberapa teks dengan memasukkan karakter spasi,
-lalu kita ingin menyimpan masukan itu sebagai suatu bilangan:
+Perbedaan lain antara `mut` sama _shadowing_ adalah karena kita sebenernya bikin 
+variabel baru pas kita pake keyword `let` lagi, kita bisa ngerubah tipe nilainya 
+tapi tetep pake nama yang sama. Misalnya, katakanlah program kita minta user 
+buat nunjukin berapa banyak spasi yang mereka mau di antara teks dengan masukin 
+karakter spasi, terus kita mau nyimpen input itu sebagai angka:
 
 ```rust
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-04-shadowing-can-change-types/src/main.rs:here}}
 ```
 
-Variabel `spaces` pertama bertipe string dan variabel `spaces` kedua bertipe
-angka. Maka *shadowing* membebaskan kita dari mencari nama lain, seperti
-misalnya `spaces_str` dan `spaces_num`; sebagai gantinya, kita dapat memakai
-ulang nama `spaces` yang lebih sederhana. Namun, bila kita mencoba memakai
-`mut` untuk ini, seperti yang ditunjukkan di sini, kita akan memperoleh 
-kesalahan waktu compile:
+Variabel `spaces` yang pertama itu tipe string dan variabel `spaces` yang kedua 
+itu tipe angka. Jadi _shadowing_ bikin kita nggak perlu repot mikirin nama yang 
+beda, kayak `spaces_str` dan `spaces_num`; mendingan kita pake lagi nama 
+`spaces` yang lebih simpel. Tapi, kalau kita nyoba pake `mut` buat hal ini, 
+kayak yang ditunjukin di sini, kita bakal dapet _compile-time error_:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch03-common-programming-concepts/no-listing-05-mut-cant-change-types/src/main.rs:here}}
 ```
 
-Kesalahannya mengatakan bahwa kita tidak diizinkan untuk memutasi suatu
-tipe variabel:
+Error-nya bilang kalau kita nggak diperbolehkan buat nge-mutasi tipe variabel:
 
 ```console
 {{#include ../listings/ch03-common-programming-concepts/no-listing-05-mut-cant-change-types/output.txt}}
 ```
 
-Kini setelah kita mengeksplorasi bagaimana variabel bekerja, mari kita 
-melihat lebih banyak tipe data yang dapat mereka miliki.
+Sekarang setelah kita eksplor gimana cara kerja variabel, yuk kita liat tipe 
+data lainnya yang bisa mereka punya.
 
-[comparing-the-guess-to-the-secret-number]:
-ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number
+[comparing-the-guess-to-the-secret-number]: ch02-00-guessing-game-tutorial.html#comparing-the-guess-to-the-secret-number
 [data-types]: ch03-02-data-types.html#data-types
 [storing-values-with-variables]: ch02-00-guessing-game-tutorial.html#storing-values-with-variables
 [const-eval]: ../reference/const_eval.html

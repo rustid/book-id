@@ -1,118 +1,125 @@
-# Generic Types, Traits, and Lifetimes
+# Tipe Generik, Traits, dan Lifetimes
 
-Every programming language has tools for effectively handling the duplication
-of concepts. In Rust, one such tool is *generics*: abstract stand-ins for
-concrete types or other properties. We can express the behavior of generics or
-how they relate to other generics without knowing what will be in their place
-when compiling and running the code.
+Setiap bahasa pemrograman punya _tools_ buat menangani duplikasi konsep 
+secara efektif. Di Rust, salah satu _tool_ itu adalah _generics_ (generik): 
+pengganti abstrak buat tipe konkret atau properti lainnya. Kita bisa 
+mengekspresikan perilaku dari generik atau gimana mereka berhubungan dengan 
+generik lainnya tanpa perlu tau apa yang bakal menempati posisi mereka saat 
+kode di-compile dan dijalankan.
 
-Functions can take parameters of some generic type, instead of a concrete type
-like `i32` or `String`, in the same way a function takes parameters with
-unknown values to run the same code on multiple concrete values. In fact, we’ve
-already used generics in Chapter 6 with `Option<T>`, Chapter 8 with `Vec<T>`
-and `HashMap<K, V>`, and Chapter 9 with `Result<T, E>`. In this chapter, you’ll
-explore how to define your own types, functions, and methods with generics!
+Fungsi bisa menerima parameter dari suatu tipe generik, bukannya tipe konkret 
+seperti `i32` atau `String`, dengan cara yang sama seperti mereka menerima 
+parameter dengan nilai yang belum diketahui untuk menjalankan kode yang sama di 
+beberapa nilai konkret. Sebenarnya, kita sudah memakai generik di Bab 6 dengan 
+`Option<T>`, di Bab 8 dengan `Vec<T>` dan `HashMap<K, V>`, serta di Bab 9 
+dengan `Result<T, E>`. Di bab ini, kita bakal eksplor gimana cara 
+mendefinisikan tipe, fungsi, dan _method_ kita sendiri pakai generik!
 
-First, we’ll review how to extract a function to reduce code duplication. We’ll
-then use the same technique to make a generic function from two functions that
-differ only in the types of their parameters. We’ll also explain how to use
-generic types in struct and enum definitions.
+Pertama-tama kita bakal mengulang gimana cara mengekstrak sebuah fungsi buat 
+mengurangi duplikasi kode. Kemudian kita bakal memakai teknik yang sama buat 
+bikin fungsi generik dari dua fungsi yang hanya berbeda di tipe parameternya. 
+Kita juga bakal menjelaskan gimana cara memakai tipe generik di dalam definisi 
+_struct_ dan _enum_.
 
-Then you’ll learn how to use *traits* to define behavior in a generic way. You
-can combine traits with generic types to constrain a generic type to accept
-only those types that have a particular behavior, as opposed to just any type.
+Setelah itu, kita bakal belajar gimana cara memakai _traits_ untuk 
+mendefinisikan perilaku dengan cara yang generik. Kita bisa menggabungkan 
+_traits_ dengan tipe generik untuk membatasi tipe generik agar cuma menerima 
+tipe yang punya perilaku tertentu, dan tidak asal menerima tipe apa saja.
 
-Finally, we’ll discuss *lifetimes*: a variety of generics that give the
-compiler information about how references relate to each other. Lifetimes allow
-us to give the compiler enough information about borrowed values so that it can
-ensure references will be valid in more situations than it could without our
-help.
+Terakhir, kita bakal membahas _lifetimes_: berbagai jenis generik yang memberi 
+_compiler_ informasi soal gimana referensi saling berhubungan. _Lifetimes_ 
+memungkinkan kita ngasih informasi yang cukup ke _compiler_ soal _borrowed 
+values_ (nilai yang dipinjam) agar _compiler_ bisa memastikan referensinya 
+bakal valid di lebih banyak situasi yang tidak akan dia sanggup lakukan tanpa 
+bantuan kita.
 
-## Removing Duplication by Extracting a Function
+## Menghapus Duplikasi dengan Mengekstrak Fungsi
 
-Generics allow us to replace specific types with a placeholder that represents
-multiple types to remove code duplication. Before diving into generics syntax,
-then, let’s first look at how to remove duplication in a way that doesn’t
-involve generic types by extracting a function that replaces specific values
-with a placeholder that represents multiple values. Then we’ll apply the same
-technique to extract a generic function! By looking at how to recognize
-duplicated code you can extract into a function, you’ll start to recognize
-duplicated code that can use generics.
+Generik memungkinkan kita mengganti tipe spesifik pakai _placeholder_ (tempat 
+pengganti) yang mewakili banyak tipe buat menghilangkan duplikasi kode. Sebelum 
+masuk ke sintaks generik, mari kita lihat dulu gimana cara menghilangkan duplikasi 
+pakai cara yang tidak melibatkan tipe generik, yaitu dengan mengekstrak sebuah 
+fungsi yang menggantikan nilai spesifik pakai _placeholder_ yang mewakili banyak 
+nilai. Habis itu, kita bakal menerapkan teknik yang sama buat mengekstrak fungsi 
+generik! Dengan melihat gimana cara mengenali kode duplikat yang bisa diekstrak 
+jadi sebuah fungsi, kita bakal mulai terbiasa mengenali kode duplikat yang bisa 
+memakai generik.
 
-We begin with the short program in Listing 10-1 that finds the largest number
-in a list.
+Kita bakal mulai dari program pendek di Listing 10-1 yang mencari angka paling 
+besar di dalam sebuah daftar (_list_).
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-1" file-name="src/main.rs" caption="Mencari angka paling besar di dalam daftar angka">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-01/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-1: Finding the largest number in a list of
-numbers</span>
+</Listing>
 
-We store a list of integers in the variable `number_list` and place a reference
-to the first number in the list in a variable named `largest`. We then iterate
-through all the numbers in the list, and if the current number is greater than
-the number stored in `largest`, replace the reference in that variable.
-However, if the current number is less than or equal to the largest number seen
-so far, the variable doesn’t change, and the code moves on to the next number
-in the list. After considering all the numbers in the list, `largest` should
-refer to the largest number, which in this case is 100.
+Kita menyimpan daftar integer di variabel `number_list` dan menaruh referensi 
+ke angka pertama di daftar itu di variabel bernama `largest`. Kemudian kita 
+iterasi melewati semua angka di daftar itu, dan kalau angka saat ini lebih 
+besar dari angka yang disimpan di `largest`, kita mengganti referensi di 
+variabel itu. Tapi, kalau angka saat ini lebih kecil atau sama dengan angka 
+paling besar yang dilihat sejauh ini, variabelnya tidak berubah, dan kodenya 
+lanjut ke angka berikutnya di daftar itu. Setelah memeriksa semua angka di 
+daftar, `largest` seharusnya merujuk ke angka paling besar, yang di kasus ini 
+adalah 100.
 
-We've now been tasked with finding the largest number in two different lists of
-numbers. To do so, we can choose to duplicate the code in Listing 10-1 and use
-the same logic at two different places in the program, as shown in Listing 10-2.
+Sekarang kita dapat tugas buat mencari angka paling besar di dua daftar angka 
+yang berbeda. Untuk melakukan itu, kita bisa memilih buat menduplikasi kode di 
+Listing 10-1 lalu memakai logika yang sama di dua tempat yang berbeda di program, 
+seperti yang ditunjukkan di Listing 10-2.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-2" file-name="src/main.rs" caption="Kode buat mencari angka paling besar di *dua* daftar angka">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-02/src/main.rs}}
 ```
 
-<span class="caption">Listing 10-2: Code to find the largest number in *two*
-lists of numbers</span>
+</Listing>
 
-Although this code works, duplicating code is tedious and error prone. We also
-have to remember to update the code in multiple places when we want to change
-it.
+Walaupun kode ini jalan, menduplikasi kode itu merepotkan dan rawan error. Kita 
+juga harus ingat buat meng-update kodenya di banyak tempat kalau kita mau 
+mengubahnya.
 
-To eliminate this duplication, we’ll create an abstraction by defining a
-function that operates on any list of integers passed in a parameter. This
-solution makes our code clearer and lets us express the concept of finding the
-largest number in a list abstractly.
+Buat menghilangkan duplikasi ini, kita bakal bikin abstraksi dengan 
+mendefinisikan sebuah fungsi yang beroperasi pada daftar integer apa pun yang 
+dimasukkan sebagai parameternya. Solusi ini bikin kode kita lebih jelas dan 
+memungkinkan kita mengekspresikan konsep pencarian angka paling besar di sebuah 
+daftar secara abstrak.
 
-In Listing 10-3, we extract the code that finds the largest number into a
-function named `largest`. Then we call the function to find the largest number
-in the two lists from Listing 10-2. We could also use the function on any other
-list of `i32` values we might have in the future.
+Di Listing 10-3, kita mengekstrak kode yang mencari angka paling besar ke dalam 
+fungsi bernama `largest`. Terus kita panggil fungsi itu buat mencari angka 
+paling besar di dua daftar dari Listing 10-2. Kita juga bisa memakai fungsi itu 
+di daftar nilai `i32` lain yang mungkin kita punya di masa depan.
 
-<span class="filename">Filename: src/main.rs</span>
+<Listing number="10-3" file-name="src/main.rs" caption="Kode yang diabstraksi buat mencari angka paling besar di dua daftar">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-03/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 10-3: Abstracted code to find the largest number
-in two lists</span>
+</Listing>
 
-The `largest` function has a parameter called `list`, which represents any
-concrete slice of `i32` values we might pass into the function. As a result,
-when we call the function, the code runs on the specific values that we pass
-in.
+Fungsi `largest` punya parameter bernama `list`, yang mewakili _slice_ konkret 
+apa pun dari nilai `i32` yang mungkin kita masukkan ke fungsi tersebut. Hasilnya, 
+pas kita memanggil fungsinya, kodenya jalan di nilai-nilai spesifik yang kita 
+masukkan.
 
-In summary, here are the steps we took to change the code from Listing 10-2 to
-Listing 10-3:
+Sebagai ringkasan, ini langkah-langkah yang kita ambil buat ngubah kode dari 
+Listing 10-2 jadi Listing 10-3:
 
-1. Identify duplicate code.
-2. Extract the duplicate code into the body of the function and specify the
-   inputs and return values of that code in the function signature.
-3. Update the two instances of duplicated code to call the function instead.
+1. Kenali kode yang terduplikasi.
+1. Ekstrak kode yang terduplikasi ke dalam body fungsi, lalu tentukan input 
+   dan nilai kembalian dari kode itu di _signature_ fungsinya.
+1. Update dua instance kode yang terduplikasi buat memanggil fungsinya sebagai gantinya.
 
-Next, we’ll use these same steps with generics to reduce code duplication. In
-the same way that the function body can operate on an abstract `list` instead
-of specific values, generics allow code to operate on abstract types.
+Berikutnya, kita bakal pakai langkah-langkah yang sama ini dengan generik buat 
+mengurangi duplikasi kode. Sama seperti body fungsi yang bisa beroperasi di `list` 
+abstrak bukannya nilai spesifik, generik memungkinkan kode buat beroperasi di 
+tipe abstrak.
 
-For example, say we had two functions: one that finds the largest item in a
-slice of `i32` values and one that finds the largest item in a slice of `char`
-values. How would we eliminate that duplication? Let’s find out!
+Misalnya, katakanlah kita punya dua fungsi: satu yang mencari item paling besar 
+di _slice_ nilai `i32` dan satu lagi yang mencari item paling besar di _slice_ 
+nilai `char`. Gimana cara kita menghilangkan duplikasi itu? Mari kita cari tahu!

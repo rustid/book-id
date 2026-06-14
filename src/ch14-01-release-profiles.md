@@ -1,16 +1,18 @@
-## Customizing Builds with Release Profiles
+## Mengkustomisasi Build dengan Release Profiles
 
-In Rust, *release profiles* are predefined and customizable profiles with
-different configurations that allow a programmer to have more control over
-various options for compiling code. Each profile is configured independently of
-the others.
+Di Rust, _release profiles_ (profil rilis) adalah profil yang sudah didefinisikan 
+sebelumnya (predefined) dan bisa dikustomisasi dengan berbagai konfigurasi yang 
+memungkinkan programmer buat punya lebih banyak kontrol atas berbagai opsi saat 
+men-compile kode. Setiap profil dikonfigurasi secara independen satu sama lain.
 
-Cargo has two main profiles: the `dev` profile Cargo uses when you run `cargo
-build` and the `release` profile Cargo uses when you run `cargo build
---release`. The `dev` profile is defined with good defaults for development,
-and the `release` profile has good defaults for release builds.
+Cargo punya dua profil utama: profil `dev` yang dipakai Cargo saat kita 
+menjalankan `cargo build`, dan profil `release` yang dipakai Cargo saat kita 
+menjalankan `cargo build --release`. Profil `dev` didefinisikan dengan 
+_default_ yang bagus buat fase _development_ (pengembangan), dan profil 
+`release` punya _default_ yang bagus buat _release builds_ (build versi rilis).
 
-These profile names might be familiar from the output of your builds:
+Nama-nama profil ini mungkin terasa familier dari output _build_ yang pernah 
+kita jalankan:
 
 <!-- manual-regeneration
 anywhere, run:
@@ -21,20 +23,21 @@ and ensure output below is accurate
 
 ```console
 $ cargo build
-    Finished dev [unoptimized + debuginfo] target(s) in 0.0s
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.00s
 $ cargo build --release
-    Finished release [optimized] target(s) in 0.0s
+    Finished `release` profile [optimized] target(s) in 0.32s
 ```
 
-The `dev` and `release` are these different profiles used by the compiler.
+`dev` dan `release` adalah profil-profil berbeda yang dipakai sama _compiler_.
 
-Cargo has default settings for each of the profiles that apply when you haven't
-explicitly added any `[profile.*]` sections in the project’s *Cargo.toml* file.
-By adding `[profile.*]` sections for any profile you want to customize, you
-override any subset of the default settings. For example, here are the default
-values for the `opt-level` setting for the `dev` and `release` profiles:
+Cargo punya pengaturan _default_ buat setiap profil yang berlaku kalau kita 
+belum menambahkan bagian `[profile.*]` secara eksplisit di file _Cargo.toml_ 
+milik project kita. Dengan menambahkan bagian `[profile.*]` buat profil mana 
+pun yang mau kita kustomisasi, kita bisa menimpa (_override_) sebagian dari 
+pengaturan _default_-nya. Misalnya, ini adalah nilai _default_ buat pengaturan 
+`opt-level` di profil `dev` dan `release`:
 
-<span class="filename">Filename: Cargo.toml</span>
+<span class="filename">Nama file: Cargo.toml</span>
 
 ```toml
 [profile.dev]
@@ -44,32 +47,38 @@ opt-level = 0
 opt-level = 3
 ```
 
-The `opt-level` setting controls the number of optimizations Rust will apply to
-your code, with a range of 0 to 3. Applying more optimizations extends
-compiling time, so if you’re in development and compiling your code often,
-you’ll want fewer optimizations to compile faster even if the resulting code
-runs slower. The default `opt-level` for `dev` is therefore `0`. When you’re
-ready to release your code, it’s best to spend more time compiling. You’ll only
-compile in release mode once, but you’ll run the compiled program many times,
-so release mode trades longer compile time for code that runs faster. That is
-why the default `opt-level` for the `release` profile is `3`.
+Pengaturan `opt-level` mengontrol seberapa banyak optimasi yang bakal 
+diterapkan Rust ke kode kita, dengan rentang nilai dari 0 sampai 3. Menerapkan 
+lebih banyak optimasi bakal memperpanjang waktu kompilasi, jadi kalau kita 
+sedang dalam fase pengembangan dan sering men-compile kode kita, kita bakal 
+mau lebih sedikit optimasi agar kodenya bisa di-compile lebih cepat meskipun 
+kode akhirnya nanti berjalan lebih lambat. Oleh karena itu, nilai `opt-level` 
+_default_ buat `dev` adalah `0`. Saat kita sudah siap merilis kode kita, hal 
+terbaik adalah menghabiskan lebih banyak waktu buat kompilasi. Kita cuma 
+bakal men-compile dalam mode `release` sesekali saja, tapi kita bakal 
+menjalankan program yang sudah di-compile itu berkali-kali, jadi mode 
+`release` menukar waktu kompilasi yang lebih lama demi mendapatkan kode yang 
+berjalan lebih cepat. Itulah kenapa nilai `opt-level` _default_ buat profil 
+`release` adalah `3`.
 
-You can override a default setting by adding a different value for it in
-*Cargo.toml*. For example, if we want to use optimization level 1 in the
-development profile, we can add these two lines to our project’s *Cargo.toml*
-file:
+Kita bisa menimpa pengaturan _default_ dengan menambahkan nilai yang berbeda 
+untuknya di _Cargo.toml_. Misalnya, kalau kita mau memakai tingkat optimasi 1 
+di profil _development_, kita bisa menambahkan dua baris ini ke file _Cargo.toml_ 
+project kita:
 
-<span class="filename">Filename: Cargo.toml</span>
+<span class="filename">Nama file: Cargo.toml</span>
 
 ```toml
 [profile.dev]
 opt-level = 1
 ```
 
-This code overrides the default setting of `0`. Now when we run `cargo build`,
-Cargo will use the defaults for the `dev` profile plus our customization to
-`opt-level`. Because we set `opt-level` to `1`, Cargo will apply more
-optimizations than the default, but not as many as in a release build.
+Kode ini menimpa pengaturan _default_ yaitu `0`. Sekarang pas kita menjalankan 
+`cargo build`, Cargo bakal memakai nilai-nilai _default_ buat profil `dev` 
+ditambah dengan kustomisasi kita pada `opt-level`. Karena kita menge-set 
+`opt-level` jadi `1`, Cargo bakal menerapkan lebih banyak optimasi daripada 
+nilai _default_-nya, tapi tidak sebanyak di versi _release build_.
 
-For the full list of configuration options and defaults for each profile, see
-[Cargo’s documentation](https://doc.rust-lang.org/cargo/reference/profiles.html).
+Buat melihat daftar lengkap dari opsi konfigurasi dan nilai _default_ dari 
+setiap profil, silakan cek 
+[dokumentasi Cargo](https://doc.rust-lang.org/cargo/reference/profiles.html).

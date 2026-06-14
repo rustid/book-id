@@ -1,92 +1,100 @@
-## Appendix A: Keywords
+## Lampiran A: Kata Kunci (Keywords)
 
-The following list contains keywords that are reserved for current or future
-use by the Rust language. As such, they cannot be used as identifiers (except
-as raw identifiers as we’ll discuss in the “[Raw
-Identifiers][raw-identifiers]<!-- ignore -->” section). Identifiers are names
-of functions, variables, parameters, struct fields, modules, crates, constants,
-macros, static values, attributes, types, traits, or lifetimes.
+Daftar berikut ini berisi *keywords* (kata kunci) yang direservasi buat 
+penggunaan saat ini maupun penggunaan di masa depan oleh bahasa Rust. Oleh 
+karena itu, kata-kata ini tidak bisa dipakai sebagai _identifiers_ (pengidentifikasi) 
+(terkecuali dipakai sebagai *raw identifiers*, seperti yang bakal kita obrolin di 
+bagian [“Raw Identifiers”][raw-identifiers]<!-- ignore -->). _Identifiers_ adalah 
+nama-nama fungsi, variabel, parameter, field struct, modul, _crates_, konstanta, 
+_macros_, nilai statis, atribut, tipe, _traits_, atau _lifetimes_.
 
 [raw-identifiers]: #raw-identifiers
 
-### Keywords Currently in Use
+### Keywords yang Saat Ini Dipakai
 
-The following is a list of keywords currently in use, with their functionality
-described.
+Berikut adalah daftar *keywords* yang saat ini sedang dipakai, beserta 
+penjelasan fungsionalitasnya.
 
-* `as` - perform primitive casting, disambiguate the specific trait containing
-  an item, or rename items in `use` statements
-* `async` -  return a `Future` instead of blocking the current thread
-* `await` - suspend execution until the result of a `Future` is ready
-* `break` - exit a loop immediately
-* `const` - define constant items or constant raw pointers
-* `continue` - continue to the next loop iteration
-* `crate` - in a module path, refers to the crate root
-* `dyn` - dynamic dispatch to a trait object
-* `else` - fallback for `if` and `if let` control flow constructs
-* `enum` - define an enumeration
-* `extern` - link an external function or variable
-* `false` - Boolean false literal
-* `fn` - define a function or the function pointer type
-* `for` - loop over items from an iterator, implement a trait, or specify a
-  higher-ranked lifetime
-* `if` - branch based on the result of a conditional expression
-* `impl` - implement inherent or trait functionality
-* `in` - part of `for` loop syntax
-* `let` - bind a variable
-* `loop` - loop unconditionally
-* `match` - match a value to patterns
-* `mod` - define a module
-* `move` - make a closure take ownership of all its captures
-* `mut` - denote mutability in references, raw pointers, or pattern bindings
-* `pub` - denote public visibility in struct fields, `impl` blocks, or modules
-* `ref` - bind by reference
-* `return` - return from function
-* `Self` - a type alias for the type we are defining or implementing
-* `self` - method subject or current module
-* `static` - global variable or lifetime lasting the entire program execution
-* `struct` - define a structure
-* `super` - parent module of the current module
-* `trait` - define a trait
-* `true` - Boolean true literal
-* `type` - define a type alias or associated type
-* `union` - define a [union][union]<!-- ignore -->; is only a keyword when used
-  in a union declaration
-* `unsafe` - denote unsafe code, functions, traits, or implementations
-* `use` - bring symbols into scope
-* `where` - denote clauses that constrain a type
-* `while` - loop conditionally based on the result of an expression
+- **`as`**: melakukan _casting_ (pengubahan tipe) primitif, menghilangkan 
+  ambiguitas trait spesifik yang menampung sebuah item, atau mengganti nama 
+  item di dalam statement `use`
+- **`async`**: mengembalikan sebuah `Future` ketimbang memblokir _thread_ saat ini
+- **`await`**: menahan eksekusi sampai hasil dari sebuah `Future` sudah siap
+- **`break`**: keluar dari sebuah perulangan (loop) secara langsung
+- **`const`**: mendefinisikan item konstanta atau *raw pointers* konstanta
+- **`continue`**: lanjut ke iterasi perulangan berikutnya
+- **`crate`**: di dalam _module path_, ini merujuk ke akar _crate_ (crate root)
+- **`dyn`**: penyaluran dinamis (dynamic dispatch) ke sebuah _trait object_
+- **`else`**: jalan alternatif (_fallback_) untuk struktur *control flow* `if` 
+  dan `if let`
+- **`enum`**: mendefinisikan sebuah enumerasi
+- **`extern`**: menautkan (link) sebuah fungsi atau variabel eksternal
+- **`false`**: nilai literal salah (false) pada Boolean
+- **`fn`**: mendefinisikan sebuah fungsi atau tipe dari _function pointer_
+- **`for`**: perulangan (loop) melewati item-item dari sebuah iterator, 
+  mengimplementasikan sebuah trait, atau menentukan _higher-ranked lifetime_
+- **`if`**: percabangan berdasarkan hasil dari ekspresi kondisional
+- **`impl`**: mengimplementasikan fungsionalitas bawaan (inherent) atau fungsionalitas trait
+- **`in`**: bagian dari sintaks perulangan `for`
+- **`let`**: mengikat (_bind_) sebuah variabel
+- **`loop`**: perulangan (loop) tanpa syarat
+- **`match`**: mencocokkan sebuah nilai terhadap _patterns_ (pola-pola)
+- **`mod`**: mendefinisikan sebuah modul
+- **`move`**: membuat _closure_ mengambil alih kepemilikan (ownership) atas semua 
+  nilai yang ditangkapnya (captures)
+- **`mut`**: menandakan mutabilitas pada referensi, *raw pointers*, atau _pattern bindings_
+- **`pub`**: menandakan visibilitas publik pada field struct, blok `impl`, atau modul
+- **`ref`**: mengikat berdasarkan referensi
+- **`return`**: mengembalikan nilai dari fungsi
+- **`Self`**: _type alias_ untuk tipe yang sedang kita definisikan atau implementasikan
+- **`self`**: subjek dari _method_ atau modul saat ini
+- **`static`**: variabel global atau _lifetime_ yang berlangsung selama keseluruhan 
+  eksekusi program
+- **`struct`**: mendefinisikan sebuah struktur
+- **`super`**: modul induk (parent module) dari modul saat ini
+- **`trait`**: mendefinisikan sebuah trait
+- **`true`**: nilai literal benar (true) pada Boolean
+- **`type`**: mendefinisikan _type alias_ atau _associated type_
+- **`union`**: mendefinisikan [union][union]<!-- ignore -->; hanya menjadi keyword saat dipakai 
+  di dalam deklarasi _union_
+- **`unsafe`**: menandakan kode, fungsi, trait, atau implementasi yang tidak aman
+- **`use`**: membawa *symbols* ke dalam _scope_; menentukan tangkapan pasti (precise captures) 
+  untuk batasan _generic_ dan _lifetime_
+- **`where`**: menandakan klausa yang membatasi (constrain) sebuah tipe
+- **`while`**: perulangan bersyarat berdasarkan hasil dari sebuah ekspresi
 
 [union]: ../reference/items/unions.html
 
-### Keywords Reserved for Future Use
+### Keywords yang Direservasi buat Penggunaan di Masa Depan
 
-The following keywords do not yet have any functionality but are reserved by
-Rust for potential future use.
+Keywords berikut ini belum punya fungsionalitas apa pun, tapi sudah direservasi 
+oleh Rust buat potensi pemakaian di masa depan:
 
-* `abstract`
-* `become`
-* `box`
-* `do`
-* `final`
-* `macro`
-* `override`
-* `priv`
-* `try`
-* `typeof`
-* `unsized`
-* `virtual`
-* `yield`
+- `abstract`
+- `become`
+- `box`
+- `do`
+- `final`
+- `gen`
+- `macro`
+- `override`
+- `priv`
+- `try`
+- `typeof`
+- `unsized`
+- `virtual`
+- `yield`
 
 ### Raw Identifiers
 
-*Raw identifiers* are the syntax that lets you use keywords where they wouldn’t
-normally be allowed. You use a raw identifier by prefixing a keyword with `r#`.
+_Raw identifiers_ adalah sintaks yang memungkinkan kita memakai keywords di tempat-tempat 
+di mana mereka biasanya tidak diperbolehkan. Kita bisa memakai _raw identifier_ dengan 
+menambahkan awalan `r#` pada sebuah keyword.
 
-For example, `match` is a keyword. If you try to compile the following function
-that uses `match` as its name:
+Misalnya, `match` itu adalah sebuah keyword. Kalau kita mencoba men-compile 
+fungsi berikut yang memakai `match` sebagai namanya:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama File: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 fn match(needle: &str, haystack: &str) -> bool {
@@ -94,7 +102,7 @@ fn match(needle: &str, haystack: &str) -> bool {
 }
 ```
 
-you’ll get this error:
+kita bakal mendapat error ini:
 
 ```text
 error: expected identifier, found keyword `match`
@@ -104,11 +112,11 @@ error: expected identifier, found keyword `match`
   |    ^^^^^ expected identifier, found keyword
 ```
 
-The error shows that you can’t use the keyword `match` as the function
-identifier. To use `match` as a function name, you need to use the raw
-identifier syntax, like this:
+Error tersebut menunjukkan kalau kita tidak bisa memakai keyword `match` sebagai 
+identifikasi fungsi. Supaya bisa memakai `match` sebagai nama fungsi, kita perlu 
+memakai sintaks _raw identifier_, kayak gini:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Nama File: src/main.rs</span>
 
 ```rust
 fn r#match(needle: &str, haystack: &str) -> bool {
@@ -120,18 +128,21 @@ fn main() {
 }
 ```
 
-This code will compile without any errors. Note the `r#` prefix on the function
-name in its definition as well as where the function is called in `main`.
+Kode ini bakal berhasil di-compile tanpa error. Perhatikan awalan `r#` pada 
+nama fungsi di bagian definisinya sekaligus di tempat fungsi tersebut dipanggil 
+di dalam `main`.
 
-Raw identifiers allow you to use any word you choose as an identifier, even if
-that word happens to be a reserved keyword. This gives us more freedom to
-choose identifier names, as well as lets us integrate with programs written in
-a language where these words aren’t keywords. In addition, raw identifiers
-allow you to use libraries written in a different Rust edition than your crate
-uses. For example, `try` isn’t a keyword in the 2015 edition but is in the 2018
-edition. If you depend on a library that’s written using the 2015 edition and
-has a `try` function, you’ll need to use the raw identifier syntax, `r#try` in
-this case, to call that function from your 2018 edition code. See [Appendix
-E][appendix-e]<!-- ignore --> for more information on editions.
+_Raw identifiers_ membiarkan kita memakai kata apa pun sebagai identifier, bahkan 
+jika kata tersebut kebetulan adalah keyword yang direservasi. Hal ini ngasih 
+kita kebebasan lebih dalam memilih nama identifier, sekaligus memungkinkan kita 
+berintegrasi dengan program yang ditulis di bahasa lain di mana kata-kata 
+tersebut bukanlah keywords. Selain itu, _raw identifiers_ juga memungkinkan 
+kita memakai *libraries* yang ditulis dalam edisi (_edition_) Rust yang berbeda 
+dari yang dipakai oleh _crate_ kita. Misalnya, `try` bukanlah keyword di edisi 2015, 
+tapi dia menjadi keyword di edisi 2018, 2021, dan 2024. Kalau kita bergantung 
+pada sebuah *library* yang ditulis pakai edisi 2015 dan punya fungsi `try`, kita 
+harus memakai sintaks _raw identifier_, yaitu `r#try` di kasus ini, buat memanggil 
+fungsi tersebut dari kode kita di edisi-edisi yang lebih baru. Lihat [Lampiran E][appendix-e] 
+untuk informasi lebih lanjut tentang *editions*.
 
 [appendix-e]: appendix-05-editions.html

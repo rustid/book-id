@@ -1,24 +1,22 @@
-# Konsep-konsep Pemrograman Umum
+# Konsep Pemrograman Umum
 
-Bab ini membahas konsep-konsep yang muncul dalam hampir semua bahasa
-pemrograman dan bagaimana mereka bekerja dalam Rust. Banyak bahasa pemrograman
-memiliki kesamaan dalam inti mereka. Tidak ada dari konsep yang disajikan
-dalam bab ini unik untuk Rust, tapi kami akan mendiskusikan mereka dalam
-konteks Rust dan menjelaskan konvensi seputaran memakai konsep-konsep ini.
+Bab ini ngebahas konsep-konsep yang ada di hampir semua bahasa pemrograman dan 
+gimana cara kerjanya di Rust. Banyak bahasa pemrograman yang sebenernya punya 
+kemiripan di intinya. Nggak ada konsep di bab ini yang unik cuma buat Rust 
+doang, tapi kita bakal bahas dalam konteks Rust dan jelasin konvensi cara pakenya.
 
-Secara spesifik, Anda akan belajar tentang variabel, tipe dasar, fungsi,
-komentar, dan alur kendali. Fondasi ini akan ada dalam setiap program Rust,
-dan mempelajari mereka dini akan memberi Anda inti yang kuat untuk memulai.
+Spesifiknya, kita bakal belajar soal variabel, tipe dasar, fungsi, komentar, 
+sama control flow. Dasar-dasar ini bakal ada di tiap program Rust, dan 
+mempelajarinya dari awal bakal ngasih kita pondasi yang kuat buat mulai.
 
-> #### Kata Kunci
+> #### Keywords
 >
-> Bahasa Rust memiliki suatu set *kata kunci* yang hanya boleh dipakai oleh
-> bahasa, seperti dalam bahasa-bahasa lain. Ingatlah bahwa Anda tidak bisa
-> memakai kata-kata ini sebagai nama variabel atau fungsi. Kebanyakan kata
-> kunci memiliki arti khusus, dan Anda akan memakai mereka untuk melakukan
-> berbagai tugas dalam program-program Rust Anda; beberapa tidak memiliki
-> fungsionalitas yang dikaitkan dengan mereka saat ini tapi telah dipesan
-> untuk fungsionalitas yang mungkin akan ditambahkan ke Rust di masa depan.
-> Anda dapat menemukan daftar kata kunci dalam [Lampiran A][appendix_a].
+> Bahasa Rust punya sekumpulan _keywords_ yang dipesen (reserved) cuma buat 
+> dipake sama bahasanya aja, sama kayak di bahasa lain. Inget ya kalau kita 
+> nggak bisa pake kata-kata ini sebagai nama variabel atau fungsi. Kebanyakan 
+> keyword punya makna khusus, dan kita bakal pakenya buat macem-macem tugas di 
+> program Rust kita; ada beberapa yang sekarang belum ada fungsinya tapi udah 
+> di-reserve buat fitur yang mungkin ditambahin ke Rust nanti. Kita bisa liat 
+> daftar keyword-nya di [Lampiran A][appendix_a].
 
 [appendix_a]: appendix-01-keywords.md

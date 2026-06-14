@@ -1,48 +1,52 @@
-# Managing Growing Projects with Packages, Crates, and Modules
+# Mengelola Project yang Makin Gede pake Packages, Crates, sama Modules
 
-As you write large programs, organizing your code will become increasingly
-important. By grouping related functionality and separating code with distinct
-features, you’ll clarify where to find code that implements a particular
-feature and where to go to change how a feature works.
+Seiring kita nulis program yang makin gede, ngatur organisasi kode kita bakal 
+makin penting. Dengan ngelempokin fungsionalitas yang terkait dan misahin kode 
+dengan fitur yang beda, kita bakal lebih gampang nemuin di mana kode yang 
+mengimplementasikan fitur tertentu dan ke mana harus pergi buat ngerubah cara 
+kerja sebuah fitur.
 
-The programs we’ve written so far have been in one module in one file. As a
-project grows, you should organize code by splitting it into multiple modules
-and then multiple files. A package can contain multiple binary crates and
-optionally one library crate. As a package grows, you can extract parts into
-separate crates that become external dependencies. This chapter covers all
-these techniques. For very large projects comprising a set of interrelated
-packages that evolve together, Cargo provides *workspaces*, which we’ll cover
-in the [“Cargo Workspaces”][workspaces]<!-- ignore --> section in Chapter 14.
+Program-program yang udah kita tulis sejauh ini semuanya ada di satu modul di 
+dalem satu file. Seiring berkembangnya project, kita harus ngatur kodenya dengan 
+mecahnya jadi banyak modul dan terus jadi banyak file. Sebuah package bisa 
+isinya banyak binary crates dan opsionalnya satu library crate. Pas sebuah 
+package makin gede, kita bisa ngekstrak bagian-bagiannya jadi crates terpisah 
+yang bakal jadi dependensi eksternal. Bab ini ngebahas semua teknik ini. Buat 
+project yang bener-bener gede yang disusun dari sekumpulan packages yang saling 
+berhubungan dan berkembang bareng, Cargo nyediain _workspaces_, yang bakal kita 
+bahas di [“Cargo Workspaces”][workspaces] di Bab 14.
 
-We’ll also discuss encapsulating implementation details, which lets you reuse
-code at a higher level: once you’ve implemented an operation, other code can
-call your code via its public interface without having to know how the
-implementation works. The way you write code defines which parts are public for
-other code to use and which parts are private implementation details that you
-reserve the right to change. This is another way to limit the amount of detail
-you have to keep in your head.
+Kita juga bakal bahas gimana nyembunyiin (encapsulating) detail implementasi, 
+yang ngebolehin kita buat pake ulang (_reuse_) kode di tingkat yang lebih 
+tinggi: sekali kita udah mengimplementasikan sebuah operasi, kode lain bisa 
+manggil kode kita lewat antarmuka _public_-nya tanpa harus tau gimana detail 
+implementasinya jalan. Cara kita nulis kode bakal nentuin bagian mana yang 
+_public_ buat dipake kode lain dan bagian mana yang merupakan detail implementasi 
+_private_ yang kita punya hak buat ngubahnya kapan aja. Ini cara lain buat 
+ngebatesin jumlah detail yang harus kita inget-inget di kepala kita.
 
-A related concept is scope: the nested context in which code is written has a
-set of names that are defined as “in scope.” When reading, writing, and
-compiling code, programmers and compilers need to know whether a particular
-name at a particular spot refers to a variable, function, struct, enum, module,
-constant, or other item and what that item means. You can create scopes and
-change which names are in or out of scope. You can’t have two items with the
-same name in the same scope; tools are available to resolve name conflicts.
+Konsep yang terkait adalah _scope_ (ruang lingkup): konteks bersarang (nested) di mana 
+kode itu ditulis punya sekumpulan nama yang didefinisikan sebagai "di dalem scope." 
+Pas baca, nulis, dan nge-compile kode, programmer dan _compiler_ perlu tau 
+apakah nama tertentu di tempat tertentu itu ngerujuk ke variabel, fungsi, struct, 
+enum, modul, konstanta, atau item lainnya dan apa makna dari item itu. Kita 
+bisa bikin _scopes_ dan ngerubah nama apa aja yang masuk atau keluar dari scope. 
+Kita nggak bisa punya dua item dengan nama yang sama di scope yang sama; ada 
+_tools_ yang tersedia buat nyelesein konflik nama.
 
-Rust has a number of features that allow you to manage your code’s
-organization, including which details are exposed, which details are private,
-and what names are in each scope in your programs. These features, sometimes
-collectively referred to as the *module system*, include:
+Rust punya sejumlah fitur yang ngebolehin kita ngatur organisasi kode kita, 
+termasuk detail apa yang diekspos, detail apa yang _private_, dan nama apa aja 
+yang ada di tiap scope di program kita. Fitur-fitur ini, yang kadang secara 
+kolektif disebut _module system_ (sistem modul), meliputi:
 
-* **Packages:** A Cargo feature that lets you build, test, and share crates
-* **Crates:** A tree of modules that produces a library or executable
-* **Modules** and **use:** Let you control the organization, scope, and
-  privacy of paths
-* **Paths:** A way of naming an item, such as a struct, function, or module
+* **Packages**: Fitur Cargo yang ngebolehin kita buat build, test, dan nge-share crates.
+* **Crates**: Struktur pohon modul yang ngasilin library atau file _executable_.
+* **Modules dan use**: Ngebolehin kita buat ngontrol organisasi, scope, dan privasi dari _paths_.
+* **Paths**: Cara buat namain sebuah item, kayak struct, fungsi, atau modul.
 
-In this chapter, we’ll cover all these features, discuss how they interact, and
-explain how to use them to manage scope. By the end, you should have a solid
-understanding of the module system and be able to work with scopes like a pro!
+Di bab ini, kita bakal ngebahas semua fitur ini, liat gimana mereka berinteraksi, 
+dan ngejelasin gimana cara pakenya buat ngelola scope. Pas selesai nanti, kita 
+bakal punya pemahaman yang solid soal sistem modul dan bisa main-main sama 
+scope layaknya pro!
 
 [workspaces]: ch14-03-cargo-workspaces.html
